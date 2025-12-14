@@ -8,26 +8,57 @@ import { MainLayout } from './components/main-layout'
 import { PropertyPanel } from './components/property-panel'
 import { StatusBar } from './components/status-bar'
 import { Toolbar } from './components/toolbar'
-import type { ProtocolData } from './types/protocol'
+import type { ProtocolData, SceneItem } from './types/protocol'
 import './App.css'
 
 function App() {
-  const [data] = useState<ProtocolData>(protocolData as ProtocolData)
+  const [data, setData] = useState<ProtocolData>(protocolData as ProtocolData)
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null)
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [isStreaming, setIsStreaming] = useState(false)
 
-  // 初始化时设置第一个活跃场景
+  // 初始化激活场景（仅执行一次）
   useEffect(() => {
     const activeScene = data.scenes.find((s) => s.active) || data.scenes[0]
-    if (activeScene) {
+    if (activeScene && !activeSceneId) {
       setActiveSceneId(activeScene.id)
     }
-  }, [data.scenes])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const activeScene = data.scenes.find((s) => s.id === activeSceneId) || null
   const selectedItem =
     activeScene?.items.find((item) => item.id === selectedItemId) || null
+
+  // 更新场景项
+  const handleUpdateItem = (itemId: string, updates: Partial<SceneItem>) => {
+    if (!activeSceneId) return
+
+    setData((prevData) => ({
+      ...prevData,
+      scenes: prevData.scenes.map((scene) => {
+        if (scene.id !== activeSceneId) return scene
+
+        return {
+          ...scene,
+          items: scene.items.map((item) => {
+            if (item.id !== itemId) return item
+
+            return {
+              ...item,
+              ...updates,
+              layout: updates.layout
+                ? { ...item.layout, ...updates.layout }
+                : item.layout,
+              transform: updates.transform
+                ? { ...item.transform, ...updates.transform }
+                : item.transform,
+            }
+          }),
+        }
+      }),
+    }))
+  }
 
   return (
     <MainLayout
@@ -40,14 +71,16 @@ function App() {
       }
       toolbar={<Toolbar />}
       leftSidebar={<LeftSidebar />}
-      canvas={
+      canvas={(
         <KonvaCanvas
           scene={activeScene}
           canvasWidth={data.canvas.width}
           canvasHeight={data.canvas.height}
           onSelectItem={setSelectedItemId}
+          onUpdateItem={handleUpdateItem}
+          selectedItemId={selectedItemId}
         />
-      }
+      )}
       rightSidebar={<PropertyPanel selectedItem={selectedItem} />}
       bottomBar={
         <BottomBar
