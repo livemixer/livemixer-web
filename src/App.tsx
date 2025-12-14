@@ -81,7 +81,7 @@ function App() {
           selectedItemId={selectedItemId}
         />
       )}
-      rightSidebar={<PropertyPanel selectedItem={selectedItem} />}
+      rightSidebar={<PropertyPanel selectedItem={selectedItem} onUpdateItem={handleUpdateItem} />}
       bottomBar={
         <BottomBar
           scenes={data.scenes}
