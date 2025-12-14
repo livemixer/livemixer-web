@@ -6,6 +6,7 @@ import { KonvaCanvas } from './components/konva-canvas'
 import { LeftSidebar } from './components/left-sidebar'
 import { MainLayout } from './components/main-layout'
 import { PropertyPanel } from './components/property-panel'
+import { SettingsDialog } from './components/settings-dialog'
 import { StatusBar } from './components/status-bar'
 import { Toolbar } from './components/toolbar'
 import type { ProtocolData, SceneItem } from './types/protocol'
@@ -16,6 +17,7 @@ function App() {
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null)
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [isStreaming, setIsStreaming] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   // 初始化激活场景（仅执行一次）
   useEffect(() => {
@@ -24,7 +26,7 @@ function App() {
       setActiveSceneId(activeScene.id)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [activeSceneId, data.scenes.find, data.scenes[0]])
 
   const activeScene = data.scenes.find((s) => s.id === activeSceneId) || null
   const selectedItem =
@@ -61,48 +63,56 @@ function App() {
   }
 
   return (
-    <MainLayout
-      logo={
-        <img
-          src={lmsLogo}
-          style={{ width: '40px', height: '40px' }}
-          alt="LMS logo"
-        />
-      }
-      toolbar={<Toolbar />}
-      leftSidebar={<LeftSidebar />}
-      canvas={(
-        <KonvaCanvas
-          scene={activeScene}
-          canvasWidth={data.canvas.width}
-          canvasHeight={data.canvas.height}
-          onSelectItem={setSelectedItemId}
-          onUpdateItem={handleUpdateItem}
-          selectedItemId={selectedItemId}
-        />
-      )}
-      rightSidebar={<PropertyPanel selectedItem={selectedItem} onUpdateItem={handleUpdateItem} />}
-      bottomBar={
-        <BottomBar
-          scenes={data.scenes}
-          activeSceneId={activeSceneId}
-          onSceneSelect={setActiveSceneId}
-          sources={data.resources?.sources || []}
-          selectedItemId={selectedItemId}
-          onSelectItem={setSelectedItemId}
-          isStreaming={isStreaming}
-          onToggleStreaming={() => setIsStreaming(!isStreaming)}
-        />
-      }
-      statusBar={
-        <StatusBar
-          isStreaming={isStreaming}
-          outputResolution={`${data.canvas.width}x${data.canvas.height}`}
-          fps={60}
-          cpuUsage={Math.random() * 20}
-        />
-      }
-    />
+    <>
+      <MainLayout
+        logo={
+          <img
+            src={lmsLogo}
+            style={{ width: '40px', height: '40px' }}
+            alt="LMS logo"
+          />
+        }
+        toolbar={<Toolbar />}
+        leftSidebar={<LeftSidebar />}
+        canvas={
+          <KonvaCanvas
+            scene={activeScene}
+            canvasWidth={data.canvas.width}
+            canvasHeight={data.canvas.height}
+            onSelectItem={setSelectedItemId}
+            onUpdateItem={handleUpdateItem}
+            selectedItemId={selectedItemId}
+          />
+        }
+        rightSidebar={
+          <PropertyPanel
+            selectedItem={selectedItem}
+            onUpdateItem={handleUpdateItem}
+          />
+        }
+        bottomBar={
+          <BottomBar
+            scenes={data.scenes}
+            activeSceneId={activeSceneId}
+            onSceneSelect={setActiveSceneId}
+            selectedItemId={selectedItemId}
+            onSelectItem={setSelectedItemId}
+            isStreaming={isStreaming}
+            onToggleStreaming={() => setIsStreaming(!isStreaming)}
+            onSettingsClick={() => setSettingsOpen(true)}
+          />
+        }
+        statusBar={
+          <StatusBar
+            isStreaming={isStreaming}
+            outputResolution={`${data.canvas.width}x${data.canvas.height}`}
+            fps={60}
+            cpuUsage={Math.random() * 20}
+          />
+        }
+      />
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+    </>
   )
 }
 
