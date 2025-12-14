@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react'
-import { MainLayout } from './components/main-layout'
-import { KonvaCanvas } from './components/konva-canvas'
-import { PropertyPanel } from './components/property-panel'
+import { useEffect, useState } from 'react'
+import lmsLogo from '/lms.svg'
+import protocolData from '../protocol/v1.0.0/v1.0.0.json'
 import { BottomBar } from './components/bottom-bar'
+import { KonvaCanvas } from './components/konva-canvas'
 import { LeftSidebar } from './components/left-sidebar'
+import { MainLayout } from './components/main-layout'
+import { PropertyPanel } from './components/property-panel'
 import { StatusBar } from './components/status-bar'
 import { Toolbar } from './components/toolbar'
-import type { ProtocolData, SceneItem } from './types/protocol'
-import protocolData from '../protocol/v1.0.0/v1.0.0.json'
-import lmsLogo from '/lms.svg'
+import type { ProtocolData } from './types/protocol'
 import './App.css'
 
 function App() {
@@ -19,14 +19,15 @@ function App() {
 
   // 初始化时设置第一个活跃场景
   useEffect(() => {
-    const activeScene = data.scenes.find(s => s.active) || data.scenes[0]
+    const activeScene = data.scenes.find((s) => s.active) || data.scenes[0]
     if (activeScene) {
       setActiveSceneId(activeScene.id)
     }
   }, [data.scenes])
 
-  const activeScene = data.scenes.find(s => s.id === activeSceneId) || null
-  const selectedItem = activeScene?.items.find(item => item.id === selectedItemId) || null
+  const activeScene = data.scenes.find((s) => s.id === activeSceneId) || null
+  const selectedItem =
+    activeScene?.items.find((item) => item.id === selectedItemId) || null
 
   return (
     <MainLayout

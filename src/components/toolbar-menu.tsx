@@ -1,72 +1,55 @@
-import { useState, useRef, useEffect } from 'react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu'
 
 interface MenuItem {
-    label?: string
-    onClick?: () => void
-    divider?: boolean
+  label?: string
+  onClick?: () => void
+  divider?: boolean
 }
 
 interface ToolbarMenuProps {
-    label: string
-    items: MenuItem[]
+  label: string
+  items: MenuItem[]
 }
 
 export function ToolbarMenu({ label, items }: ToolbarMenuProps) {
-    const [isOpen, setIsOpen] = useState(false)
-    const menuRef = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                setIsOpen(false)
-            }
-        }
-
-        if (isOpen) {
-            document.addEventListener('mousedown', handleClickOutside)
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside)
-        }
-    }, [isOpen])
-
-    const handleItemClick = (item: MenuItem) => {
-        item.onClick?.()
-        setIsOpen(false)
-    }
-
-    return (
-        <div ref={menuRef} className="relative">
-            <button
-                type="button"
-                onClick={() => setIsOpen(!isOpen)}
-                className={`
-                    px-3 py-1.5 text-sm transition-colors
-                    ${isOpen ? 'bg-[#3e3e42] text-white' : 'text-gray-300 hover:bg-[#3e3e42] hover:text-white'}
-                `}
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="px-3 py-1.5 text-sm text-gray-300 hover:bg-[#3e3e42] hover:text-white transition-colors data-[state=open]:bg-[#3e3e42] data-[state=open]:text-white"
+        >
+          {label}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="min-w-[180px] bg-[#2d2d30] border-[#3e3e42] rounded-md shadow-xl"
+        align="start"
+        sideOffset={2}
+      >
+        {items.map((item, index) =>
+          item.divider ? (
+            <DropdownMenuSeparator
+              key={`divider-${index}`}
+              className="bg-[#3e3e42]"
+            />
+          ) : (
+            <DropdownMenuItem
+              key={item.label || `item-${index}`}
+              onClick={item.onClick}
+              className="text-sm text-gray-300 hover:bg-[#3e3e42] hover:text-white focus:bg-[#3e3e42] focus:text-white cursor-pointer"
             >
-                {label}
-            </button>
-
-            {isOpen && (
-                <div className="absolute top-full left-0 mt-0.5 min-w-[180px] bg-[#2d2d30] border border-[#3e3e42] rounded-md shadow-xl z-50 py-1">
-                    {items.map((item, index) => (
-                        item.divider ? (
-                            <div key={index} className="my-1 border-t border-[#3e3e42]" />
-                        ) : (
-                            <button
-                                key={index}
-                                type="button"
-                                onClick={() => handleItemClick(item)}
-                                className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-[#3e3e42] hover:text-white transition-colors"
-                            >
-                                {item.label}
-                            </button>
-                        )
-                    ))}
-                </div>
-            )}
-        </div>
-    )
+              {item.label}
+            </DropdownMenuItem>
+          ),
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
 }
