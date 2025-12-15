@@ -12,6 +12,17 @@ interface SettingsDialogProps {
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [activeTab, setActiveTab] = useState('general')
 
+  // 直播设置状态
+  const [streamService, setStreamService] = useState('custom')
+  const [livekitUrl, setLivekitUrl] = useState('')
+  const [livekitToken, setLivekitToken] = useState('')
+
+  // 输出设置状态
+  const [videoBitrate, setVideoBitrate] = useState('2500')
+  const [audioBitrate, setAudioBitrate] = useState('48000')
+  const [videoEncoder, setVideoEncoder] = useState('h264')
+  const [audioEncoder, setAudioEncoder] = useState('opus')
+
   // 视频设置状态
   const [baseResolution, setBaseResolution] = useState('1920x1080')
   const [outputResolution, setOutputResolution] = useState('1920x1080')
@@ -34,44 +45,50 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               <button
                 type="button"
                 onClick={() => setActiveTab('general')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
-                  activeTab === 'general'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                }`}
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'general'
+                  ? 'bg-[#2a2a2a] text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                  }`}
               >
                 常规
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('streaming')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
-                  activeTab === 'streaming'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                }`}
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'streaming'
+                  ? 'bg-[#2a2a2a] text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                  }`}
               >
                 直播
               </button>
               <button
                 type="button"
+                onClick={() => setActiveTab('output')}
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'output'
+                  ? 'bg-[#2a2a2a] text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                  }`}
+              >
+                输出
+              </button>
+              <button
+                type="button"
                 onClick={() => setActiveTab('audio')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
-                  activeTab === 'audio'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                }`}
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'audio'
+                  ? 'bg-[#2a2a2a] text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                  }`}
               >
                 音频
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('video')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
-                  activeTab === 'video'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                }`}
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'video'
+                  ? 'bg-[#2a2a2a] text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                  }`}
               >
                 视频
               </button>
@@ -113,23 +130,106 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 <h2 className="text-lg font-semibold text-white">直播设置</h2>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="streamServer">推流服务器</Label>
+                    <Label htmlFor="streamService">推流服务</Label>
+                    <select
+                      id="streamService"
+                      value={streamService}
+                      onChange={(e) => setStreamService(e.target.value)}
+                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                    >
+                      <option value="custom">自定义地址</option>
+                    </select>
+                  </div>
+
+                  {streamService === 'custom' && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="livekitUrl">服务器地址</Label>
+                        <Input
+                          id="livekitUrl"
+                          value={livekitUrl}
+                          onChange={(e) => setLivekitUrl(e.target.value)}
+                          placeholder="wss://your-livekit-server.com"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="livekitToken">Token</Label>
+                        <Input
+                          id="livekitToken"
+                          type="password"
+                          value={livekitToken}
+                          onChange={(e) => setLivekitToken(e.target.value)}
+                          placeholder="输入 Token"
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'output' && (
+              <div className="space-y-6">
+                <h2 className="text-lg font-semibold text-white">输出设置</h2>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="videoBitrate">视频码率 (kbps)</Label>
                     <Input
-                      id="streamServer"
-                      placeholder="rtmp://live.example.com/live"
+                      id="videoBitrate"
+                      type="number"
+                      value={videoBitrate}
+                      onChange={(e) => setVideoBitrate(e.target.value)}
+                      placeholder="2500"
+                      min="500"
+                      max="20000"
                     />
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="streamKey">推流密钥</Label>
-                    <Input
-                      id="streamKey"
-                      type="password"
-                      placeholder="输入推流密钥"
-                    />
+                    <Label htmlFor="audioBitrate">音频码率 (bps)</Label>
+                    <select
+                      id="audioBitrate"
+                      value={audioBitrate}
+                      onChange={(e) => setAudioBitrate(e.target.value)}
+                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                    >
+                      <option value="12000">12 kbps (Telephone)</option>
+                      <option value="24000">24 kbps (Speech)</option>
+                      <option value="48000">48 kbps (Music)</option>
+                      <option value="64000">64 kbps (Music Stereo)</option>
+                      <option value="96000">96 kbps (Music High Quality)</option>
+                      <option value="128000">128 kbps (Music High Quality Stereo)</option>
+                    </select>
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="bitrate">比特率 (kbps)</Label>
-                    <Input id="bitrate" type="number" placeholder="2500" />
+                    <Label htmlFor="videoEncoder">视频编码器</Label>
+                    <select
+                      id="videoEncoder"
+                      value={videoEncoder}
+                      onChange={(e) => setVideoEncoder(e.target.value)}
+                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                    >
+                      <option value="h264">H.264/AVC</option>
+                      <option value="h265">H.265/HEVC</option>
+                      <option value="vp8">VP8</option>
+                      <option value="vp9">VP9</option>
+                      <option value="av1">AV1</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="audioEncoder">音频编码器</Label>
+                    <select
+                      id="audioEncoder"
+                      value={audioEncoder}
+                      onChange={(e) => setAudioEncoder(e.target.value)}
+                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                    >
+                      <option value="aac">AAC</option>
+                      <option value="opus">Opus</option>
+                      <option value="mp3">MP3</option>
+                    </select>
                   </div>
                 </div>
               </div>
