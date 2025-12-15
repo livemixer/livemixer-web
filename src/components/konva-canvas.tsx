@@ -48,6 +48,8 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
             height: canvasHeight,
         })
         const shapeRefs = useRef<Map<string, Konva.Node>>(new Map())
+        // 像素比例，适配高分屏
+        const pixelRatio = window.devicePixelRatio || 1
 
         // 暴露方法给父组件
         useImperativeHandle(ref, () => ({
@@ -349,6 +351,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                             ref={stageRef}
                             width={canvasWidth}
                             height={canvasHeight}
+                            pixelRatio={pixelRatio}
                             onMouseDown={(e) => {
                                 // 点击空白处取消选中
                                 const clickedOnEmpty = e.target === e.target.getStage()

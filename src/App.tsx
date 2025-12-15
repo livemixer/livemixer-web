@@ -23,8 +23,8 @@ function App() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const canvasRef = useRef<KonvaCanvasHandle>(null)
 
-  // 从 store 获取 LiveKit 配置
-  const { livekitUrl, livekitToken, fps } = useSettingsStore()
+  // 从 store 获取 LiveKit 配置和输出设置
+  const { livekitUrl, livekitToken, fps, videoBitrate, videoEncoder } = useSettingsStore()
 
   // 初始化激活场景（仅执行一次）
   useEffect(() => {
@@ -93,8 +93,18 @@ function App() {
         const fpsValue = Number.parseInt(fps, 10) || 30
         const mediaStream = canvasCaptureService.captureStream(canvas, fpsValue)
 
-        // 连接到 LiveKit 并推流
-        await streamingService.connect(livekitUrl, livekitToken, mediaStream)
+        // 获取视频码率设置（kbps）
+        const bitrateValue = Number.parseInt(videoBitrate, 10) || 5000
+
+        // 连接到 LiveKit 并推流，使用设置中的编码器和帧率
+        await streamingService.connect(
+          livekitUrl,
+          livekitToken,
+          mediaStream,
+          bitrateValue,
+          videoEncoder as 'h264' | 'h265' | 'vp8' | 'vp9' | 'av1',
+          fpsValue
+        )
 
         setIsStreaming(true)
         console.log('开始推流')
@@ -119,7 +129,7 @@ function App() {
         console.error('停止推流失败:', error)
       }
     }
-  }, [isStreaming, livekitUrl, livekitToken, fps])
+  }, [isStreaming, livekitUrl, livekitToken, fps, videoBitrate, videoEncoder])
 
   // 组件卸载时清理资源
   useEffect(() => {

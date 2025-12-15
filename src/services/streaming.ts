@@ -13,11 +13,17 @@ export class StreamingService {
      * @param url LiveKit 服务器地址
      * @param token 访问令牌
      * @param mediaStream 要推送的媒体流
+     * @param videoBitrate 视频码率（kbps），默认 5000
+     * @param videoCodec 视频编码器，默认 'vp8'
+     * @param maxFramerate 最大帧率，默认 30
      */
     async connect(
         url: string,
         token: string,
         mediaStream: MediaStream,
+        videoBitrate = 5000,
+        videoCodec: 'h264' | 'h265' | 'vp8' | 'vp9' | 'av1' = 'vp8',
+        maxFramerate = 30,
     ): Promise<void> {
         if (this.isConnected) {
             throw new Error('已经在推流中')
@@ -32,6 +38,14 @@ export class StreamingService {
             this.room = new Room({
                 adaptiveStream: true,
                 dynacast: true,
+                // 设置视频编码默认参数
+                videoCaptureDefaults: {
+                    resolution: {
+                        width: 1920,
+                        height: 1080,
+                        frameRate: maxFramerate,
+                    },
+                },
             })
 
             // 监听连接状态
@@ -62,17 +76,37 @@ export class StreamingService {
                 throw new Error('MediaStream 中没有视频轨道')
             }
 
-            // 创建 LocalVideoTrack
-            this.videoTrack = new LocalVideoTrack(videoTracks[0])
+            const videoTrack = videoTracks[0]
 
-            // 发布视频轨道
+            // 设置视频轨道约束，优化编码质量
+            await videoTrack.applyConstraints({
+                width: { ideal: 1920 },
+                height: { ideal: 1080 },
+                frameRate: { ideal: maxFramerate },
+            })
+
+            // 创建 LocalVideoTrack
+            this.videoTrack = new LocalVideoTrack(videoTrack)
+
+            // 发布视频轨道，设置编码参数
             await this.room.localParticipant.publishTrack(this.videoTrack, {
                 name: 'canvas-output',
                 source: Track.Source.ScreenShare,
-                simulcast: true,
+                simulcast: false, // 禁用模拟投射以获得更高质量
+                videoEncoding: {
+                    maxBitrate: videoBitrate * 1000, // 转换为 bps
+                    maxFramerate: maxFramerate,
+                },
+                videoCodec: videoCodec, // 使用设置中的编码器
             })
 
             console.log('视频轨道已发布到 LiveKit')
+            console.log('视频编码参数:', {
+                codec: videoCodec,
+                maxBitrate: videoBitrate * 1000,
+                maxFramerate: maxFramerate,
+                resolution: `${videoTrack.getSettings().width}x${videoTrack.getSettings().height}`,
+            })
 
             // 如果有音频轨道也发布
             const audioTracks = mediaStream.getAudioTracks()
