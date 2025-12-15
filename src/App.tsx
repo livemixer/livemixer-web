@@ -1,14 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import lmsLogo from '/lms.svg'
 import protocolData from '../protocol/v1.0.0/v1.0.0.json'
 import { BottomBar } from './components/bottom-bar'
-import { KonvaCanvas } from './components/konva-canvas'
+import { KonvaCanvas, type KonvaCanvasHandle } from './components/konva-canvas'
 import { LeftSidebar } from './components/left-sidebar'
 import { MainLayout } from './components/main-layout'
 import { PropertyPanel } from './components/property-panel'
 import { SettingsDialog } from './components/settings-dialog'
 import { StatusBar } from './components/status-bar'
 import { Toolbar } from './components/toolbar'
+import { canvasCaptureService } from './services/canvas-capture'
+import { streamingService } from './services/streaming'
+import { useSettingsStore } from './store/setting'
 import type { ProtocolData, SceneItem } from './types/protocol'
 import './App.css'
 
@@ -18,6 +21,10 @@ function App() {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [isStreaming, setIsStreaming] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const canvasRef = useRef<KonvaCanvasHandle>(null)
+
+  // 从 store 获取 LiveKit 配置
+  const { livekitUrl, livekitToken, fps } = useSettingsStore()
 
   // 初始化激活场景（仅执行一次）
   useEffect(() => {
@@ -62,6 +69,69 @@ function App() {
     }))
   }
 
+  // 处理推流开关
+  const handleToggleStreaming = useCallback(async () => {
+    if (!isStreaming) {
+      // 开始推流
+      try {
+        if (!livekitUrl || !livekitToken) {
+          alert('请先在设置中配置 LiveKit 服务器地址和 Token')
+          return
+        }
+
+        // 获取 Canvas 元素
+        const canvas = canvasRef.current?.getCanvas()
+        if (!canvas) {
+          alert('无法获取画布元素')
+          return
+        }
+
+        // 启动持续渲染，确保 captureStream 持续捕获帧
+        canvasRef.current?.startContinuousRendering()
+
+        // 从 Canvas 捕获媒体流
+        const fpsValue = Number.parseInt(fps, 10) || 30
+        const mediaStream = canvasCaptureService.captureStream(canvas, fpsValue)
+
+        // 连接到 LiveKit 并推流
+        await streamingService.connect(livekitUrl, livekitToken, mediaStream)
+
+        setIsStreaming(true)
+        console.log('开始推流')
+      } catch (error) {
+        console.error('推流失败:', error)
+        alert(
+          `推流失败: ${error instanceof Error ? error.message : '未知错误'}`,
+        )
+        // 清理资源
+        canvasRef.current?.stopContinuousRendering()
+        canvasCaptureService.stopCapture()
+      }
+    } else {
+      // 停止推流
+      try {
+        await streamingService.disconnect()
+        canvasCaptureService.stopCapture()
+        canvasRef.current?.stopContinuousRendering()
+        setIsStreaming(false)
+        console.log('停止推流')
+      } catch (error) {
+        console.error('停止推流失败:', error)
+      }
+    }
+  }, [isStreaming, livekitUrl, livekitToken, fps])
+
+  // 组件卸载时清理资源
+  useEffect(() => {
+    return () => {
+      if (isStreaming) {
+        streamingService.disconnect()
+        canvasCaptureService.stopCapture()
+        canvasRef.current?.stopContinuousRendering()
+      }
+    }
+  }, [isStreaming])
+
   return (
     <>
       <MainLayout
@@ -76,6 +146,7 @@ function App() {
         leftSidebar={<LeftSidebar />}
         canvas={
           <KonvaCanvas
+            ref={canvasRef}
             scene={activeScene}
             canvasWidth={data.canvas.width}
             canvasHeight={data.canvas.height}
@@ -98,7 +169,7 @@ function App() {
             selectedItemId={selectedItemId}
             onSelectItem={setSelectedItemId}
             isStreaming={isStreaming}
-            onToggleStreaming={() => setIsStreaming(!isStreaming)}
+            onToggleStreaming={handleToggleStreaming}
             onSettingsClick={() => setSettingsOpen(true)}
           />
         }

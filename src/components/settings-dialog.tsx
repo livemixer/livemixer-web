@@ -1,9 +1,9 @@
 import { useState } from 'react'
+import { useSettingsStore } from '@/store/setting'
 import lmsLogo from '/lms.svg'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
-import { useSettingsStore } from '@/store/setting'
 
 interface SettingsDialogProps {
   open: boolean
@@ -60,50 +60,55 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               <button
                 type="button"
                 onClick={() => setActiveTab('general')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'general'
-                  ? 'bg-[#2a2a2a] text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                  }`}
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
+                  activeTab === 'general'
+                    ? 'bg-[#2a2a2a] text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                }`}
               >
                 常规
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('streaming')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'streaming'
-                  ? 'bg-[#2a2a2a] text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                  }`}
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
+                  activeTab === 'streaming'
+                    ? 'bg-[#2a2a2a] text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                }`}
               >
                 直播
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('output')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'output'
-                  ? 'bg-[#2a2a2a] text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                  }`}
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
+                  activeTab === 'output'
+                    ? 'bg-[#2a2a2a] text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                }`}
               >
                 输出
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('audio')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'audio'
-                  ? 'bg-[#2a2a2a] text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                  }`}
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
+                  activeTab === 'audio'
+                    ? 'bg-[#2a2a2a] text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                }`}
               >
                 音频
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('video')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'video'
-                  ? 'bg-[#2a2a2a] text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                  }`}
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
+                  activeTab === 'video'
+                    ? 'bg-[#2a2a2a] text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                }`}
               >
                 视频
               </button>
@@ -121,7 +126,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <select
                       id="language"
                       value={language}
-                      onChange={(e) => updatePersistentSettings({ language: e.target.value })}
+                      onChange={(e) =>
+                        updatePersistentSettings({ language: e.target.value })
+                      }
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="zh-CN">简体中文</option>
@@ -133,7 +140,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <select
                       id="theme"
                       value={theme}
-                      onChange={(e) => updatePersistentSettings({ theme: e.target.value })}
+                      onChange={(e) =>
+                        updatePersistentSettings({ theme: e.target.value })
+                      }
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="dark">深色</option>
@@ -153,36 +162,44 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <select
                       id="streamService"
                       value={streamService}
-                      onChange={(e) => updatePersistentSettings({ streamService: e.target.value })}
+                      onChange={(e) =>
+                        updatePersistentSettings({
+                          streamService: e.target.value,
+                        })
+                      }
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
-                      <option value="custom">自定义地址</option>
+                      <option value="custom">自定义</option>
                     </select>
                   </div>
 
-                  {streamService === 'custom' && (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="livekitUrl">服务器地址</Label>
-                        <Input
-                          id="livekitUrl"
-                          value={livekitUrl}
-                          onChange={(e) => updatePersistentSettings({ livekitUrl: e.target.value })}
-                          placeholder="wss://your-livekit-server.com"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="livekitToken">Token</Label>
-                        <Input
-                          id="livekitToken"
-                          type="password"
-                          value={livekitToken}
-                          onChange={(e) => updateSensitiveSettings({ livekitToken: e.target.value })}
-                          placeholder="输入 Token"
-                        />
-                      </div>
-                    </>
-                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="livekitUrl">服务器地址</Label>
+                    <Input
+                      id="livekitUrl"
+                      value={livekitUrl}
+                      onChange={(e) =>
+                        updatePersistentSettings({
+                          livekitUrl: e.target.value,
+                        })
+                      }
+                      placeholder="wss://your-livekit-server.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="livekitToken">Token</Label>
+                    <Input
+                      id="livekitToken"
+                      type="password"
+                      value={livekitToken}
+                      onChange={(e) =>
+                        updateSensitiveSettings({
+                          livekitToken: e.target.value,
+                        })
+                      }
+                      placeholder="输入 Token"
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -197,7 +214,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       id="videoBitrate"
                       type="number"
                       value={videoBitrate}
-                      onChange={(e) => updatePersistentSettings({ videoBitrate: e.target.value })}
+                      onChange={(e) =>
+                        updatePersistentSettings({
+                          videoBitrate: e.target.value,
+                        })
+                      }
                       placeholder="2500"
                       min="500"
                       max="20000"
@@ -209,15 +230,23 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <select
                       id="audioBitrate"
                       value={audioBitrate}
-                      onChange={(e) => updatePersistentSettings({ audioBitrate: e.target.value })}
+                      onChange={(e) =>
+                        updatePersistentSettings({
+                          audioBitrate: e.target.value,
+                        })
+                      }
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="12000">12 kbps (Telephone)</option>
                       <option value="24000">24 kbps (Speech)</option>
                       <option value="48000">48 kbps (Music)</option>
                       <option value="64000">64 kbps (Music Stereo)</option>
-                      <option value="96000">96 kbps (Music High Quality)</option>
-                      <option value="128000">128 kbps (Music High Quality Stereo)</option>
+                      <option value="96000">
+                        96 kbps (Music High Quality)
+                      </option>
+                      <option value="128000">
+                        128 kbps (Music High Quality Stereo)
+                      </option>
                     </select>
                   </div>
 
@@ -226,7 +255,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <select
                       id="videoEncoder"
                       value={videoEncoder}
-                      onChange={(e) => updatePersistentSettings({ videoEncoder: e.target.value })}
+                      onChange={(e) =>
+                        updatePersistentSettings({
+                          videoEncoder: e.target.value,
+                        })
+                      }
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="h264">H.264/AVC</option>
@@ -242,7 +275,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <select
                       id="audioEncoder"
                       value={audioEncoder}
-                      onChange={(e) => updatePersistentSettings({ audioEncoder: e.target.value })}
+                      onChange={(e) =>
+                        updatePersistentSettings({
+                          audioEncoder: e.target.value,
+                        })
+                      }
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="aac">AAC</option>
@@ -263,7 +300,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <select
                       id="audioDevice"
                       value={audioDevice}
-                      onChange={(e) => updatePersistentSettings({ audioDevice: e.target.value })}
+                      onChange={(e) =>
+                        updatePersistentSettings({
+                          audioDevice: e.target.value,
+                        })
+                      }
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="default">默认</option>
@@ -274,7 +315,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <select
                       id="sampleRate"
                       value={sampleRate}
-                      onChange={(e) => updatePersistentSettings({ sampleRate: e.target.value })}
+                      onChange={(e) =>
+                        updatePersistentSettings({ sampleRate: e.target.value })
+                      }
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="44100">44.1 kHz</option>
@@ -286,7 +329,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <select
                       id="channels"
                       value={channels}
-                      onChange={(e) => updatePersistentSettings({ channels: e.target.value })}
+                      onChange={(e) =>
+                        updatePersistentSettings({ channels: e.target.value })
+                      }
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="stereo">立体声</option>
@@ -306,7 +351,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <select
                       id="baseResolution"
                       value={baseResolution}
-                      onChange={(e) => updatePersistentSettings({ baseResolution: e.target.value })}
+                      onChange={(e) =>
+                        updatePersistentSettings({
+                          baseResolution: e.target.value,
+                        })
+                      }
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="1920x1080">1920x1080</option>
@@ -325,7 +374,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           id="customWidth"
                           type="number"
                           value={customWidth || ''}
-                          onChange={(e) => updatePersistentSettings({ customWidth: e.target.value })}
+                          onChange={(e) =>
+                            updatePersistentSettings({
+                              customWidth: e.target.value,
+                            })
+                          }
                           placeholder="1920"
                         />
                       </div>
@@ -335,7 +388,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           id="customHeight"
                           type="number"
                           value={customHeight || ''}
-                          onChange={(e) => updatePersistentSettings({ customHeight: e.target.value })}
+                          onChange={(e) =>
+                            updatePersistentSettings({
+                              customHeight: e.target.value,
+                            })
+                          }
                           placeholder="1080"
                         />
                       </div>
@@ -347,7 +404,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <select
                       id="outputResolution"
                       value={outputResolution}
-                      onChange={(e) => updatePersistentSettings({ outputResolution: e.target.value })}
+                      onChange={(e) =>
+                        updatePersistentSettings({
+                          outputResolution: e.target.value,
+                        })
+                      }
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="1920x1080">1920x1080</option>
@@ -363,7 +424,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <select
                       id="fps"
                       value={fps}
-                      onChange={(e) => updatePersistentSettings({ fps: e.target.value })}
+                      onChange={(e) =>
+                        updatePersistentSettings({ fps: e.target.value })
+                      }
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="24">24</option>
@@ -378,7 +441,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <select
                       id="scaleFilter"
                       value={scaleFilter}
-                      onChange={(e) => updatePersistentSettings({ scaleFilter: e.target.value })}
+                      onChange={(e) =>
+                        updatePersistentSettings({
+                          scaleFilter: e.target.value,
+                        })
+                      }
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="bilinear">双线性</option>
