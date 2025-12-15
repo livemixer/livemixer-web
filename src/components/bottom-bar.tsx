@@ -54,10 +54,9 @@ export function BottomBar({
                       }}
                       className={`
                         px-3 py-2 rounded cursor-pointer transition-colors text-sm select-none
-                        ${
-                          activeSceneId === scene.id
-                            ? 'bg-blue-500/80 text-white'
-                            : 'bg-[#1e1e1e] text-gray-300 hover:bg-[#3e3e42]'
+                        ${activeSceneId === scene.id
+                          ? 'bg-blue-500/80 text-white'
+                          : 'bg-[#1e1e1e] text-gray-300 hover:bg-[#3e3e42]'
                         }
                       `}
                     >
@@ -111,10 +110,9 @@ export function BottomBar({
                         }}
                         className={`
                           px-3 py-2 rounded transition-colors cursor-pointer select-none
-                          ${
-                            selectedItemId === item.id
-                              ? 'bg-blue-500/80 text-white'
-                              : 'bg-[#1e1e1e] text-gray-300 hover:bg-[#3e3e42]'
+                          ${selectedItemId === item.id
+                            ? 'bg-blue-500/80 text-white'
+                            : 'bg-[#1e1e1e] text-gray-300 hover:bg-[#3e3e42]'
                           }
                         `}
                       >
@@ -155,10 +153,9 @@ export function BottomBar({
               onClick={onToggleStreaming}
               className={`
                 w-full px-4 py-3 rounded font-medium transition-all flex items-center justify-center gap-2
-                ${
-                  isStreaming
-                    ? 'bg-red-600 hover:bg-red-700 text-white'
-                    : 'bg-green-600 hover:bg-green-700 text-white'
+                ${isStreaming
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-green-600 hover:bg-green-700 text-white'
                 }
               `}
             >

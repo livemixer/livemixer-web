@@ -4,138 +4,138 @@ import { LocalVideoTrack, Room, RoomEvent, Track } from 'livekit-client'
  * LiveKit 推流服务
  */
 export class StreamingService {
-  private room: Room | null = null
-  private videoTrack: LocalVideoTrack | null = null
-  private isConnected = false
+    private room: Room | null = null
+    private videoTrack: LocalVideoTrack | null = null
+    private isConnected = false
 
-  /**
-   * 连接到 LiveKit 房间并开始推流
-   * @param url LiveKit 服务器地址
-   * @param token 访问令牌
-   * @param mediaStream 要推送的媒体流
-   */
-  async connect(
-    url: string,
-    token: string,
-    mediaStream: MediaStream,
-  ): Promise<void> {
-    if (this.isConnected) {
-      throw new Error('已经在推流中')
+    /**
+     * 连接到 LiveKit 房间并开始推流
+     * @param url LiveKit 服务器地址
+     * @param token 访问令牌
+     * @param mediaStream 要推送的媒体流
+     */
+    async connect(
+        url: string,
+        token: string,
+        mediaStream: MediaStream,
+    ): Promise<void> {
+        if (this.isConnected) {
+            throw new Error('已经在推流中')
+        }
+
+        if (!url || !token) {
+            throw new Error('LiveKit 服务器地址和 Token 不能为空')
+        }
+
+        try {
+            // 创建房间实例
+            this.room = new Room({
+                adaptiveStream: true,
+                dynacast: true,
+            })
+
+            // 监听连接状态
+            this.room.on(RoomEvent.Connected, () => {
+                console.log('已连接到 LiveKit 房间')
+                this.isConnected = true
+            })
+
+            this.room.on(RoomEvent.Disconnected, () => {
+                console.log('已断开 LiveKit 连接')
+                this.isConnected = false
+            })
+
+            this.room.on(RoomEvent.Reconnecting, () => {
+                console.log('正在重新连接 LiveKit...')
+            })
+
+            this.room.on(RoomEvent.Reconnected, () => {
+                console.log('已重新连接到 LiveKit')
+            })
+
+            // 连接到房间
+            await this.room.connect(url, token)
+
+            // 从 MediaStream 获取视频轨道
+            const videoTracks = mediaStream.getVideoTracks()
+            if (videoTracks.length === 0) {
+                throw new Error('MediaStream 中没有视频轨道')
+            }
+
+            // 创建 LocalVideoTrack
+            this.videoTrack = new LocalVideoTrack(videoTracks[0])
+
+            // 发布视频轨道
+            await this.room.localParticipant.publishTrack(this.videoTrack, {
+                name: 'canvas-output',
+                source: Track.Source.ScreenShare,
+                simulcast: true,
+            })
+
+            console.log('视频轨道已发布到 LiveKit')
+
+            // 如果有音频轨道也发布
+            const audioTracks = mediaStream.getAudioTracks()
+            if (audioTracks.length > 0) {
+                await this.room.localParticipant.publishTrack(audioTracks[0], {
+                    source: Track.Source.Microphone,
+                })
+                console.log('音频轨道已发布到 LiveKit')
+            }
+        } catch (error) {
+            this.isConnected = false
+            this.cleanup()
+            throw error
+        }
     }
 
-    if (!url || !token) {
-      throw new Error('LiveKit 服务器地址和 Token 不能为空')
+    /**
+     * 断开连接并清理资源
+     */
+    async disconnect(): Promise<void> {
+        if (!this.room) {
+            return
+        }
+
+        try {
+            // 取消发布所有轨道
+            if (this.videoTrack) {
+                await this.room.localParticipant.unpublishTrack(this.videoTrack)
+                this.videoTrack.stop()
+                this.videoTrack = null
+            }
+
+            // 断开房间连接
+            await this.room.disconnect()
+        } catch (error) {
+            console.error('断开连接时出错:', error)
+        } finally {
+            this.cleanup()
+        }
     }
 
-    try {
-      // 创建房间实例
-      this.room = new Room({
-        adaptiveStream: true,
-        dynacast: true,
-      })
-
-      // 监听连接状态
-      this.room.on(RoomEvent.Connected, () => {
-        console.log('已连接到 LiveKit 房间')
-        this.isConnected = true
-      })
-
-      this.room.on(RoomEvent.Disconnected, () => {
-        console.log('已断开 LiveKit 连接')
-        this.isConnected = false
-      })
-
-      this.room.on(RoomEvent.Reconnecting, () => {
-        console.log('正在重新连接 LiveKit...')
-      })
-
-      this.room.on(RoomEvent.Reconnected, () => {
-        console.log('已重新连接到 LiveKit')
-      })
-
-      // 连接到房间
-      await this.room.connect(url, token)
-
-      // 从 MediaStream 获取视频轨道
-      const videoTracks = mediaStream.getVideoTracks()
-      if (videoTracks.length === 0) {
-        throw new Error('MediaStream 中没有视频轨道')
-      }
-
-      // 创建 LocalVideoTrack
-      this.videoTrack = new LocalVideoTrack(videoTracks[0])
-
-      // 发布视频轨道
-      await this.room.localParticipant.publishTrack(this.videoTrack, {
-        name: 'canvas-output',
-        source: Track.Source.Camera,
-        simulcast: true,
-      })
-
-      console.log('视频轨道已发布到 LiveKit')
-
-      // 如果有音频轨道也发布
-      const audioTracks = mediaStream.getAudioTracks()
-      if (audioTracks.length > 0) {
-        await this.room.localParticipant.publishTrack(audioTracks[0], {
-          source: Track.Source.Microphone,
-        })
-        console.log('音频轨道已发布到 LiveKit')
-      }
-    } catch (error) {
-      this.isConnected = false
-      this.cleanup()
-      throw error
-    }
-  }
-
-  /**
-   * 断开连接并清理资源
-   */
-  async disconnect(): Promise<void> {
-    if (!this.room) {
-      return
-    }
-
-    try {
-      // 取消发布所有轨道
-      if (this.videoTrack) {
-        await this.room.localParticipant.unpublishTrack(this.videoTrack)
-        this.videoTrack.stop()
+    /**
+     * 清理资源
+     */
+    private cleanup(): void {
+        this.room = null
         this.videoTrack = null
-      }
-
-      // 断开房间连接
-      await this.room.disconnect()
-    } catch (error) {
-      console.error('断开连接时出错:', error)
-    } finally {
-      this.cleanup()
+        this.isConnected = false
     }
-  }
 
-  /**
-   * 清理资源
-   */
-  private cleanup(): void {
-    this.room = null
-    this.videoTrack = null
-    this.isConnected = false
-  }
+    /**
+     * 获取连接状态
+     */
+    getConnectionState(): boolean {
+        return this.isConnected
+    }
 
-  /**
-   * 获取连接状态
-   */
-  getConnectionState(): boolean {
-    return this.isConnected
-  }
-
-  /**
-   * 获取房间实例
-   */
-  getRoom(): Room | null {
-    return this.room
-  }
+    /**
+     * 获取房间实例
+     */
+    getRoom(): Room | null {
+        return this.room
+    }
 }
 
 // 导出单例实例
