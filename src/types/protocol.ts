@@ -23,6 +23,8 @@ export interface SceneItem {
   zIndex: number
   layout: Layout
   transform?: Transform
+  visible?: boolean // 可见性
+  locked?: boolean // 属性锁定
   // color type
   color?: string
   // text type

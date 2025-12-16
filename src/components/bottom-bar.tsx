@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Play, Plus, Settings, Square, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, Eye, EyeOff, Lock, LockOpen, Play, Plus, Settings, Square, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import type { Scene } from '../types/protocol'
 import {
@@ -35,6 +35,8 @@ interface BottomBarProps {
   onDeleteItem: (itemId: string) => void
   onMoveItemUp: (itemId: string) => void
   onMoveItemDown: (itemId: string) => void
+  onToggleItemVisibility: (itemId: string) => void
+  onToggleItemLock: (itemId: string) => void
 }
 
 export function BottomBar({
@@ -54,6 +56,8 @@ export function BottomBar({
   onDeleteItem,
   onMoveItemUp,
   onMoveItemDown,
+  onToggleItemVisibility,
+  onToggleItemLock,
 }: BottomBarProps) {
   const activeScene = scenes.find((s) => s.id === activeSceneId)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -196,24 +200,62 @@ export function BottomBar({
                   <Tooltip key={item.id}>
                     <TooltipTrigger asChild>
                       <div
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => onSelectItem(item.id)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            onSelectItem(item.id)
-                          }
-                        }}
                         className={`
-                          px-3 py-2 rounded transition-colors cursor-pointer select-none
+                          px-3 py-2 rounded transition-colors select-none flex items-center gap-2
                           ${selectedItemId === item.id
                             ? 'bg-blue-500/80 text-white'
                             : 'bg-[#1e1e1e] text-gray-300 hover:bg-[#3e3e42]'
                           }
+                          ${item.visible === false ? 'opacity-50' : ''}
                         `}
                       >
-                        <div className="text-sm font-medium">{item.id}</div>
-                        <div className="text-xs opacity-70">{item.type}</div>
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => onSelectItem(item.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              onSelectItem(item.id)
+                            }
+                          }}
+                          className="flex-1 cursor-pointer"
+                        >
+                          <div className="text-sm font-medium">{item.id}</div>
+                          <div className="text-xs opacity-70">{item.type}</div>
+                        </div>
+                        {/* 可见性和锁定按钮 */}
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              onToggleItemVisibility(item.id)
+                            }}
+                            className="p-1 hover:bg-black/20 rounded transition-colors"
+                            title={item.visible === false ? '显示' : '隐藏'}
+                          >
+                            {item.visible === false ? (
+                              <EyeOff className="w-3.5 h-3.5" />
+                            ) : (
+                              <Eye className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              onToggleItemLock(item.id)
+                            }}
+                            className="p-1 hover:bg-black/20 rounded transition-colors"
+                            title={item.locked ? '解锁' : '锁定'}
+                          >
+                            {item.locked ? (
+                              <Lock className="w-3.5 h-3.5" />
+                            ) : (
+                              <LockOpen className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        </div>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent
@@ -224,6 +266,9 @@ export function BottomBar({
                         <div className="font-medium">{item.id}</div>
                         <div className="text-xs text-gray-400">
                           类型: {item.type}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          状态: {item.visible === false ? '隐藏' : '可见'} | {item.locked ? '锁定' : '未锁定'}
                         </div>
                       </div>
                     </TooltipContent>

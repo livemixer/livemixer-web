@@ -204,7 +204,13 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
         }
 
         const renderItem = (item: SceneItem, isChildItem = false) => {
+            // 如果隐藏，不渲染
+            if (item.visible === false) {
+                return null
+            }
+
             const isSelected = !isChildItem && selectedItemId === item.id
+            const isLocked = item.locked === true
             const commonProps = {
                 key: item.id,
                 x: item.layout.x,
@@ -213,13 +219,13 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                 height: item.layout.height,
                 opacity: item.transform?.opacity ?? 1,
                 rotation: item.transform?.rotation ?? 0,
-                draggable: isSelected,
+                draggable: isSelected && !isLocked, // 锁定时不可拖拽
                 onClick: isChildItem ? undefined : () => onSelectItem?.(item.id),
                 onTap: isChildItem ? undefined : () => onSelectItem?.(item.id),
-                onDragEnd: isChildItem
+                onDragEnd: isChildItem || isLocked
                     ? undefined
                     : (e: Konva.KonvaEventObject<DragEvent>) => handleDragEnd(item.id, e),
-                onTransformEnd: isChildItem
+                onTransformEnd: isChildItem || isLocked
                     ? undefined
                     : (e: Konva.KonvaEventObject<Event>) =>
                         handleTransformEnd(item.id, item.transform, e),
@@ -234,7 +240,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                     },
                 // 高亮选中的控件
                 ...(isSelected && {
-                    shadowColor: '#00a8ff',
+                    shadowColor: isLocked ? '#ff6b6b' : '#00a8ff', // 锁定时用红色
                     shadowBlur: 10,
                     shadowOpacity: 0.8,
                 }),
@@ -365,6 +371,11 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                                 <Transformer
                                     ref={transformerRef}
                                     boundBoxFunc={(oldBox, newBox) => {
+                                        // 锁定时不允许变换
+                                        const selectedItem = scene.items.find(i => i.id === selectedItemId)
+                                        if (selectedItem?.locked) {
+                                            return oldBox
+                                        }
                                         // 限制最小尺寸
                                         if (newBox.width < 5 || newBox.height < 5) {
                                             return oldBox

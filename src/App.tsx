@@ -224,6 +224,52 @@ function App() {
     }))
   }
 
+  // 切换源的可见性
+  const handleToggleItemVisibility = (itemId: string) => {
+    if (!activeSceneId) return
+
+    setData((prevData) => ({
+      ...prevData,
+      scenes: prevData.scenes.map((scene) => {
+        if (scene.id !== activeSceneId) return scene
+
+        return {
+          ...scene,
+          items: scene.items.map((item) => {
+            if (item.id !== itemId) return item
+            return {
+              ...item,
+              visible: item.visible === false ? true : false,
+            }
+          }),
+        }
+      }),
+    }))
+  }
+
+  // 切换源的锁定状态
+  const handleToggleItemLock = (itemId: string) => {
+    if (!activeSceneId) return
+
+    setData((prevData) => ({
+      ...prevData,
+      scenes: prevData.scenes.map((scene) => {
+        if (scene.id !== activeSceneId) return scene
+
+        return {
+          ...scene,
+          items: scene.items.map((item) => {
+            if (item.id !== itemId) return item
+            return {
+              ...item,
+              locked: !item.locked,
+            }
+          }),
+        }
+      }),
+    }))
+  }
+
   // 更新场景项
   const handleUpdateItem = (itemId: string, updates: Partial<SceneItem>) => {
     if (!activeSceneId) return
@@ -374,6 +420,8 @@ function App() {
             onDeleteItem={handleDeleteItem}
             onMoveItemUp={handleMoveItemUp}
             onMoveItemDown={handleMoveItemDown}
+            onToggleItemVisibility={handleToggleItemVisibility}
+            onToggleItemLock={handleToggleItemLock}
           />
         }
         statusBar={
