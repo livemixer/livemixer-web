@@ -1,5 +1,16 @@
-import { Play, Settings, Square } from 'lucide-react'
+import { ChevronDown, ChevronUp, Play, Plus, Settings, Square, Trash2 } from 'lucide-react'
+import { useState } from 'react'
 import type { Scene } from '../types/protocol'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './ui/alert-dialog'
 import {
   Tooltip,
   TooltipContent,
@@ -16,6 +27,14 @@ interface BottomBarProps {
   isStreaming: boolean
   onToggleStreaming: () => void
   onSettingsClick: () => void
+  onAddScene: () => void
+  onDeleteScene: (sceneId: string) => void
+  onMoveSceneUp: (sceneId: string) => void
+  onMoveSceneDown: (sceneId: string) => void
+  onAddItem: () => void
+  onDeleteItem: (itemId: string) => void
+  onMoveItemUp: (itemId: string) => void
+  onMoveItemDown: (itemId: string) => void
 }
 
 export function BottomBar({
@@ -27,8 +46,22 @@ export function BottomBar({
   isStreaming,
   onToggleStreaming,
   onSettingsClick,
+  onAddScene,
+  onDeleteScene,
+  onMoveSceneUp,
+  onMoveSceneDown,
+  onAddItem,
+  onDeleteItem,
+  onMoveItemUp,
+  onMoveItemDown,
 }: BottomBarProps) {
   const activeScene = scenes.find((s) => s.id === activeSceneId)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteItemDialogOpen, setDeleteItemDialogOpen] = useState(false)
+  const sceneToDelete = activeScene
+  const itemToDelete = activeScene?.items.find(
+    (item) => item.id === selectedItemId,
+  )
 
   return (
     <TooltipProvider>
@@ -83,6 +116,69 @@ export function BottomBar({
                 </Tooltip>
               ))}
             </div>
+          </div>
+          {/* 场景操作按钮 - 底部 */}
+          <div className="border-t border-[#3e3e42] p-2 flex items-center justify-center gap-2 bg-[#1a1a1a]">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={onAddScene}
+                  className="p-2 hover:bg-[#3e3e42] rounded transition-colors"
+                >
+                  <Plus className="w-4 h-4 text-gray-300" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-[#2d2d30] border-[#3e3e42] text-white">
+                添加场景
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => setDeleteDialogOpen(true)}
+                  disabled={!activeSceneId || scenes.length <= 1}
+                  className="p-2 hover:bg-[#3e3e42] rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <Trash2 className="w-4 h-4 text-gray-300" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-[#2d2d30] border-[#3e3e42] text-white">
+                删除场景
+              </TooltipContent>
+            </Tooltip>
+            <div className="w-px h-5 bg-[#3e3e42]" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => activeSceneId && onMoveSceneUp(activeSceneId)}
+                  disabled={!activeSceneId || scenes.findIndex(s => s.id === activeSceneId) === 0}
+                  className="p-2 hover:bg-[#3e3e42] rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <ChevronUp className="w-4 h-4 text-gray-300" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-[#2d2d30] border-[#3e3e42] text-white">
+                上移
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => activeSceneId && onMoveSceneDown(activeSceneId)}
+                  disabled={!activeSceneId || scenes.findIndex(s => s.id === activeSceneId) === scenes.length - 1}
+                  className="p-2 hover:bg-[#3e3e42] rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <ChevronDown className="w-4 h-4 text-gray-300" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-[#2d2d30] border-[#3e3e42] text-white">
+                下移
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
 
@@ -140,6 +236,79 @@ export function BottomBar({
               </div>
             )}
           </div>
+          {/* 源操作按钮 - 底部 */}
+          <div className="border-t border-[#3e3e42] p-2 flex items-center justify-center gap-2 bg-[#1a1a1a]">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={onAddItem}
+                  disabled={!activeSceneId}
+                  className="p-2 hover:bg-[#3e3e42] rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <Plus className="w-4 h-4 text-gray-300" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-[#2d2d30] border-[#3e3e42] text-white">
+                添加源
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => setDeleteItemDialogOpen(true)}
+                  disabled={!selectedItemId}
+                  className="p-2 hover:bg-[#3e3e42] rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <Trash2 className="w-4 h-4 text-gray-300" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-[#2d2d30] border-[#3e3e42] text-white">
+                删除源
+              </TooltipContent>
+            </Tooltip>
+            <div className="w-px h-5 bg-[#3e3e42]" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => selectedItemId && onMoveItemUp(selectedItemId)}
+                  disabled={
+                    !selectedItemId ||
+                    !activeScene ||
+                    activeScene.items.findIndex((i) => i.id === selectedItemId) === 0
+                  }
+                  className="p-2 hover:bg-[#3e3e42] rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <ChevronUp className="w-4 h-4 text-gray-300" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-[#2d2d30] border-[#3e3e42] text-white">
+                上移
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => selectedItemId && onMoveItemDown(selectedItemId)}
+                  disabled={
+                    !selectedItemId ||
+                    !activeScene ||
+                    activeScene.items.findIndex((i) => i.id === selectedItemId) ===
+                    activeScene.items.length - 1
+                  }
+                  className="p-2 hover:bg-[#3e3e42] rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <ChevronDown className="w-4 h-4 text-gray-300" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-[#2d2d30] border-[#3e3e42] text-white">
+                下移
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
 
         {/* 控制按钮区域 - 25% */}
@@ -183,6 +352,62 @@ export function BottomBar({
           </div>
         </div>
       </div>
+
+      {/* 删除场景确认对话框 */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="shadow-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除场景</AlertDialogTitle>
+            <AlertDialogDescription>
+              你确定要删除场景 "{sceneToDelete?.name}" 吗？
+              <br />
+              <span className="text-yellow-500 font-medium">
+                此操作无法撤销，场景中的所有元素都将被删除。
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-3">
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (activeSceneId) {
+                  onDeleteScene(activeSceneId)
+                }
+              }}
+            >
+              确认删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 删除源确认对话框 */}
+      <AlertDialog open={deleteItemDialogOpen} onOpenChange={setDeleteItemDialogOpen}>
+        <AlertDialogContent className="shadow-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除源</AlertDialogTitle>
+            <AlertDialogDescription>
+              你确定要删除源 "{itemToDelete?.id}" 吗？
+              <br />
+              <span className="text-yellow-500 font-medium">
+                此操作无法撤销。
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-3">
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (selectedItemId) {
+                  onDeleteItem(selectedItemId)
+                }
+              }}
+            >
+              确认删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </TooltipProvider>
   )
 }

@@ -39,6 +39,191 @@ function App() {
   const selectedItem =
     activeScene?.items.find((item) => item.id === selectedItemId) || null
 
+  // 添加新场景
+  const handleAddScene = () => {
+    const newSceneId = `scene_${Date.now()}`
+    const newScene = {
+      id: newSceneId,
+      name: `新场景 ${data.scenes.length + 1}`,
+      active: false,
+      items: [],
+    }
+
+    setData((prevData) => ({
+      ...prevData,
+      scenes: [...prevData.scenes, newScene],
+    }))
+
+    // 自动选择新场景
+    setActiveSceneId(newSceneId)
+  }
+
+  // 删除场景
+  const handleDeleteScene = (sceneId: string) => {
+    if (data.scenes.length <= 1) {
+      alert('至少需要保留一个场景')
+      return
+    }
+
+    setData((prevData) => {
+      const newScenes = prevData.scenes.filter((s) => s.id !== sceneId)
+      return {
+        ...prevData,
+        scenes: newScenes,
+      }
+    })
+
+    // 如果删除的是当前激活的场景，切换到第一个场景
+    if (activeSceneId === sceneId) {
+      const remainingScenes = data.scenes.filter((s) => s.id !== sceneId)
+      setActiveSceneId(remainingScenes[0]?.id || null)
+    }
+  }
+
+  // 上移场景
+  const handleMoveSceneUp = (sceneId: string) => {
+    setData((prevData) => {
+      const index = prevData.scenes.findIndex((s) => s.id === sceneId)
+      if (index <= 0) return prevData // 已经是第一个，无法上移
+
+      const newScenes = [...prevData.scenes]
+        ;[newScenes[index - 1], newScenes[index]] = [
+          newScenes[index],
+          newScenes[index - 1],
+        ]
+
+      return {
+        ...prevData,
+        scenes: newScenes,
+      }
+    })
+  }
+
+  // 下移场景
+  const handleMoveSceneDown = (sceneId: string) => {
+    setData((prevData) => {
+      const index = prevData.scenes.findIndex((s) => s.id === sceneId)
+      if (index < 0 || index >= prevData.scenes.length - 1) return prevData // 已经是最后一个，无法下移
+
+      const newScenes = [...prevData.scenes]
+        ;[newScenes[index], newScenes[index + 1]] = [
+          newScenes[index + 1],
+          newScenes[index],
+        ]
+
+      return {
+        ...prevData,
+        scenes: newScenes,
+      }
+    })
+  }
+
+  // 添加新源到当前场景
+  const handleAddItem = () => {
+    if (!activeSceneId) return
+
+    const newItemId = `item_${Date.now()}`
+    const newItem = {
+      id: newItemId,
+      type: 'color' as const,
+      zIndex: activeScene?.items.length || 0,
+      layout: {
+        x: 100,
+        y: 100,
+        width: 400,
+        height: 300,
+      },
+      color: '#3b82f6',
+    }
+
+    setData((prevData) => ({
+      ...prevData,
+      scenes: prevData.scenes.map((scene) => {
+        if (scene.id !== activeSceneId) return scene
+        return {
+          ...scene,
+          items: [...scene.items, newItem],
+        }
+      }),
+    }))
+
+    // 自动选择新添加的源
+    setSelectedItemId(newItemId)
+  }
+
+  // 删除源
+  const handleDeleteItem = (itemId: string) => {
+    if (!activeSceneId) return
+
+    setData((prevData) => ({
+      ...prevData,
+      scenes: prevData.scenes.map((scene) => {
+        if (scene.id !== activeSceneId) return scene
+        return {
+          ...scene,
+          items: scene.items.filter((item) => item.id !== itemId),
+        }
+      }),
+    }))
+
+    // 如果删除的是当前选中的源，清除选中状态
+    if (selectedItemId === itemId) {
+      setSelectedItemId(null)
+    }
+  }
+
+  // 上移源
+  const handleMoveItemUp = (itemId: string) => {
+    if (!activeSceneId) return
+
+    setData((prevData) => ({
+      ...prevData,
+      scenes: prevData.scenes.map((scene) => {
+        if (scene.id !== activeSceneId) return scene
+
+        const index = scene.items.findIndex((item) => item.id === itemId)
+        if (index <= 0) return scene // 已经是第一个，无法上移
+
+        const newItems = [...scene.items]
+          ;[newItems[index - 1], newItems[index]] = [
+            newItems[index],
+            newItems[index - 1],
+          ]
+
+        return {
+          ...scene,
+          items: newItems,
+        }
+      }),
+    }))
+  }
+
+  // 下移源
+  const handleMoveItemDown = (itemId: string) => {
+    if (!activeSceneId) return
+
+    setData((prevData) => ({
+      ...prevData,
+      scenes: prevData.scenes.map((scene) => {
+        if (scene.id !== activeSceneId) return scene
+
+        const index = scene.items.findIndex((item) => item.id === itemId)
+        if (index < 0 || index >= scene.items.length - 1) return scene // 已经是最后一个，无法下移
+
+        const newItems = [...scene.items]
+          ;[newItems[index], newItems[index + 1]] = [
+            newItems[index + 1],
+            newItems[index],
+          ]
+
+        return {
+          ...scene,
+          items: newItems,
+        }
+      }),
+    }))
+  }
+
   // 更新场景项
   const handleUpdateItem = (itemId: string, updates: Partial<SceneItem>) => {
     if (!activeSceneId) return
@@ -181,6 +366,14 @@ function App() {
             isStreaming={isStreaming}
             onToggleStreaming={handleToggleStreaming}
             onSettingsClick={() => setSettingsOpen(true)}
+            onAddScene={handleAddScene}
+            onDeleteScene={handleDeleteScene}
+            onMoveSceneUp={handleMoveSceneUp}
+            onMoveSceneDown={handleMoveSceneDown}
+            onAddItem={handleAddItem}
+            onDeleteItem={handleDeleteItem}
+            onMoveItemUp={handleMoveItemUp}
+            onMoveItemDown={handleMoveItemDown}
           />
         }
         statusBar={
