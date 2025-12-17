@@ -1,14 +1,71 @@
+import type { ProtocolData } from '../types/protocol'
 import { ToolbarMenu } from './toolbar-menu'
 
-export function Toolbar() {
+interface ToolbarProps {
+  data: ProtocolData
+  setData: (data: ProtocolData) => void
+}
+
+export function Toolbar({ data, setData }: ToolbarProps) {
   const handleImport = () => {
-    console.log('导入配置')
-    // TODO: 实现导入功能
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.json'
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (!file) return
+
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        try {
+          const content = event.target?.result as string
+          const importedData = JSON.parse(content) as ProtocolData
+
+          // 验证导入的数据结构
+          if (!importedData.version || !importedData.scenes || !importedData.canvas) {
+            alert('无效的配置文件格式')
+            return
+          }
+
+          // 更新 metadata 的时间戳
+          importedData.metadata.updatedAt = new Date().toISOString()
+
+          setData(importedData)
+          console.log('成功导入配置')
+        } catch (error) {
+          console.error('导入失败:', error)
+          alert('导入失败：文件格式错误')
+        }
+      }
+      reader.readAsText(file)
+    }
+    input.click()
   }
 
   const handleExport = () => {
-    console.log('导出配置')
-    // TODO: 实现导出功能
+    try {
+      // 更新 metadata 的时间戳
+      const exportData = {
+        ...data,
+        metadata: {
+          ...data.metadata,
+          updatedAt: new Date().toISOString(),
+        },
+      }
+
+      const jsonString = JSON.stringify(exportData, null, 2)
+      const blob = new Blob([jsonString], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `livemixer-config-${new Date().getTime()}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+      console.log('成功导出配置')
+    } catch (error) {
+      console.error('导出失败:', error)
+      alert('导出失败')
+    }
   }
 
   const handleCheckUpdate = () => {

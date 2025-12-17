@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import lmsLogo from '/lms.svg'
-import protocolData from '../protocol/v1.0.0/v1.0.0.json'
 import { BottomBar } from './components/bottom-bar'
 import { KonvaCanvas, type KonvaCanvasHandle } from './components/konva-canvas'
 import { LeftSidebar } from './components/left-sidebar'
@@ -15,8 +14,33 @@ import { useSettingsStore } from './store/setting'
 import type { ProtocolData, SceneItem } from './types/protocol'
 import './App.css'
 
+// 创建默认的空白场景配置
+const createDefaultProtocolData = (): ProtocolData => ({
+  version: '1.0.0',
+  metadata: {
+    name: 'New Project',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  canvas: {
+    width: 1920,
+    height: 1080,
+  },
+  resources: {
+    sources: [],
+  },
+  scenes: [
+    {
+      id: 'default_scene',
+      name: '场景 1',
+      active: true,
+      items: [],
+    },
+  ],
+})
+
 function App() {
-  const [data, setData] = useState<ProtocolData>(protocolData as ProtocolData)
+  const [data, setData] = useState<ProtocolData>(createDefaultProtocolData())
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null)
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [isStreaming, setIsStreaming] = useState(false)
@@ -383,7 +407,7 @@ function App() {
             alt="LMS logo"
           />
         }
-        toolbar={<Toolbar />}
+        toolbar={<Toolbar data={data} setData={setData} />}
         leftSidebar={<LeftSidebar />}
         canvas={
           <KonvaCanvas
