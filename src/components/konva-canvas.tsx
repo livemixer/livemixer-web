@@ -6,7 +6,8 @@ import {
     useRef,
     useState,
 } from 'react'
-import { Group, Layer, Rect, Stage, Text, Transformer } from 'react-konva'
+import { Group, Layer, Rect, Stage, Text, Transformer, Image as KonvaImage } from 'react-konva'
+import useImage from 'use-image'
 import type { Scene, SceneItem, Transform } from '../types/protocol'
 
 interface KonvaCanvasProps {
@@ -50,6 +51,23 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
         const shapeRefs = useRef<Map<string, Konva.Node>>(new Map())
         // 像素比例，适配高分屏
         const pixelRatio = window.devicePixelRatio || 1
+
+        // 图片组件，用于加载和显示图片
+        const ImageItem = ({ item, commonProps }: { item: SceneItem; commonProps: any }) => {
+            const [image] = useImage(item.url || '', 'anonymous')
+
+            // 从 commonProps 中提取 ref，因为它需要特殊处理
+            const { ref: nodeRef, ...restProps } = commonProps
+
+            return (
+                <KonvaImage
+                    {...restProps}
+                    ref={nodeRef}
+                    image={image}
+                    cornerRadius={item.transform?.borderRadius || 0}
+                />
+            )
+        }
 
         // 暴露方法给父组件
         useImperativeHandle(ref, () => ({
@@ -176,6 +194,15 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
             node.scaleY(1)
         }
 
+        const handleDragMove = (
+            e: Konva.KonvaEventObject<DragEvent>,
+        ) => {
+            // 拖拽时实时更新 Transformer
+            if (transformerRef.current) {
+                transformerRef.current.getLayer()?.batchDraw()
+            }
+        }
+
         const handleTransformEnd = (
             itemId: string,
             currentTransform: Transform | undefined,
@@ -222,6 +249,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                 draggable: isSelected && !isLocked, // 锁定时不可拖拽
                 onClick: isChildItem ? undefined : () => onSelectItem?.(item.id),
                 onTap: isChildItem ? undefined : () => onSelectItem?.(item.id),
+                onDragMove: isChildItem || isLocked ? undefined : handleDragMove,
                 onDragEnd: isChildItem || isLocked
                     ? undefined
                     : (e: Konva.KonvaEventObject<DragEvent>) => handleDragEnd(item.id, e),
@@ -249,6 +277,13 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
             switch (item.type) {
                 case 'color':
                     return <Rect {...commonProps} fill={item.color || '#000000'} />
+
+                case 'image':
+                    return <ImageItem item={item} commonProps={commonProps} />
+
+                case 'media':
+                    // 媒体源也使用图片组件（视频封面或音频占位图）
+                    return <ImageItem item={item} commonProps={commonProps} />
 
                 case 'text':
                     return (

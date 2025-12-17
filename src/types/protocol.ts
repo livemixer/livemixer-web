@@ -19,7 +19,7 @@ export interface Transform {
 
 export interface SceneItem {
   id: string
-  type: 'color' | 'video' | 'text' | 'screen' | 'container' | 'scene_ref'
+  type: 'color' | 'image' | 'media' | 'text' | 'screen' | 'window' | 'video_input' | 'audio_input' | 'audio_output' | 'container' | 'scene_ref'
   zIndex: number
   layout: Layout
   transform?: Transform
@@ -33,7 +33,9 @@ export interface SceneItem {
     fontSize?: number
     color?: string
   }
-  // video/screen type
+  // image/media type
+  url?: string
+  // video/screen/window type
   source?: string
   // container type
   children?: SceneItem[]

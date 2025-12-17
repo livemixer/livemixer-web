@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp, Eye, EyeOff, Lock, LockOpen, Play, Plus, Settings, Square, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import type { Scene } from '../types/protocol'
+import { AddSourceDialog, type SourceType } from './add-source-dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,7 +32,7 @@ interface BottomBarProps {
   onDeleteScene: (sceneId: string) => void
   onMoveSceneUp: (sceneId: string) => void
   onMoveSceneDown: (sceneId: string) => void
-  onAddItem: () => void
+  onAddItem: (sourceType: SourceType) => void
   onDeleteItem: (itemId: string) => void
   onMoveItemUp: (itemId: string) => void
   onMoveItemDown: (itemId: string) => void
@@ -62,6 +63,7 @@ export function BottomBar({
   const activeScene = scenes.find((s) => s.id === activeSceneId)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteItemDialogOpen, setDeleteItemDialogOpen] = useState(false)
+  const [addSourceDialogOpen, setAddSourceDialogOpen] = useState(false)
   const sceneToDelete = activeScene
   const itemToDelete = activeScene?.items.find(
     (item) => item.id === selectedItemId,
@@ -287,7 +289,7 @@ export function BottomBar({
               <TooltipTrigger asChild>
                 <button
                   type="button"
-                  onClick={onAddItem}
+                  onClick={() => setAddSourceDialogOpen(true)}
                   disabled={!activeSceneId}
                   className="p-2 hover:bg-[#3e3e42] rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
@@ -453,6 +455,13 @@ export function BottomBar({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 添加源选择对话框 */}
+      <AddSourceDialog
+        open={addSourceDialogOpen}
+        onOpenChange={setAddSourceDialogOpen}
+        onSelectSourceType={onAddItem}
+      />
     </TooltipProvider>
   )
 }

@@ -1,4 +1,4 @@
-import { Lock } from 'lucide-react'
+import { Lock, Upload, Link as LinkIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { SceneItem } from '../types/protocol'
 import { Input } from './ui/input'
@@ -15,6 +15,7 @@ export function PropertyPanel({
   onUpdateItem,
 }: PropertyPanelProps) {
   const [localItem, setLocalItem] = useState<SceneItem | null>(selectedItem)
+  const [urlInputMethod, setUrlInputMethod] = useState<'file' | 'url'>('url')
 
   // 使用 useEffect 确保 selectedItem 的任何变化都同步到 localItem
   useEffect(() => {
@@ -47,6 +48,15 @@ export function PropertyPanel({
     }
     setLocalItem(newItem)
     onUpdateItem?.(selectedItem.id, updates)
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isLocked) return
+    const file = e.target.files?.[0]
+    if (file) {
+      const url = URL.createObjectURL(file)
+      updateProperty({ url })
+    }
   }
 
   return (
@@ -391,6 +401,95 @@ export function PropertyPanel({
               placeholder="输入媒体源"
               disabled={isLocked}
             />
+          </div>
+        )}
+
+        {/* 图像和媒体源 URL 编辑 */}
+        {(localItem.type === 'image' || localItem.type === 'media') && (
+          <div className="border-t border-[#3e3e42] pt-4">
+            <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+              <span className="w-1 h-4 bg-blue-500 rounded"></span>
+              {localItem.type === 'image' ? '图像源' : '媒体源'}
+            </h4>
+
+            {/* 输入方式选择 */}
+            <div className="flex gap-2 mb-4">
+              <button
+                type="button"
+                onClick={() => setUrlInputMethod('url')}
+                disabled={isLocked}
+                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${urlInputMethod === 'url'
+                    ? 'bg-blue-500 border-blue-500 text-white'
+                    : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                <LinkIcon className="w-3.5 h-3.5" />
+                <span>URL</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setUrlInputMethod('file')}
+                disabled={isLocked}
+                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${urlInputMethod === 'file'
+                    ? 'bg-blue-500 border-blue-500 text-white'
+                    : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>本地文件</span>
+              </button>
+            </div>
+
+            {/* URL 输入 */}
+            {urlInputMethod === 'url' && (
+              <div>
+                <Label htmlFor="url" className="block mb-2">
+                  {localItem.type === 'image' ? '图片 URL' : '媒体 URL'}
+                </Label>
+                <Input
+                  id="url"
+                  type="url"
+                  value={localItem.url || ''}
+                  onChange={(e) => updateProperty({ url: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                  disabled={isLocked}
+                />
+              </div>
+            )}
+
+            {/* 文件上传 */}
+            {urlInputMethod === 'file' && (
+              <div>
+                <Label htmlFor="file-upload" className="block mb-2">
+                  选择文件
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="file-upload"
+                    type="file"
+                    accept={localItem.type === 'image' ? 'image/*' : 'video/*,audio/*'}
+                    onChange={handleFileChange}
+                    disabled={isLocked}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="file-upload"
+                    className={`flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg transition-colors text-sm text-gray-300 ${isLocked
+                        ? 'cursor-not-allowed opacity-50'
+                        : 'cursor-pointer hover:bg-[#2d2d30]'
+                      }`}
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>点击选择{localItem.type === 'image' ? '图片' : '媒体'}文件</span>
+                  </label>
+                </div>
+                {localItem.url && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    当前: {localItem.url.substring(0, 50)}{localItem.url.length > 50 ? '...' : ''}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

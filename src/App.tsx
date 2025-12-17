@@ -8,6 +8,8 @@ import { PropertyPanel } from './components/property-panel'
 import { SettingsDialog } from './components/settings-dialog'
 import { StatusBar } from './components/status-bar'
 import { Toolbar } from './components/toolbar'
+import type { SourceType } from './components/add-source-dialog'
+import { ConfigureSourceDialog, type SourceConfig } from './components/configure-source-dialog'
 import { canvasCaptureService } from './services/canvas-capture'
 import { streamingService } from './services/streaming'
 import { useProtocolStore } from './store/protocol'
@@ -22,6 +24,8 @@ function App() {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [isStreaming, setIsStreaming] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [pendingSourceType, setPendingSourceType] = useState<SourceType | null>(null)
+  const [configureSourceOpen, setConfigureSourceOpen] = useState(false)
   const canvasRef = useRef<KonvaCanvasHandle>(null)
 
   // 从 store 获取 LiveKit 配置和输出设置
@@ -112,22 +116,165 @@ function App() {
     })
   }
 
-  // 添加新源到当前场景
-  const handleAddItem = () => {
+  // 添加新源到当前场景 - 第一步：选择源类型
+  const handleAddItem = (sourceType: SourceType) => {
+    // 对于图像和媒体源，需要进一步配置
+    if (sourceType === 'image' || sourceType === 'media') {
+      setPendingSourceType(sourceType)
+      setConfigureSourceOpen(true)
+      return
+    }
+
+    // 其他类型直接创建
+    createItem(sourceType)
+  }
+
+  // 添加新源到当前场景 - 第二步：配置源内容后创建
+  const handleConfigureSource = (config: SourceConfig) => {
+    if (!pendingSourceType) return
+    createItem(pendingSourceType, config)
+    setPendingSourceType(null)
+  }
+
+  // 创建源项的核心逻辑
+  const createItem = (sourceType: SourceType, config?: SourceConfig) => {
     if (!activeSceneId) return
 
     const newItemId = `item_${Date.now()}`
-    const newItem = {
-      id: newItemId,
-      type: 'color' as const,
-      zIndex: activeScene?.items.length || 0,
-      layout: {
-        x: 100,
-        y: 100,
-        width: 400,
-        height: 300,
-      },
-      color: '#3b82f6',
+    let newItem: SceneItem
+
+    // 根据源类型创建不同的项
+    switch (sourceType) {
+      case 'image':
+        newItem = {
+          id: newItemId,
+          type: 'image',
+          zIndex: activeScene?.items.length || 0,
+          layout: {
+            x: 100,
+            y: 100,
+            width: 400,
+            height: 300,
+          },
+          url: config?.url || '',
+        }
+        break
+      case 'media':
+        newItem = {
+          id: newItemId,
+          type: 'media',
+          zIndex: activeScene?.items.length || 0,
+          layout: {
+            x: 100,
+            y: 100,
+            width: 400,
+            height: 300,
+          },
+          url: config?.url || '',
+        }
+        break
+      case 'text':
+        newItem = {
+          id: newItemId,
+          type: 'text',
+          zIndex: activeScene?.items.length || 0,
+          layout: {
+            x: 100,
+            y: 100,
+            width: 400,
+            height: 100,
+          },
+          content: '文本内容',
+          properties: {
+            fontSize: 32,
+            color: '#ffffff',
+          },
+        }
+        break
+      case 'screen':
+        newItem = {
+          id: newItemId,
+          type: 'screen',
+          zIndex: activeScene?.items.length || 0,
+          layout: {
+            x: 100,
+            y: 100,
+            width: 400,
+            height: 300,
+          },
+          source: 'screen_capture', // 待用户选择显示器
+        }
+        break
+      case 'window':
+        newItem = {
+          id: newItemId,
+          type: 'window',
+          zIndex: activeScene?.items.length || 0,
+          layout: {
+            x: 100,
+            y: 100,
+            width: 400,
+            height: 300,
+          },
+          source: 'window_capture', // 待用户选择窗口
+        }
+        break
+      case 'video_input':
+        newItem = {
+          id: newItemId,
+          type: 'video_input',
+          zIndex: activeScene?.items.length || 0,
+          layout: {
+            x: 100,
+            y: 100,
+            width: 400,
+            height: 300,
+          },
+          source: 'video_device', // 待用户选择设备
+        }
+        break
+      case 'audio_input':
+        newItem = {
+          id: newItemId,
+          type: 'audio_input',
+          zIndex: activeScene?.items.length || 0,
+          layout: {
+            x: 100,
+            y: 100,
+            width: 200,
+            height: 100,
+          },
+          source: 'audio_input_device', // 待用户选择设备
+        }
+        break
+      case 'audio_output':
+        newItem = {
+          id: newItemId,
+          type: 'audio_output',
+          zIndex: activeScene?.items.length || 0,
+          layout: {
+            x: 100,
+            y: 100,
+            width: 200,
+            height: 100,
+          },
+          source: 'audio_output_device', // 待用户选择设备
+        }
+        break
+      default:
+        // 默认为 color 类型（保留向后兼容）
+        newItem = {
+          id: newItemId,
+          type: 'color',
+          zIndex: activeScene?.items.length || 0,
+          layout: {
+            x: 100,
+            y: 100,
+            width: 400,
+            height: 300,
+          },
+          color: '#3b82f6',
+        }
     }
 
     updateData({
@@ -428,6 +575,12 @@ function App() {
         }
       />
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <ConfigureSourceDialog
+        open={configureSourceOpen}
+        onOpenChange={setConfigureSourceOpen}
+        sourceType={pendingSourceType}
+        onConfirm={handleConfigureSource}
+      />
     </>
   )
 }
