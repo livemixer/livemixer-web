@@ -10,37 +10,14 @@ import { StatusBar } from './components/status-bar'
 import { Toolbar } from './components/toolbar'
 import { canvasCaptureService } from './services/canvas-capture'
 import { streamingService } from './services/streaming'
+import { useProtocolStore } from './store/protocol'
 import { useSettingsStore } from './store/setting'
-import type { ProtocolData, SceneItem } from './types/protocol'
+import type { SceneItem } from './types/protocol'
 import './App.css'
 
-// 创建默认的空白场景配置
-const createDefaultProtocolData = (): ProtocolData => ({
-  version: '1.0.0',
-  metadata: {
-    name: 'New Project',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  canvas: {
-    width: 1920,
-    height: 1080,
-  },
-  resources: {
-    sources: [],
-  },
-  scenes: [
-    {
-      id: 'default_scene',
-      name: '场景 1',
-      active: true,
-      items: [],
-    },
-  ],
-})
-
 function App() {
-  const [data, setData] = useState<ProtocolData>(createDefaultProtocolData())
+  // 从 protocol store 获取配置
+  const { data, updateData } = useProtocolStore()
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null)
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [isStreaming, setIsStreaming] = useState(false)
@@ -73,10 +50,10 @@ function App() {
       items: [],
     }
 
-    setData((prevData) => ({
-      ...prevData,
-      scenes: [...prevData.scenes, newScene],
-    }))
+    updateData({
+      ...data,
+      scenes: [...data.scenes, newScene],
+    })
 
     // 自动选择新场景
     setActiveSceneId(newSceneId)
@@ -89,56 +66,49 @@ function App() {
       return
     }
 
-    setData((prevData) => {
-      const newScenes = prevData.scenes.filter((s) => s.id !== sceneId)
-      return {
-        ...prevData,
-        scenes: newScenes,
-      }
+    const newScenes = data.scenes.filter((s) => s.id !== sceneId)
+    updateData({
+      ...data,
+      scenes: newScenes,
     })
 
     // 如果删除的是当前激活的场景，切换到第一个场景
     if (activeSceneId === sceneId) {
-      const remainingScenes = data.scenes.filter((s) => s.id !== sceneId)
-      setActiveSceneId(remainingScenes[0]?.id || null)
+      setActiveSceneId(newScenes[0]?.id || null)
     }
   }
 
   // 上移场景
   const handleMoveSceneUp = (sceneId: string) => {
-    setData((prevData) => {
-      const index = prevData.scenes.findIndex((s) => s.id === sceneId)
-      if (index <= 0) return prevData // 已经是第一个，无法上移
+    const index = data.scenes.findIndex((s) => s.id === sceneId)
+    if (index <= 0) return // 已经是第一个，无法上移
 
-      const newScenes = [...prevData.scenes]
-        ;[newScenes[index - 1], newScenes[index]] = [
-          newScenes[index],
-          newScenes[index - 1],
-        ]
+    const newScenes = [...data.scenes]
+      ;[newScenes[index - 1], newScenes[index]] = [
+        newScenes[index],
+        newScenes[index - 1],
+      ]
 
-      return {
-        ...prevData,
-        scenes: newScenes,
-      }
+    updateData({
+      ...data,
+      scenes: newScenes,
     })
   }
 
   // 下移场景
   const handleMoveSceneDown = (sceneId: string) => {
-    setData((prevData) => {
-      const index = prevData.scenes.findIndex((s) => s.id === sceneId)
-      if (index < 0 || index >= prevData.scenes.length - 1) return prevData // 已经是最后一个，无法下移
+    const index = data.scenes.findIndex((s) => s.id === sceneId)
+    if (index < 0 || index >= data.scenes.length - 1) return // 已经是最后一个，无法下移
 
-      const newScenes = [...prevData.scenes]
-        ;[newScenes[index], newScenes[index + 1]] = [
-          newScenes[index + 1],
-          newScenes[index],
-        ]
+    const newScenes = [...data.scenes]
+      ;[newScenes[index], newScenes[index + 1]] = [
+        newScenes[index + 1],
+        newScenes[index],
+      ]
 
-      return {
-        ...prevData,
-        scenes: newScenes,
-      }
+    updateData({
+      ...data,
+      scenes: newScenes,
     })
   }
 
@@ -160,16 +130,16 @@ function App() {
       color: '#3b82f6',
     }
 
-    setData((prevData) => ({
-      ...prevData,
-      scenes: prevData.scenes.map((scene) => {
+    updateData({
+      ...data,
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene
         return {
           ...scene,
           items: [...scene.items, newItem],
         }
       }),
-    }))
+    })
 
     // 自动选择新添加的源
     setSelectedItemId(newItemId)
@@ -179,16 +149,16 @@ function App() {
   const handleDeleteItem = (itemId: string) => {
     if (!activeSceneId) return
 
-    setData((prevData) => ({
-      ...prevData,
-      scenes: prevData.scenes.map((scene) => {
+    updateData({
+      ...data,
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene
         return {
           ...scene,
           items: scene.items.filter((item) => item.id !== itemId),
         }
       }),
-    }))
+    })
 
     // 如果删除的是当前选中的源，清除选中状态
     if (selectedItemId === itemId) {
@@ -200,9 +170,9 @@ function App() {
   const handleMoveItemUp = (itemId: string) => {
     if (!activeSceneId) return
 
-    setData((prevData) => ({
-      ...prevData,
-      scenes: prevData.scenes.map((scene) => {
+    updateData({
+      ...data,
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene
 
         const index = scene.items.findIndex((item) => item.id === itemId)
@@ -219,16 +189,16 @@ function App() {
           items: newItems,
         }
       }),
-    }))
+    })
   }
 
   // 下移源
   const handleMoveItemDown = (itemId: string) => {
     if (!activeSceneId) return
 
-    setData((prevData) => ({
-      ...prevData,
-      scenes: prevData.scenes.map((scene) => {
+    updateData({
+      ...data,
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene
 
         const index = scene.items.findIndex((item) => item.id === itemId)
@@ -245,16 +215,16 @@ function App() {
           items: newItems,
         }
       }),
-    }))
+    })
   }
 
   // 切换源的可见性
   const handleToggleItemVisibility = (itemId: string) => {
     if (!activeSceneId) return
 
-    setData((prevData) => ({
-      ...prevData,
-      scenes: prevData.scenes.map((scene) => {
+    updateData({
+      ...data,
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene
 
         return {
@@ -268,16 +238,16 @@ function App() {
           }),
         }
       }),
-    }))
+    })
   }
 
   // 切换源的锁定状态
   const handleToggleItemLock = (itemId: string) => {
     if (!activeSceneId) return
 
-    setData((prevData) => ({
-      ...prevData,
-      scenes: prevData.scenes.map((scene) => {
+    updateData({
+      ...data,
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene
 
         return {
@@ -291,16 +261,16 @@ function App() {
           }),
         }
       }),
-    }))
+    })
   }
 
   // 更新场景项
   const handleUpdateItem = (itemId: string, updates: Partial<SceneItem>) => {
     if (!activeSceneId) return
 
-    setData((prevData) => ({
-      ...prevData,
-      scenes: prevData.scenes.map((scene) => {
+    updateData({
+      ...data,
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene
 
         return {
@@ -321,7 +291,7 @@ function App() {
           }),
         }
       }),
-    }))
+    })
   }
 
   // 处理推流开关
@@ -407,7 +377,7 @@ function App() {
             alt="LMS logo"
           />
         }
-        toolbar={<Toolbar data={data} setData={setData} />}
+        toolbar={<Toolbar data={data} updateData={updateData} />}
         leftSidebar={<LeftSidebar />}
         canvas={
           <KonvaCanvas

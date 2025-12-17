@@ -3,10 +3,10 @@ import { ToolbarMenu } from './toolbar-menu'
 
 interface ToolbarProps {
   data: ProtocolData
-  setData: (data: ProtocolData) => void
+  updateData: (data: ProtocolData) => void
 }
 
-export function Toolbar({ data, setData }: ToolbarProps) {
+export function Toolbar({ data, updateData }: ToolbarProps) {
   const handleImport = () => {
     const input = document.createElement('input')
     input.type = 'file'
@@ -27,10 +27,7 @@ export function Toolbar({ data, setData }: ToolbarProps) {
             return
           }
 
-          // 更新 metadata 的时间戳
-          importedData.metadata.updatedAt = new Date().toISOString()
-
-          setData(importedData)
+          updateData(importedData)
           console.log('成功导入配置')
         } catch (error) {
           console.error('导入失败:', error)
@@ -44,16 +41,7 @@ export function Toolbar({ data, setData }: ToolbarProps) {
 
   const handleExport = () => {
     try {
-      // 更新 metadata 的时间戳
-      const exportData = {
-        ...data,
-        metadata: {
-          ...data.metadata,
-          updatedAt: new Date().toISOString(),
-        },
-      }
-
-      const jsonString = JSON.stringify(exportData, null, 2)
+      const jsonString = JSON.stringify(data, null, 2)
       const blob = new Blob([jsonString], { type: 'application/json' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
