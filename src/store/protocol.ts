@@ -19,7 +19,7 @@ const createDefaultProtocolData = (): ProtocolData => ({
     },
     scenes: [
         {
-            id: 'default_scene',
+            id: 'scene-1',
             name: '场景 1',
             active: true,
             items: [],

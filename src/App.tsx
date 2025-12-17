@@ -46,10 +46,12 @@ function App() {
 
   // 添加新场景
   const handleAddScene = () => {
-    const newSceneId = `scene_${Date.now()}`
+    // 生成新场景 ID，格式为 scene-序号
+    const nextNumber = data.scenes.length + 1
+    const newSceneId = `scene-${nextNumber}`
     const newScene = {
       id: newSceneId,
-      name: `新场景 ${data.scenes.length + 1}`,
+      name: `场景 ${nextNumber}`,
       active: false,
       items: [],
     }
@@ -140,7 +142,12 @@ function App() {
   const createItem = (sourceType: SourceType, config?: SourceConfig) => {
     if (!activeSceneId) return
 
-    const newItemId = `item_${Date.now()}`
+    // 生成新的 ID，格式为 type-序号（类似 OBS）
+    const existingItems = activeScene?.items || []
+    const sameTypeItems = existingItems.filter(item => item.type === sourceType)
+    const nextNumber = sameTypeItems.length + 1
+    const newItemId = `${sourceType}-${nextNumber}`
+
     let newItem: SceneItem
 
     // 根据源类型创建不同的项
