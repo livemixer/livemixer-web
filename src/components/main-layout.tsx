@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 interface MainLayoutProps {
   logo?: ReactNode
   toolbar?: ReactNode
+  userSection?: ReactNode
   canvas?: ReactNode
   leftSidebar?: ReactNode
   rightSidebar?: ReactNode
@@ -13,6 +14,7 @@ interface MainLayoutProps {
 export function MainLayout({
   logo,
   toolbar,
+  userSection,
   canvas,
   leftSidebar,
   rightSidebar,
@@ -26,6 +28,8 @@ export function MainLayout({
         {/* Logo 区域 */}
         {logo && <div className="flex-shrink-0">{logo}</div>}
         <div className="flex-1">{toolbar}</div>
+        {/* 用户信息区域 */}
+        {userSection && <div className="flex-shrink-0">{userSection}</div>}
       </div>
 
       {/* 主内容区域 */}

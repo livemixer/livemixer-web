@@ -1,11 +1,46 @@
 {
   "name": "livemixer-web",
-  "private": true,
-  "version": "0.0.0",
+  "private": false,
+  "version": "0.0.1",
   "type": "module",
+  "description": "An open-source live video mixer and streaming application based on LiveKit RTC",
+  "author": "LiveMixer Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/livemixer/livemixer-web.git"
+  },
+  "keywords": [
+    "live-streaming",
+    "video-mixer",
+    "livekit",
+    "obs-alternative",
+    "react",
+    "konva"
+  ],
+  "main": "./dist/livemixer-web.umd.js",
+  "module": "./dist/livemixer-web.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/livemixer-web.es.js",
+      "require": "./dist/livemixer-web.umd.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types/index.d.ts",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:lib": "tsc && vite build --mode lib",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",

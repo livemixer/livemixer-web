@@ -15,9 +15,10 @@ import { streamingService } from './services/streaming'
 import { useProtocolStore } from './store/protocol'
 import { useSettingsStore } from './store/setting'
 import type { SceneItem } from './types/protocol'
+import type { LiveMixerExtensions } from './types/extensions'
 import './App.css'
 
-function App() {
+function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
   // 从 protocol store 获取配置
   const { data, updateData } = useProtocolStore()
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null)
@@ -532,6 +533,7 @@ function App() {
           />
         }
         toolbar={<Toolbar data={data} updateData={updateData} />}
+        userSection={extensions?.userComponent}
         leftSidebar={<LeftSidebar />}
         canvas={
           <KonvaCanvas
