@@ -195,7 +195,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
         }
 
         const handleDragMove = (
-            e: Konva.KonvaEventObject<DragEvent>,
+            _e: Konva.KonvaEventObject<DragEvent>,
         ) => {
             // 拖拽时实时更新 Transformer
             if (transformerRef.current) {
@@ -297,7 +297,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                         />
                     )
 
-                case 'video':
+                case 'window':
                     return (
                         <Rect
                             {...commonProps}

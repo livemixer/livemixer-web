@@ -23,13 +23,13 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/livemixer-web.es.js",
-      "require": "./dist/livemixer-web.umd.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/livemixer-web.umd.js"
     },
     "./types": {
-      "import": "./dist/types/index.d.ts",
-      "types": "./dist/types/index.d.ts"
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.d.ts"
     }
   },
   "files": [
@@ -40,7 +40,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:lib": "tsc && vite build --mode lib",
+    "build:lib": "vite build --mode lib && tsc --project tsconfig.lib.json",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",

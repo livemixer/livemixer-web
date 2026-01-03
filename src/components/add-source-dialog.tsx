@@ -1,4 +1,4 @@
-import { Image, Monitor, Music, ScreenShare, Type, Video, Mic, Volume2 } from 'lucide-react'
+import { Image, Monitor, ScreenShare, Type, Video, Mic, Volume2 } from 'lucide-react'
 import {
     Dialog,
     DialogContent,
