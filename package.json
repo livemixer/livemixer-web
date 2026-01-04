@@ -27,6 +27,7 @@
       "import": "./dist/livemixer-web.es.js",
       "require": "./dist/livemixer-web.umd.js"
     },
+    "./dist/livemixer-web.css": "./dist/livemixer-web.css",
     "./types": {
       "types": "./dist/types/index.d.ts",
       "import": "./dist/types/index.d.ts"

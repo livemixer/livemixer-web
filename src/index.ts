@@ -3,6 +3,9 @@
  * 
  */
 
+// 导入样式
+import './index.css'
+
 export { default as LiveMixerApp } from './App'
 
 export type { ProtocolData, Scene, SceneItem, CanvasConfig } from './types/protocol'

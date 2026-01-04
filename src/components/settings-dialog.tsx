@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useSettingsStore } from '@/store/setting'
-import lmsLogo from '/lms.svg'
+import lmsLogo from '../assets/lms.svg'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
@@ -60,55 +60,50 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               <button
                 type="button"
                 onClick={() => setActiveTab('general')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
-                  activeTab === 'general'
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'general'
                     ? 'bg-[#2a2a2a] text-white'
                     : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                }`}
+                  }`}
               >
                 常规
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('streaming')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
-                  activeTab === 'streaming'
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'streaming'
                     ? 'bg-[#2a2a2a] text-white'
                     : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                }`}
+                  }`}
               >
                 直播
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('output')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
-                  activeTab === 'output'
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'output'
                     ? 'bg-[#2a2a2a] text-white'
                     : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                }`}
+                  }`}
               >
                 输出
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('audio')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
-                  activeTab === 'audio'
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'audio'
                     ? 'bg-[#2a2a2a] text-white'
                     : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                }`}
+                  }`}
               >
                 音频
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('video')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
-                  activeTab === 'video'
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'video'
                     ? 'bg-[#2a2a2a] text-white'
                     : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                }`}
+                  }`}
               >
                 视频
               </button>

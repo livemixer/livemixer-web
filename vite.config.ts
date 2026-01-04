@@ -32,10 +32,24 @@ export default defineConfig(({ mode }) => {
               'react-dom': 'ReactDOM',
               'react/jsx-runtime': 'jsxRuntime',
             },
+            // 提取 CSS 和资源文件到单独文件
+            assetFileNames: (assetInfo) => {
+              // CSS 文件直接放在根目录，不带 hash
+              if (assetInfo.name?.endsWith('.css')) {
+                return 'livemixer-web.css'
+              }
+              // SVG 和其他资源文件保持原名
+              if (assetInfo.name?.endsWith('.svg')) {
+                return '[name][extname]'
+              }
+              return 'assets/[name]-[hash][extname]'
+            },
           },
         },
         // 生成类型声明文件
         emptyOutDir: true,
+        // 确保 CSS 被提取
+        cssCodeSplit: false,
       }
       : {
         // 应用模式配置（开发和预览）

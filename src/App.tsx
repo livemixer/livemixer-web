@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import lmsLogo from '/lms.svg'
+import lmsLogo from './assets/lms.svg'
 import { BottomBar } from './components/bottom-bar'
 import { KonvaCanvas, type KonvaCanvasHandle } from './components/konva-canvas'
 import { LeftSidebar } from './components/left-sidebar'
@@ -526,11 +526,13 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
     <>
       <MainLayout
         logo={
-          <img
-            src={lmsLogo}
-            style={{ width: '40px', height: '40px' }}
-            alt="LMS logo"
-          />
+          extensions?.logo || (
+            <img
+              src={lmsLogo}
+              style={{ width: '40px', height: '40px' }}
+              alt="LMS logo"
+            />
+          )
         }
         toolbar={<Toolbar data={data} updateData={updateData} />}
         userSection={extensions?.userComponent}

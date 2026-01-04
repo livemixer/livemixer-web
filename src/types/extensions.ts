@@ -15,6 +15,16 @@ export interface UserInfo {
  */
 export interface LiveMixerExtensions {
     /**
+     * Optional custom logo
+     * Will be rendered in the top toolbar on the left side
+     * @example
+     * ```tsx
+     * logo: <img src="/logo.svg" alt="Logo" className="w-10 h-10" />
+     * ```
+     */
+    logo?: React.ReactNode
+
+    /**
      * Optional user info component
      * Will be rendered in the top toolbar on the right side
      * @example
