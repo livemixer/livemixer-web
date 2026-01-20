@@ -1,4 +1,4 @@
-import { Lock, Upload, Link as LinkIcon } from 'lucide-react'
+import { Lock, Upload, Link as LinkIcon, Play, Pause, RotateCcw } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { SceneItem } from '../types/protocol'
 import { Input } from './ui/input'
@@ -401,6 +401,243 @@ export function PropertyPanel({
               placeholder="输入媒体源"
               disabled={isLocked}
             />
+          </div>
+        )}
+
+        {/* 定时器/时钟控制 */}
+        {(localItem.type === 'timer' || localItem.type === 'clock') && (
+          <div className="border-t border-[#3e3e42] pt-4">
+            <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+              <span className="w-1 h-4 bg-blue-500 rounded"></span>
+              {localItem.type === 'timer' ? '定时器控制' : '时钟设置'}
+            </h4>
+
+            {localItem.type === 'timer' && localItem.timerConfig && (
+              <>
+                {/* 控制按钮 */}
+                <div className="flex gap-2 mb-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const config = localItem.timerConfig!
+                      if (config.running) {
+                        // 暂停
+                        const now = performance.now() / 1000
+                        let pausedAt = 0
+
+                        if (config.mode === 'countdown' && config.startTime && config.duration) {
+                          const elapsed = now - config.startTime
+                          pausedAt = Math.max(0, config.duration - elapsed)
+                        } else if (config.mode === 'countup' && config.startTime) {
+                          pausedAt = now - config.startTime + (config.startValue || 0)
+                        }
+
+                        updateProperty({
+                          timerConfig: {
+                            ...config,
+                            running: false,
+                            pausedAt,
+                            startTime: undefined,
+                          },
+                        })
+                      } else {
+                        // 启动/继续
+                        const now = performance.now() / 1000
+                        let startTime = now
+
+                        if (config.mode === 'countdown' && config.pausedAt !== undefined) {
+                          // 从暂停位置继续
+                          startTime = now
+                          updateProperty({
+                            timerConfig: {
+                              ...config,
+                              running: true,
+                              startTime,
+                              duration: config.pausedAt,
+                              pausedAt: undefined,
+                            },
+                          })
+                        } else if (config.mode === 'countup' && config.pausedAt !== undefined) {
+                          // 正计时从暂停位置继续
+                          updateProperty({
+                            timerConfig: {
+                              ...config,
+                              running: true,
+                              startTime,
+                              startValue: config.pausedAt,
+                              pausedAt: undefined,
+                            },
+                          })
+                        } else {
+                          updateProperty({
+                            timerConfig: {
+                              ...config,
+                              running: true,
+                              startTime,
+                              pausedAt: undefined,
+                            },
+                          })
+                        }
+                      }
+                    }}
+                    disabled={isLocked}
+                    className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+                  >
+                    {localItem.timerConfig.running ? (
+                      <>
+                        <Pause className="w-4 h-4" />
+                        <span>暂停</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4" />
+                        <span>启动</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const config = localItem.timerConfig!
+                      updateProperty({
+                        timerConfig: {
+                          ...config,
+                          running: false,
+                          currentTime: config.mode === 'countdown' ? config.duration : config.startValue,
+                          startTime: undefined,
+                          pausedAt: undefined,
+                        },
+                      })
+                    }}
+                    disabled={isLocked}
+                    className="px-4 py-2 bg-[#1e1e1e] hover:bg-[#2d2d30] disabled:cursor-not-allowed text-white rounded-lg transition-colors border border-[#3e3e42] flex items-center gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    <span>重置</span>
+                  </button>
+                </div>
+
+                {/* 模式显示 */}
+                <div className="mb-4">
+                  <Label className="block mb-2">模式</Label>
+                  <div className="text-sm text-gray-300 bg-[#1e1e1e] px-3 py-2 rounded border border-[#3e3e42] capitalize">
+                    {localItem.timerConfig.mode === 'countdown' ? '倒计时' : '正计时'}
+                  </div>
+                </div>
+
+                {/* 倒计时时长设置 */}
+                {localItem.timerConfig.mode === 'countdown' && (
+                  <div className="mb-4">
+                    <Label htmlFor="duration" className="block mb-2">
+                      时长（秒）
+                    </Label>
+                    <Input
+                      id="duration"
+                      type="number"
+                      min="1"
+                      value={localItem.timerConfig.duration || 0}
+                      onChange={(e) =>
+                        updateProperty({
+                          timerConfig: {
+                            ...localItem.timerConfig!,
+                            duration: Number.parseInt(e.target.value) || 0,
+                          },
+                        })
+                      }
+                      disabled={isLocked || localItem.timerConfig.running}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* 显示格式 */}
+            <div className="mb-4">
+              <Label htmlFor="format" className="block mb-2">
+                显示格式
+              </Label>
+              <select
+                id="format"
+                value={localItem.timerConfig?.format || 'HH:MM:SS'}
+                onChange={(e) =>
+                  updateProperty({
+                    timerConfig: {
+                      ...localItem.timerConfig!,
+                      format: e.target.value,
+                    },
+                  })
+                }
+                disabled={isLocked}
+                className="w-full bg-[#1e1e1e] border border-[#3e3e42] text-white px-3 py-2 rounded"
+              >
+                <option value="HH:MM:SS">HH:MM:SS</option>
+                <option value="MM:SS">MM:SS</option>
+                {localItem.type === 'clock' && <option value="HH:MM">HH:MM</option>}
+              </select>
+            </div>
+
+            {/* 字体大小 */}
+            <div className="mb-4">
+              <Label htmlFor="timer-fontSize" className="block mb-2">
+                字体大小
+              </Label>
+              <Input
+                id="timer-fontSize"
+                type="number"
+                min="12"
+                max="200"
+                value={localItem.properties?.fontSize || 48}
+                onChange={(e) =>
+                  updateProperty({
+                    properties: {
+                      ...localItem.properties,
+                      fontSize: Number.parseInt(e.target.value) || 48,
+                    },
+                  })
+                }
+                disabled={isLocked}
+              />
+            </div>
+
+            {/* 颜色 */}
+            <div>
+              <Label htmlFor="timer-color" className="block mb-2">
+                颜色
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="timer-color"
+                  type="color"
+                  value={localItem.properties?.color || '#FFFFFF'}
+                  onChange={(e) =>
+                    updateProperty({
+                      properties: {
+                        ...localItem.properties,
+                        color: e.target.value,
+                      },
+                    })
+                  }
+                  className="w-14 h-10 p-1 cursor-pointer"
+                  disabled={isLocked}
+                />
+                <Input
+                  type="text"
+                  value={localItem.properties?.color || '#FFFFFF'}
+                  onChange={(e) =>
+                    updateProperty({
+                      properties: {
+                        ...localItem.properties,
+                        color: e.target.value,
+                      },
+                    })
+                  }
+                  className="flex-1"
+                  placeholder="#FFFFFF"
+                  disabled={isLocked}
+                />
+              </div>
+            </div>
           </div>
         )}
 

@@ -19,7 +19,7 @@ export interface Transform {
 
 export interface SceneItem {
   id: string
-  type: 'color' | 'image' | 'media' | 'text' | 'screen' | 'window' | 'video_input' | 'audio_input' | 'audio_output' | 'container' | 'scene_ref'
+  type: 'color' | 'image' | 'media' | 'text' | 'screen' | 'window' | 'video_input' | 'audio_input' | 'audio_output' | 'container' | 'scene_ref' | 'timer' | 'clock'
   zIndex: number
   layout: Layout
   transform?: Transform
@@ -41,6 +41,17 @@ export interface SceneItem {
   children?: SceneItem[]
   // scene_ref type
   refSceneId?: string
+  // timer/clock type
+  timerConfig?: {
+    mode: 'countdown' | 'countup' | 'clock' // 倒计时/正计时/时钟
+    duration?: number // 倒计时总时长（秒）
+    startValue?: number // 正计时起始值（秒）
+    format?: string // 显示格式，如 'HH:MM:SS' 或 'MM:SS'
+    running?: boolean // 是否运行中
+    currentTime?: number // 当前时间值（秒）
+    startTime?: number // 开始时间戳（用于精确计时）
+    pausedAt?: number // 暂停时的时间值
+  }
 }
 
 export interface Scene {
