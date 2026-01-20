@@ -10,6 +10,7 @@ import { StatusBar } from './components/status-bar'
 import { Toolbar } from './components/toolbar'
 import type { SourceType } from './components/add-source-dialog'
 import { ConfigureSourceDialog, type SourceConfig } from './components/configure-source-dialog'
+import { ConfigureTimerDialog, type TimerConfig } from './components/configure-timer-dialog'
 import { canvasCaptureService } from './services/canvas-capture'
 import { streamingService } from './services/streaming'
 import { useProtocolStore } from './store/protocol'
@@ -27,6 +28,7 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [pendingSourceType, setPendingSourceType] = useState<SourceType | null>(null)
   const [configureSourceOpen, setConfigureSourceOpen] = useState(false)
+  const [configureTimerOpen, setConfigureTimerOpen] = useState(false)
   const canvasRef = useRef<KonvaCanvasHandle>(null)
 
   // 从 store 获取 LiveKit 配置和输出设置
@@ -128,6 +130,13 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
       return
     }
 
+    // 定时器和时钟需要配置
+    if (sourceType === 'timer' || sourceType === 'clock') {
+      setPendingSourceType(sourceType)
+      setConfigureTimerOpen(true)
+      return
+    }
+
     // 其他类型直接创建
     createItem(sourceType)
   }
@@ -139,8 +148,15 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
     setPendingSourceType(null)
   }
 
+  // 配置定时器/时钟后创建
+  const handleConfigureTimer = (config: TimerConfig) => {
+    if (!pendingSourceType) return
+    createItem(pendingSourceType, undefined, config)
+    setPendingSourceType(null)
+  }
+
   // 创建源项的核心逻辑
-  const createItem = (sourceType: SourceType, config?: SourceConfig) => {
+  const createItem = (sourceType: SourceType, config?: SourceConfig, timerConfig?: TimerConfig) => {
     if (!activeSceneId) return
 
     // 生成新的 ID，格式为 type-序号（类似 OBS）
@@ -267,6 +283,53 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
             height: 100,
           },
           source: 'audio_output_device', // 待用户选择设备
+        }
+        break
+      case 'timer':
+        newItem = {
+          id: newItemId,
+          type: 'timer',
+          zIndex: activeScene?.items.length || 0,
+          layout: {
+            x: 100,
+            y: 100,
+            width: 400,
+            height: 100,
+          },
+          properties: {
+            fontSize: timerConfig?.fontSize || 48,
+            color: timerConfig?.color || '#FFFFFF',
+          },
+          timerConfig: {
+            mode: timerConfig?.mode || 'countdown',
+            duration: timerConfig?.duration || 300,
+            startValue: timerConfig?.startValue || 0,
+            format: timerConfig?.format || 'MM:SS',
+            running: false,
+            currentTime: 0,
+          },
+        }
+        break
+      case 'clock':
+        newItem = {
+          id: newItemId,
+          type: 'clock',
+          zIndex: activeScene?.items.length || 0,
+          layout: {
+            x: 100,
+            y: 100,
+            width: 400,
+            height: 100,
+          },
+          properties: {
+            fontSize: timerConfig?.fontSize || 48,
+            color: timerConfig?.color || '#FFFFFF',
+          },
+          timerConfig: {
+            mode: 'clock',
+            format: timerConfig?.format || 'HH:MM:SS',
+            running: true, // 时钟默认运行
+          },
         }
         break
       default:
@@ -591,6 +654,12 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
         onOpenChange={setConfigureSourceOpen}
         sourceType={pendingSourceType}
         onConfirm={handleConfigureSource}
+      />
+      <ConfigureTimerDialog
+        open={configureTimerOpen}
+        onOpenChange={setConfigureTimerOpen}
+        sourceType={pendingSourceType}
+        onConfirm={handleConfigureTimer}
       />
     </>
   )

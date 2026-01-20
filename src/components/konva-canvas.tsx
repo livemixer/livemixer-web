@@ -10,6 +10,45 @@ import { Group, Layer, Rect, Stage, Text, Transformer, Image as KonvaImage } fro
 import useImage from 'use-image'
 import type { Scene, SceneItem, Transform } from '../types/protocol'
 
+// 格式化时间显示
+function formatTime(seconds: number, format: string): string {
+    const absSeconds = Math.abs(Math.floor(seconds))
+    const hours = Math.floor(absSeconds / 3600)
+    const minutes = Math.floor((absSeconds % 3600) / 60)
+    const secs = absSeconds % 60
+
+    const pad = (num: number) => String(num).padStart(2, '0')
+
+    if (format === 'HH:MM:SS') {
+        return `${pad(hours)}:${pad(minutes)}:${pad(secs)}`
+    }
+    if (format === 'MM:SS') {
+        return `${pad(minutes)}:${pad(secs)}`
+    }
+    if (format === 'HH:MM') {
+        return `${pad(hours)}:${pad(minutes)}`
+    }
+    return `${pad(minutes)}:${pad(secs)}`
+}
+
+// 格式化当前时间
+function formatClock(format: string): string {
+    const now = new Date()
+    const hours = now.getHours()
+    const minutes = now.getMinutes()
+    const seconds = now.getSeconds()
+
+    const pad = (num: number) => String(num).padStart(2, '0')
+
+    if (format === 'HH:MM:SS') {
+        return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+    }
+    if (format === 'HH:MM') {
+        return `${pad(hours)}:${pad(minutes)}`
+    }
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+}
+
 interface KonvaCanvasProps {
     scene: Scene | null
     canvasWidth: number
@@ -51,6 +90,9 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
         const shapeRefs = useRef<Map<string, Konva.Node>>(new Map())
         // 像素比例，适配高分屏
         const pixelRatio = window.devicePixelRatio || 1
+        // 定时器/时钟状态
+        const [timerStates, setTimerStates] = useState<Map<string, string>>(new Map())
+        const timerRafRef = useRef<number | null>(null)
 
         // 图片组件，用于加载和显示图片
         const ImageItem = ({ item, commonProps }: { item: SceneItem; commonProps: any }) => {
@@ -118,6 +160,93 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                 transformerRef.current.getLayer()?.batchDraw()
             }
         }, [selectedItemId])
+
+        // 定时器/时钟更新逻辑（使用 requestAnimationFrame 实现高精度）
+        useEffect(() => {
+            if (!scene) return
+
+            // 检查是否有 timer 或 clock 类型的 item
+            const hasTimerOrClock = scene.items.some(
+                (item) => item.type === 'timer' || item.type === 'clock'
+            )
+
+            if (!hasTimerOrClock) {
+                // 没有定时器或时钟，取消帧循环
+                if (timerRafRef.current !== null) {
+                    cancelAnimationFrame(timerRafRef.current)
+                    timerRafRef.current = null
+                }
+                return
+            }
+
+            // 启动帧循环更新定时器/时钟
+            const updateTimers = () => {
+                const newStates = new Map<string, string>()
+                const now = performance.now() / 1000 // 转换为秒，使用高精度时间戳
+
+                for (const item of scene.items) {
+                    if (item.type === 'clock' && item.timerConfig) {
+                        // 时钟模式：显示当前时间
+                        const format = item.timerConfig.format || 'HH:MM:SS'
+                        newStates.set(item.id, formatClock(format))
+                    } else if (item.type === 'timer' && item.timerConfig) {
+                        const config = item.timerConfig
+                        const format = config.format || 'MM:SS'
+
+                        if (config.mode === 'countdown') {
+                            // 倒计时模式
+                            if (config.running && config.startTime !== undefined && config.duration !== undefined) {
+                                const elapsed = now - config.startTime
+                                const remaining = Math.max(0, config.duration - elapsed)
+                                newStates.set(item.id, formatTime(remaining, format))
+
+                                // 倒计时结束，自动暂停
+                                if (remaining <= 0 && config.running) {
+                                    onUpdateItem?.(item.id, {
+                                        timerConfig: {
+                                            ...config,
+                                            running: false,
+                                            currentTime: 0,
+                                        },
+                                    })
+                                }
+                            } else if (config.pausedAt !== undefined) {
+                                // 暂停状态，显示暂停时的时间
+                                newStates.set(item.id, formatTime(config.pausedAt, format))
+                            } else {
+                                // 未启动，显示总时长
+                                newStates.set(item.id, formatTime(config.duration || 0, format))
+                            }
+                        } else if (config.mode === 'countup') {
+                            // 正计时模式
+                            if (config.running && config.startTime !== undefined) {
+                                const elapsed = now - config.startTime + (config.startValue || 0)
+                                newStates.set(item.id, formatTime(elapsed, format))
+                            } else if (config.pausedAt !== undefined) {
+                                // 暂停状态
+                                newStates.set(item.id, formatTime(config.pausedAt, format))
+                            } else {
+                                // 未启动
+                                newStates.set(item.id, formatTime(config.startValue || 0, format))
+                            }
+                        }
+                    }
+                }
+
+                setTimerStates(newStates)
+                timerRafRef.current = requestAnimationFrame(updateTimers)
+            }
+
+            // 启动更新循环
+            timerRafRef.current = requestAnimationFrame(updateTimers)
+
+            return () => {
+                if (timerRafRef.current !== null) {
+                    cancelAnimationFrame(timerRafRef.current)
+                    timerRafRef.current = null
+                }
+            }
+        }, [scene, onUpdateItem])
 
         // 自适应缩放
         useEffect(() => {
@@ -296,6 +425,26 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                             verticalAlign="top"
                         />
                     )
+
+                case 'timer':
+                case 'clock': {
+                    const displayText = timerStates.get(item.id) || '00:00'
+                    const fontSize = item.properties?.fontSize || 48
+                    const color = item.properties?.color || '#FFFFFF'
+
+                    return (
+                        <Text
+                            {...commonProps}
+                            text={displayText}
+                            fontSize={fontSize}
+                            fill={color}
+                            align="center"
+                            verticalAlign="middle"
+                            fontFamily="monospace"
+                            fontStyle="bold"
+                        />
+                    )
+                }
 
                 case 'window':
                     return (

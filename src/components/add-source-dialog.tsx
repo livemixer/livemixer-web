@@ -1,4 +1,4 @@
-import { Image, Monitor, ScreenShare, Type, Video, Mic, Volume2 } from 'lucide-react'
+import { Image, Monitor, ScreenShare, Type, Video, Mic, Volume2, Timer, Clock } from 'lucide-react'
 import {
     Dialog,
     DialogContent,
@@ -7,7 +7,7 @@ import {
     DialogTitle,
 } from './ui/dialog'
 
-export type SourceType = 'image' | 'media' | 'text' | 'screen' | 'window' | 'video_input' | 'audio_input' | 'audio_output'
+export type SourceType = 'image' | 'media' | 'text' | 'screen' | 'window' | 'video_input' | 'audio_input' | 'audio_output' | 'timer' | 'clock'
 
 interface SourceTypeOption {
     type: SourceType
@@ -75,6 +75,18 @@ export function AddSourceDialog({
             name: '音频输出采集',
             description: '捕获系统音频输出',
             icon: <Volume2 className="w-6 h-6" />,
+        },
+        {
+            type: 'timer',
+            name: '定时器',
+            description: '添加倒计时或正计时',
+            icon: <Timer className="w-6 h-6" />,
+        },
+        {
+            type: 'clock',
+            name: '时钟',
+            description: '显示实时时钟',
+            icon: <Clock className="w-6 h-6" />,
         },
     ]
 
