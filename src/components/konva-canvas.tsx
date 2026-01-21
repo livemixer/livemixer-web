@@ -1,6 +1,7 @@
 import type Konva from 'konva'
 import {
     forwardRef,
+    memo,
     useEffect,
     useImperativeHandle,
     useRef,
@@ -49,6 +50,22 @@ function formatClock(format: string): string {
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
 }
 
+// 图片组件，用于加载和显示图片
+const ImageItem = memo(({ item, commonProps }: { item: SceneItem; commonProps: any }) => {
+    const [image] = useImage(item.url || '', 'anonymous')
+
+    const { ref: nodeRef, ...restProps } = commonProps
+
+    return (
+        <KonvaImage
+            {...restProps}
+            ref={nodeRef}
+            image={image}
+            cornerRadius={item.transform?.borderRadius || 0}
+        />
+    )
+})
+
 interface KonvaCanvasProps {
     scene: Scene | null
     canvasWidth: number
@@ -93,23 +110,6 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
         // 定时器/时钟状态
         const [timerStates, setTimerStates] = useState<Map<string, string>>(new Map())
         const timerRafRef = useRef<number | null>(null)
-
-        // 图片组件，用于加载和显示图片
-        const ImageItem = ({ item, commonProps }: { item: SceneItem; commonProps: any }) => {
-            const [image] = useImage(item.url || '', 'anonymous')
-
-            // 从 commonProps 中提取 ref，因为它需要特殊处理
-            const { ref: nodeRef, ...restProps } = commonProps
-
-            return (
-                <KonvaImage
-                    {...restProps}
-                    ref={nodeRef}
-                    image={image}
-                    cornerRadius={item.transform?.borderRadius || 0}
-                />
-            )
-        }
 
         // 暴露方法给父组件
         useImperativeHandle(ref, () => ({
