@@ -10,6 +10,7 @@ import {
 import { Group, Layer, Rect, Stage, Text, Transformer, Image as KonvaImage } from 'react-konva'
 import useImage from 'use-image'
 import type { Scene, SceneItem, Transform } from '../types/protocol'
+import { LiveKitStreamItem } from './livekit-stream-item'
 
 // 格式化时间显示
 function formatTime(seconds: number, format: string): string {
@@ -497,6 +498,18 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                         />
                     )
 
+                case 'livekit_stream':
+                    // LiveKit 视频流使用占位矩形，实际视频通过 HTML overlay 渲染
+                    return (
+                        <Rect
+                            {...commonProps}
+                            fill="#000000"
+                            stroke="#444444"
+                            strokeWidth={1}
+                            cornerRadius={item.transform?.borderRadius || 0}
+                        />
+                    )
+
                 default:
                     return null
             }
@@ -527,6 +540,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                         backgroundColor: '#000',
                         boxShadow:
                             '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)',
+                        overflow: 'hidden',
                     }}
                 >
                     <div
@@ -535,6 +549,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                             transformOrigin: 'top left',
                             width: canvasWidth,
                             height: canvasHeight,
+                            position: 'relative',
                         }}
                     >
                         <Stage
@@ -581,6 +596,39 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                                 />
                             </Layer>
                         </Stage>
+                        {/* HTML Overlay for LiveKit video streams */}
+                        {sortedItems
+                            .filter((item) => item.type === 'livekit_stream' && item.visible !== false)
+                            .map((item) => {
+                                if (!item.livekitStream) return null
+                                const rotation = item.transform?.rotation ?? 0
+                                const opacity = item.transform?.opacity ?? 1
+                                return (
+                                    <div
+                                        key={item.id}
+                                        style={{
+                                            position: 'absolute',
+                                            left: item.layout.x,
+                                            top: item.layout.y,
+                                            width: item.layout.width,
+                                            height: item.layout.height,
+                                            transform: `rotate(${rotation}deg)`,
+                                            transformOrigin: 'center',
+                                            opacity,
+                                            pointerEvents: selectedItemId === item.id ? 'none' : 'auto',
+                                            zIndex: item.zIndex + 1000,
+                                        }}
+                                        onClick={() => onSelectItem?.(item.id)}
+                                    >
+                                        <LiveKitStreamItem
+                                            participantIdentity={item.livekitStream.participantIdentity}
+                                            streamSource={item.livekitStream.streamSource}
+                                            width={item.layout.width}
+                                            height={item.layout.height}
+                                        />
+                                    </div>
+                                )
+                            })}
                     </div>
                     {/* 画布尺寸标签 */}
                     <div className="absolute -bottom-6 left-0 text-xs text-gray-500">
