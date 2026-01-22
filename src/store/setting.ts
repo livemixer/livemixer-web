@@ -11,6 +11,9 @@ interface PersistentSettings {
     streamService: string
     livekitUrl: string
 
+    // 拉流设置（非敏感部分）
+    livekitPullUrl: string
+
     // 输出设置
     videoBitrate: string
     audioBitrate: string
@@ -34,6 +37,7 @@ interface PersistentSettings {
 // 敏感配置接口（仅存储在内存中，不持久化）
 interface SensitiveSettings {
     livekitToken: string
+    livekitPullToken: string
 }
 
 // 完整设置状态接口
@@ -58,6 +62,9 @@ const defaultPersistentSettings: PersistentSettings = {
     streamService: 'custom',
     livekitUrl: '',
 
+    // 拉流设置
+    livekitPullUrl: '',
+
     // 输出设置
     videoBitrate: '5000',
     audioBitrate: '48000',
@@ -78,6 +85,7 @@ const defaultPersistentSettings: PersistentSettings = {
 
 const defaultSensitiveSettings: SensitiveSettings = {
     livekitToken: '',
+    livekitPullToken: '',
 }
 
 // 创建 Zustand store
@@ -117,6 +125,7 @@ export const useSettingsStore = create<SettingsState>()(
             partialize: (state) => {
                 const {
                     livekitToken: _livekitToken,
+                    livekitPullToken: _livekitPullToken,
                     updatePersistentSettings: _updatePersistentSettings,
                     updateSensitiveSettings: _updateSensitiveSettings,
                     resetSettings: _resetSettings,

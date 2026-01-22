@@ -19,7 +19,7 @@ export interface Transform {
 
 export interface SceneItem {
   id: string
-  type: 'color' | 'image' | 'media' | 'text' | 'screen' | 'window' | 'video_input' | 'audio_input' | 'audio_output' | 'container' | 'scene_ref' | 'timer' | 'clock'
+  type: 'color' | 'image' | 'media' | 'text' | 'screen' | 'window' | 'video_input' | 'audio_input' | 'audio_output' | 'container' | 'scene_ref' | 'timer' | 'clock' | 'livekit_stream'
   zIndex: number
   layout: Layout
   transform?: Transform
@@ -51,6 +51,11 @@ export interface SceneItem {
     currentTime?: number // 当前时间值（秒）
     startTime?: number // 开始时间戳（用于精确计时）
     pausedAt?: number // 暂停时的时间值
+  }
+  // livekit_stream type
+  livekitStream?: {
+    participantIdentity: string // 参会者 ID
+    streamSource: 'camera' | 'screen_share' // 流来源：摄像头或屏幕共享
   }
 }
 

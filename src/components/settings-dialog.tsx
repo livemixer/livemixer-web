@@ -22,6 +22,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     streamService,
     livekitUrl,
     livekitToken,
+    // 拉流设置
+    livekitPullUrl,
+    livekitPullToken,
     // 输出设置
     videoBitrate,
     audioBitrate,
@@ -61,8 +64,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 type="button"
                 onClick={() => setActiveTab('general')}
                 className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'general'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                  ? 'bg-[#2a2a2a] text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
                   }`}
               >
                 常规
@@ -71,18 +74,28 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 type="button"
                 onClick={() => setActiveTab('streaming')}
                 className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'streaming'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                  ? 'bg-[#2a2a2a] text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
                   }`}
               >
-                直播
+                直播（推流）
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('pulling')}
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'pulling'
+                  ? 'bg-[#2a2a2a] text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                  }`}
+              >
+                拉流
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('output')}
                 className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'output'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                  ? 'bg-[#2a2a2a] text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
                   }`}
               >
                 输出
@@ -91,8 +104,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 type="button"
                 onClick={() => setActiveTab('audio')}
                 className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'audio'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                  ? 'bg-[#2a2a2a] text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
                   }`}
               >
                 音频
@@ -101,8 +114,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 type="button"
                 onClick={() => setActiveTab('video')}
                 className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'video'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                  ? 'bg-[#2a2a2a] text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
                   }`}
               >
                 视频
@@ -150,7 +163,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             {activeTab === 'streaming' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">直播设置</h2>
+                <h2 className="text-lg font-semibold text-white">直播设置（推流）</h2>
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="streamService">推流服务</Label>
@@ -194,6 +207,46 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       }
                       placeholder="输入 Token"
                     />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'pulling' && (
+              <div className="space-y-6">
+                <h2 className="text-lg font-semibold text-white">拉流设置</h2>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="livekitPullUrl">服务器地址</Label>
+                    <Input
+                      id="livekitPullUrl"
+                      value={livekitPullUrl}
+                      onChange={(e) =>
+                        updatePersistentSettings({
+                          livekitPullUrl: e.target.value,
+                        })
+                      }
+                      placeholder="wss://your-livekit-server.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="livekitPullToken">Token</Label>
+                    <Input
+                      id="livekitPullToken"
+                      type="password"
+                      value={livekitPullToken}
+                      onChange={(e) =>
+                        updateSensitiveSettings({
+                          livekitPullToken: e.target.value,
+                        })
+                      }
+                      placeholder="输入 Token"
+                    />
+                  </div>
+                  <div className="pt-4 border-t border-[#3e3e42]">
+                    <p className="text-sm text-gray-400">
+                      配置拉流后，可以在左侧参会者面板中查看其他参会者，并将他们的摄像头或屏幕共享添加到场景中。
+                    </p>
                   </div>
                 </div>
               </div>

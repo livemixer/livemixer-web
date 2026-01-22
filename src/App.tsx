@@ -8,11 +8,13 @@ import { PropertyPanel } from './components/property-panel'
 import { SettingsDialog } from './components/settings-dialog'
 import { StatusBar } from './components/status-bar'
 import { Toolbar } from './components/toolbar'
+import { ParticipantsPanel } from './components/participants-panel'
 import type { SourceType } from './components/add-source-dialog'
 import { ConfigureSourceDialog, type SourceConfig } from './components/configure-source-dialog'
 import { ConfigureTimerDialog, type TimerConfig } from './components/configure-timer-dialog'
 import { canvasCaptureService } from './services/canvas-capture'
 import { streamingService } from './services/streaming'
+import { liveKitPullService } from './services/livekit-pull'
 import { useProtocolStore } from './store/protocol'
 import { useSettingsStore } from './store/setting'
 import type { SceneItem } from './types/protocol'
@@ -25,6 +27,7 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null)
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [isStreaming, setIsStreaming] = useState(false)
+  const [isPulling, setIsPulling] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [pendingSourceType, setPendingSourceType] = useState<SourceType | null>(null)
   const [configureSourceOpen, setConfigureSourceOpen] = useState(false)
@@ -32,7 +35,7 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
   const canvasRef = useRef<KonvaCanvasHandle>(null)
 
   // 从 store 获取 LiveKit 配置和输出设置
-  const { livekitUrl, livekitToken, fps, videoBitrate, videoEncoder } = useSettingsStore()
+  const { livekitUrl, livekitToken, livekitPullUrl, livekitPullToken, fps, videoBitrate, videoEncoder } = useSettingsStore()
 
   // 初始化激活场景（仅执行一次）
   useEffect(() => {
@@ -574,6 +577,109 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
     }
   }, [isStreaming, livekitUrl, livekitToken, fps, videoBitrate, videoEncoder])
 
+  // 处理拉流连接/断开
+  const handleTogglePulling = useCallback(async () => {
+    if (!isPulling) {
+      // 开始拉流
+      try {
+        if (!livekitPullUrl || !livekitPullToken) {
+          alert('请先在设置中配置拉流服务器地址和 Token')
+          return
+        }
+
+        await liveKitPullService.connect(livekitPullUrl, livekitPullToken, {
+          onParticipantsChanged: (participants) => {
+            console.log('参会者列表变化:', participants)
+          },
+        })
+
+        setIsPulling(true)
+        console.log('开始拉流')
+      } catch (error) {
+        console.error('拉流失败:', error)
+        alert(
+          `拉流失败: ${error instanceof Error ? error.message : '未知错误'}`,
+        )
+      }
+    } else {
+      // 停止拉流
+      try {
+        await liveKitPullService.disconnect()
+        setIsPulling(false)
+        console.log('停止拉流')
+      } catch (error) {
+        console.error('停止拉流失败:', error)
+      }
+    }
+  }, [isPulling, livekitPullUrl, livekitPullToken])
+
+  // 从参会者添加到场景
+  const handleAddParticipantToScene = useCallback(
+    (identity: string, source: 'camera' | 'screen_share') => {
+      if (!activeSceneId) return
+
+      // 生成新的 ID
+      const existingItems = activeScene?.items || []
+      const sameTypeItems = existingItems.filter(item => item.type === 'livekit_stream')
+      const nextNumber = sameTypeItems.length + 1
+      const newItemId = `livekit_stream-${nextNumber}`
+
+      // 根据主画面分辨率计算视频流的合适尺寸
+      // 默认占主画面的 1/3 宽度，高度按 16:9 比例计算
+      const canvasWidth = data.canvas.width
+      const canvasHeight = data.canvas.height
+      const targetWidth = Math.floor(canvasWidth / 3)
+      const targetHeight = Math.floor(targetWidth * 9 / 16)
+
+      // 确保不超出画布高度
+      let finalWidth = targetWidth
+      let finalHeight = targetHeight
+      if (targetHeight > canvasHeight * 0.8) {
+        finalHeight = Math.floor(canvasHeight * 0.8)
+        finalWidth = Math.floor(finalHeight * 16 / 9)
+      }
+
+      // 计算居中位置（稍微偏移以避免完全重叠）
+      const offsetX = (nextNumber - 1) * 50
+      const offsetY = (nextNumber - 1) * 50
+      const x = Math.floor((canvasWidth - finalWidth) / 2) + offsetX
+      const y = Math.floor((canvasHeight - finalHeight) / 2) + offsetY
+
+      const newItem: SceneItem = {
+        id: newItemId,
+        type: 'livekit_stream',
+        zIndex: activeScene?.items.length || 0,
+        layout: {
+          x: Math.max(0, Math.min(x, canvasWidth - finalWidth)),
+          y: Math.max(0, Math.min(y, canvasHeight - finalHeight)),
+          width: finalWidth,
+          height: finalHeight,
+        },
+        livekitStream: {
+          participantIdentity: identity,
+          streamSource: source,
+        },
+      }
+
+      updateData({
+        ...data,
+        scenes: data.scenes.map((scene) => {
+          if (scene.id !== activeSceneId) return scene
+          return {
+            ...scene,
+            items: [...scene.items, newItem],
+          }
+        }),
+      })
+
+      // 自动选择新添加的源
+      setSelectedItemId(newItemId)
+
+      console.log('已添加参会者到场景:', { identity, source, size: `${finalWidth}x${finalHeight}` })
+    },
+    [activeSceneId, activeScene, data, updateData]
+  )
+
   // 组件卸载时清理资源
   useEffect(() => {
     return () => {
@@ -582,8 +688,11 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
         canvasCaptureService.stopCapture()
         canvasRef.current?.stopContinuousRendering()
       }
+      if (isPulling) {
+        liveKitPullService.disconnect()
+      }
     }
-  }, [isStreaming])
+  }, [isStreaming, isPulling])
 
   return (
     <>
@@ -599,7 +708,28 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
         }
         toolbar={<Toolbar data={data} updateData={updateData} />}
         userSection={extensions?.userComponent}
-        leftSidebar={<LeftSidebar />}
+        leftSidebar={
+          <div className="flex flex-col h-full">
+            <div className="flex-1 overflow-hidden">
+              <ParticipantsPanel
+                isConnected={isPulling}
+                onAddToScene={handleAddParticipantToScene}
+              />
+            </div>
+            <div className="flex-shrink-0 p-4 border-t border-[#3e3e42]">
+              <button
+                type="button"
+                onClick={handleTogglePulling}
+                className={`w-full py-2 px-4 rounded text-sm font-medium transition-colors ${isPulling
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  }`}
+              >
+                {isPulling ? '断开拉流' : '连接拉流'}
+              </button>
+            </div>
+          </div>
+        }
         canvas={
           <KonvaCanvas
             ref={canvasRef}
