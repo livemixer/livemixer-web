@@ -19,6 +19,7 @@ import { useProtocolStore } from './store/protocol'
 import { useSettingsStore } from './store/setting'
 import type { SceneItem } from './types/protocol'
 import type { LiveMixerExtensions } from './types/extensions'
+import { pluginRegistry } from './services/plugin-registry'
 import './App.css'
 
 function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
@@ -170,6 +171,23 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
 
     let newItem: SceneItem
 
+    // --- 插件化 PoC: 尝试通过插件获取默认属性 ---
+    const pluginIdMap: Record<string, string> = {
+      'image': 'io.livemixer.image',
+      'video_input': 'io.livemixer.webcam',
+      'text': 'io.livemixer.text',
+    };
+    const pluginId = pluginIdMap[sourceType] || sourceType;
+    const plugin = pluginRegistry.getPlugin(pluginId);
+
+    let pluginDefaultProps = {};
+    if (plugin && plugin.propsSchema) {
+      Object.entries(plugin.propsSchema).forEach(([key, schema]) => {
+        (pluginDefaultProps as any)[key] = schema.defaultValue;
+      });
+    }
+    // ----------------------------------------
+
     // 根据源类型创建不同的项
     switch (sourceType) {
       case 'image':
@@ -184,6 +202,7 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
             height: 300,
           },
           url: config?.url || '',
+          ...pluginDefaultProps,
         }
         break
       case 'media':
@@ -258,6 +277,7 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
             height: 300,
           },
           source: 'video_device', // 待用户选择设备
+          ...pluginDefaultProps,
         }
         break
       case 'audio_input':
@@ -336,18 +356,34 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
         }
         break
       default:
-        // 默认为 color 类型（保留向后兼容）
-        newItem = {
-          id: newItemId,
-          type: 'color',
-          zIndex: activeScene?.items.length || 0,
-          layout: {
-            x: 100,
-            y: 100,
-            width: 400,
-            height: 300,
-          },
-          color: '#3b82f6',
+        // 如果是插件类型，创建一个通用的 SceneItem
+        if (plugin) {
+          newItem = {
+            id: newItemId,
+            type: sourceType,
+            zIndex: activeScene?.items.length || 0,
+            layout: {
+              x: 100,
+              y: 100,
+              width: 400,
+              height: 300,
+            },
+            ...pluginDefaultProps,
+          }
+        } else {
+          // 默认为 color 类型（保留向后兼容）
+          newItem = {
+            id: newItemId,
+            type: 'color',
+            zIndex: activeScene?.items.length || 0,
+            layout: {
+              x: 100,
+              y: 100,
+              width: 400,
+              height: 300,
+            },
+            color: '#3b82f6',
+          }
         }
     }
 

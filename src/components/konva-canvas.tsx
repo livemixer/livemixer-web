@@ -11,6 +11,12 @@ import { Group, Layer, Rect, Stage, Text, Transformer, Image as KonvaImage } fro
 import useImage from 'use-image'
 import type { Scene, SceneItem, Transform } from '../types/protocol'
 import { LiveKitStreamItem } from './livekit-stream-item'
+import { pluginRegistry } from '../services/plugin-registry'
+
+// 插件渲染组件：用于隔离 Hooks 上下文，防止违反 Rules of Hooks
+const PluginRenderer = memo(({ plugin, commonProps, item }: { plugin: any, commonProps: any, item: SceneItem }) => {
+    return plugin.render({ ...commonProps, item });
+});
 
 // 格式化时间显示
 function formatTime(seconds: number, format: string): string {
@@ -404,38 +410,59 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                 }),
             }
 
+            // --- 插件化 PoC: 检查是否存在对应的插件 ---
+            const pluginIdMap: Record<string, string> = {
+                'image': 'io.livemixer.image',
+                'video_input': 'io.livemixer.webcam',
+                'text': 'io.livemixer.text',
+            };
+            const pluginId = pluginIdMap[item.type] || item.type;
+            const plugin = pluginRegistry.getPlugin(pluginId);
+            if (plugin) {
+                const { key, ...restProps } = commonProps;
+                return <PluginRenderer key={key} plugin={plugin} commonProps={restProps} item={item} />;
+            }
+            // ----------------------------------------
+
             switch (item.type) {
-                case 'color':
-                    return <Rect {...commonProps} fill={item.color || '#000000'} />
+                case 'color': {
+                    const { key, ...restProps } = commonProps;
+                    return <Rect key={key} {...restProps} fill={item.color || '#000000'} />;
+                }
 
                 case 'image':
-                    return <ImageItem item={item} commonProps={commonProps} />
+                    return <ImageItem item={item} commonProps={commonProps} />;
 
                 case 'media':
                     // 媒体源也使用图片组件（视频封面或音频占位图）
-                    return <ImageItem item={item} commonProps={commonProps} />
+                    return <ImageItem item={item} commonProps={commonProps} />;
 
-                case 'text':
+                case 'text': {
+                    const { key, ...restProps } = commonProps;
                     return (
                         <Text
-                            {...commonProps}
+                            key={key}
+                            {...restProps}
                             text={item.content || ''}
                             fontSize={item.properties?.fontSize || 16}
                             fill={item.properties?.color || '#FFFFFF'}
                             align="left"
                             verticalAlign="top"
                         />
-                    )
+                    );
+                }
 
                 case 'timer':
                 case 'clock': {
-                    const displayText = timerStates.get(item.id) || '00:00'
-                    const fontSize = item.properties?.fontSize || 48
-                    const color = item.properties?.color || '#FFFFFF'
+                    const { key, ...restProps } = commonProps;
+                    const displayText = timerStates.get(item.id) || '00:00';
+                    const fontSize = item.properties?.fontSize || 48;
+                    const color = item.properties?.color || '#FFFFFF';
 
                     return (
                         <Text
-                            {...commonProps}
+                            key={key}
+                            {...restProps}
                             text={displayText}
                             fontSize={fontSize}
                             fill={color}
@@ -444,33 +471,40 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                             fontFamily="monospace"
                             fontStyle="bold"
                         />
-                    )
+                    );
                 }
 
-                case 'window':
+                case 'window': {
+                    const { key, ...restProps } = commonProps;
                     return (
                         <Rect
-                            {...commonProps}
+                            key={key}
+                            {...restProps}
                             fill="#333333"
                             stroke="#666666"
                             strokeWidth={2}
                             cornerRadius={item.transform?.borderRadius || 0}
                         />
-                    )
+                    );
+                }
 
-                case 'screen':
+                case 'screen': {
+                    const { key, ...restProps } = commonProps;
                     return (
                         <Rect
-                            {...commonProps}
+                            key={key}
+                            {...restProps}
                             fill="#1a1a1a"
                             stroke="#444444"
                             strokeWidth={2}
                         />
-                    )
+                    );
+                }
 
-                case 'container':
+                case 'container': {
+                    const { key, ...restProps } = commonProps;
                     return (
-                        <Group {...commonProps} key={item.id}>
+                        <Group key={key} {...restProps}>
                             {/* 容器边框（可选，便于识别） */}
                             <Rect
                                 x={0}
@@ -485,30 +519,37 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                             {/* 渲染子元素（不可交互） */}
                             {item.children?.map((child) => renderItem(child, true))}
                         </Group>
-                    )
+                    );
+                }
 
-                case 'scene_ref':
+                case 'scene_ref': {
+                    const { key, ...restProps } = commonProps;
                     return (
                         <Rect
-                            {...commonProps}
+                            key={key}
+                            {...restProps}
                             fill="#2a2a2a"
                             stroke="#888888"
                             strokeWidth={1}
                             cornerRadius={item.transform?.borderRadius || 0}
                         />
-                    )
+                    );
+                }
 
-                case 'livekit_stream':
+                case 'livekit_stream': {
+                    const { key, ...restProps } = commonProps;
                     // LiveKit 视频流使用占位矩形，实际视频通过 HTML overlay 渲染
                     return (
                         <Rect
-                            {...commonProps}
+                            key={key}
+                            {...restProps}
                             fill="#000000"
                             stroke="#444444"
                             strokeWidth={1}
                             cornerRadius={item.transform?.borderRadius || 0}
                         />
-                    )
+                    );
+                }
 
                 default:
                     return null
