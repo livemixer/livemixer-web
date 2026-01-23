@@ -4,6 +4,7 @@ import type { SceneItem } from '../types/protocol'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
 import { Slider } from './ui/slider'
+import { pluginRegistry } from '../services/plugin-registry'
 
 interface PropertyPanelProps {
   selectedItem: SceneItem | null
@@ -270,6 +271,68 @@ export function PropertyPanel({
               )}
           </div>
         </div>
+
+        {/* --- 插件化 PoC: 动态渲染插件属性 --- */}
+        {(() => {
+          const pluginIdMap: Record<string, string> = {
+            'image': 'io.livemixer.image',
+            'video_input': 'io.livemixer.webcam',
+            'text': 'io.livemixer.text',
+          };
+          const pluginId = pluginIdMap[localItem.type] || localItem.type;
+          const plugin = pluginRegistry.getPlugin(pluginId);
+
+          if (plugin && plugin.propsSchema) {
+            return (
+              <div className="border-t border-[#3e3e42] pt-4">
+                <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+                  <span className="w-1 h-4 bg-purple-500 rounded"></span>
+                  插件属性 ({plugin.name})
+                </h4>
+                <div className="space-y-4">
+                  {Object.entries(plugin.propsSchema).map(([key, schema]) => {
+                    if (schema.type === 'number') {
+                      return (
+                        <div key={key}>
+                          <div className="flex justify-between items-center mb-3">
+                            <Label className="text-xs">{schema.label}</Label>
+                            <span className="text-xs text-gray-300 font-mono bg-[#1e1e1e] px-2 py-1 rounded border border-[#3e3e42]">
+                              {localItem[key as keyof SceneItem] || schema.defaultValue}
+                            </span>
+                          </div>
+                          <Slider
+                            min={schema.min ?? 0}
+                            max={schema.max ?? 100}
+                            step={schema.step ?? 1}
+                            value={[Number(localItem[key as keyof SceneItem] ?? schema.defaultValue)]}
+                            onValueChange={(value) => updateProperty({ [key]: value[0] })}
+                            disabled={isLocked}
+                          />
+                        </div>
+                      );
+                    }
+                    if (schema.type === 'image' || schema.type === 'string') {
+                      return (
+                        <div key={key}>
+                          <Label className="block mb-2">{schema.label}</Label>
+                          <Input
+                            type="text"
+                            value={localItem[key as keyof SceneItem] || schema.defaultValue}
+                            onChange={(e) => updateProperty({ [key]: e.target.value })}
+                            disabled={isLocked}
+                          />
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })()}
+        {/* ------------------------------------ */}
 
         {/* 特定类型属性 */}
         {localItem.type === 'color' && (

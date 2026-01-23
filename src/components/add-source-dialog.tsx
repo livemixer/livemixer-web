@@ -1,4 +1,4 @@
-import { Image, Monitor, ScreenShare, Type, Video, Mic, Volume2, Timer, Clock } from 'lucide-react'
+import { Image, Monitor, ScreenShare, Type, Video, Mic, Volume2, Timer, Clock, Puzzle } from 'lucide-react'
 import {
     Dialog,
     DialogContent,
@@ -6,8 +6,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from './ui/dialog'
+import { pluginRegistry } from '../services/plugin-registry'
 
-export type SourceType = 'image' | 'media' | 'text' | 'screen' | 'window' | 'video_input' | 'audio_input' | 'audio_output' | 'timer' | 'clock'
+export type SourceType = 'image' | 'media' | 'text' | 'screen' | 'window' | 'video_input' | 'audio_input' | 'audio_output' | 'timer' | 'clock' | string
 
 interface SourceTypeOption {
     type: SourceType
@@ -95,9 +96,13 @@ export function AddSourceDialog({
         onOpenChange(false)
     }
 
+    const externalPlugins = pluginRegistry.getAllPlugins().filter(p =>
+        !['io.livemixer.image', 'io.livemixer.webcam', 'io.livemixer.text'].includes(p.id)
+    )
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="bg-[#252526] border-[#3e3e42] text-white max-w-2xl">
+            <DialogContent className="bg-[#252526] border-[#3e3e42] text-white max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-semibold text-white">
                         添加源
@@ -107,27 +112,60 @@ export function AddSourceDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="grid grid-cols-2 gap-3 mt-4">
-                    {sourceTypes.map((sourceType) => (
-                        <button
-                            key={sourceType.type}
-                            type="button"
-                            onClick={() => handleSelectType(sourceType.type)}
-                            className="flex items-start gap-4 p-4 bg-[#1e1e1e] hover:bg-[#2d2d30] border border-[#3e3e42] rounded-lg transition-colors text-left"
-                        >
-                            <div className="flex-shrink-0 text-blue-400 mt-1">
-                                {sourceType.icon}
+                <div className="space-y-6 mt-4">
+                    <div>
+                        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">内置源</h3>
+                        <div className="grid grid-cols-2 gap-3">
+                            {sourceTypes.map((sourceType) => (
+                                <button
+                                    key={sourceType.type}
+                                    type="button"
+                                    onClick={() => handleSelectType(sourceType.type)}
+                                    className="flex items-start gap-4 p-4 bg-[#1e1e1e] hover:bg-[#2d2d30] border border-[#3e3e42] rounded-lg transition-colors text-left"
+                                >
+                                    <div className="flex-shrink-0 text-blue-400 mt-1">
+                                        {sourceType.icon}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="font-medium text-white text-sm mb-1">
+                                            {sourceType.name}
+                                        </h4>
+                                        <p className="text-xs text-gray-400 line-clamp-2">
+                                            {sourceType.description}
+                                        </p>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {externalPlugins.length > 0 && (
+                        <div>
+                            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">已安装插件</h3>
+                            <div className="grid grid-cols-2 gap-3">
+                                {externalPlugins.map((plugin) => (
+                                    <button
+                                        key={plugin.id}
+                                        type="button"
+                                        onClick={() => handleSelectType(plugin.id)}
+                                        className="flex items-start gap-4 p-4 bg-[#1e1e1e] hover:bg-[#2d2d30] border border-[#3e3e42] rounded-lg transition-colors text-left"
+                                    >
+                                        <div className="flex-shrink-0 text-purple-400 mt-1">
+                                            <Puzzle className="w-6 h-6" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="font-medium text-white text-sm mb-1">
+                                                {plugin.name}
+                                            </h4>
+                                            <p className="text-xs text-gray-400 line-clamp-1">
+                                                {plugin.id}
+                                            </p>
+                                        </div>
+                                    </button>
+                                ))}
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <h4 className="font-medium text-white text-sm mb-1">
-                                    {sourceType.name}
-                                </h4>
-                                <p className="text-xs text-gray-400 line-clamp-2">
-                                    {sourceType.description}
-                                </p>
-                            </div>
-                        </button>
-                    ))}
+                        </div>
+                    )}
                 </div>
             </DialogContent>
         </Dialog>

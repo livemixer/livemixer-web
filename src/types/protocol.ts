@@ -19,7 +19,7 @@ export interface Transform {
 
 export interface SceneItem {
   id: string
-  type: 'color' | 'image' | 'media' | 'text' | 'screen' | 'window' | 'video_input' | 'audio_input' | 'audio_output' | 'container' | 'scene_ref' | 'timer' | 'clock' | 'livekit_stream'
+  type: 'color' | 'image' | 'media' | 'text' | 'screen' | 'window' | 'video_input' | 'audio_input' | 'audio_output' | 'container' | 'scene_ref' | 'timer' | 'clock' | 'livekit_stream' | string
   zIndex: number
   layout: Layout
   transform?: Transform
