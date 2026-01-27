@@ -1,64 +1,59 @@
-import { Lock, Upload, Link as LinkIcon, Play, Pause, RotateCcw } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import type { SceneItem } from '../types/protocol'
-import { Input } from './ui/input'
-import { Label } from './ui/label'
-import { Slider } from './ui/slider'
-import { pluginRegistry } from '../services/plugin-registry'
+import { Link as LinkIcon, Lock, Pause, Play, RotateCcw, Upload } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { pluginRegistry } from '../services/plugin-registry';
+import type { SceneItem } from '../types/protocol';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Slider } from './ui/slider';
 
 interface PropertyPanelProps {
-  selectedItem: SceneItem | null
-  onUpdateItem?: (itemId: string, updates: Partial<SceneItem>) => void
+  selectedItem: SceneItem | null;
+  onUpdateItem?: (itemId: string, updates: Partial<SceneItem>) => void;
 }
 
-export function PropertyPanel({
-  selectedItem,
-  onUpdateItem,
-}: PropertyPanelProps) {
-  const [localItem, setLocalItem] = useState<SceneItem | null>(selectedItem)
-  const [urlInputMethod, setUrlInputMethod] = useState<'file' | 'url'>('url')
+export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps) {
+  const [localItem, setLocalItem] = useState<SceneItem | null>(selectedItem);
+  const [urlInputMethod, setUrlInputMethod] = useState<'file' | 'url'>('url');
 
-  // 使用 useEffect 确保 selectedItem 的任何变化都同步到 localItem
+  // Keep localItem in sync with any changes to selectedItem
   useEffect(() => {
-    setLocalItem(selectedItem)
-  }, [selectedItem])
+    setLocalItem(selectedItem);
+  }, [selectedItem]);
 
   if (!selectedItem || !localItem) {
     return (
       <div className="h-full p-4 flex items-center justify-center text-gray-500 text-sm">
         未选中任何元素
       </div>
-    )
+    );
   }
 
-  const isLocked = localItem.locked === true
+  const isLocked = localItem.locked === true;
 
   const updateProperty = (updates: Partial<SceneItem>) => {
-    // 锁定时不允许修改
-    if (isLocked) return
+    // Disallow edits while locked
+    if (isLocked) return;
 
     const newItem = {
       ...localItem,
       ...updates,
-      layout: updates.layout
-        ? { ...localItem.layout, ...updates.layout }
-        : localItem.layout,
+      layout: updates.layout ? { ...localItem.layout, ...updates.layout } : localItem.layout,
       transform: updates.transform
         ? { ...localItem.transform, ...updates.transform }
         : localItem.transform,
-    }
-    setLocalItem(newItem)
-    onUpdateItem?.(selectedItem.id, updates)
-  }
+    };
+    setLocalItem(newItem);
+    onUpdateItem?.(selectedItem.id, updates);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isLocked) return
-    const file = e.target.files?.[0]
+    if (isLocked) return;
+    const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file)
-      updateProperty({ url })
+      const url = URL.createObjectURL(file);
+      updateProperty({ url });
     }
-  }
+  };
 
   return (
     <div className="h-full overflow-y-auto">
@@ -66,7 +61,7 @@ export function PropertyPanel({
         <h3 className="text-sm font-semibold text-gray-200">属性</h3>
       </div>
 
-      {/* 锁定提示 */}
+      {/* Locked item notice */}
       {isLocked && (
         <div className="mx-4 mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2 text-sm text-red-400">
           <Lock className="w-4 h-4" />
@@ -75,7 +70,7 @@ export function PropertyPanel({
       )}
 
       <div className="p-4 space-y-6">
-        {/* 基本信息 */}
+        {/* Basic info */}
         <div className="space-y-4">
           <div>
             <Label className="block mb-2">元素 ID</Label>
@@ -99,15 +94,13 @@ export function PropertyPanel({
               id="zIndex"
               type="number"
               value={localItem.zIndex}
-              onChange={(e) =>
-                updateProperty({ zIndex: Number.parseInt(e.target.value) || 0 })
-              }
+              onChange={e => updateProperty({ zIndex: Number.parseInt(e.target.value) || 0 })}
               disabled={isLocked}
             />
           </div>
         </div>
 
-        {/* 位置和大小 */}
+        {/* Position and size */}
         <div className="border-t border-[#3e3e42] pt-4">
           <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
             <span className="w-1 h-4 bg-blue-500 rounded"></span>
@@ -123,7 +116,7 @@ export function PropertyPanel({
                 id="x"
                 type="number"
                 value={Math.round(localItem.layout.x)}
-                onChange={(e) =>
+                onChange={e =>
                   updateProperty({
                     layout: {
                       ...localItem.layout,
@@ -142,7 +135,7 @@ export function PropertyPanel({
                 id="y"
                 type="number"
                 value={Math.round(localItem.layout.y)}
-                onChange={(e) =>
+                onChange={e =>
                   updateProperty({
                     layout: {
                       ...localItem.layout,
@@ -161,7 +154,7 @@ export function PropertyPanel({
                 id="width"
                 type="number"
                 value={Math.round(localItem.layout.width)}
-                onChange={(e) =>
+                onChange={e =>
                   updateProperty({
                     layout: {
                       ...localItem.layout,
@@ -180,7 +173,7 @@ export function PropertyPanel({
                 id="height"
                 type="number"
                 value={Math.round(localItem.layout.height)}
-                onChange={(e) =>
+                onChange={e =>
                   updateProperty({
                     layout: {
                       ...localItem.layout,
@@ -194,7 +187,7 @@ export function PropertyPanel({
           </div>
         </div>
 
-        {/* 变换 */}
+        {/* Transform */}
         <div className="border-t border-[#3e3e42] pt-4">
           <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
             <span className="w-1 h-4 bg-blue-500 rounded"></span>
@@ -217,9 +210,7 @@ export function PropertyPanel({
                 max={1}
                 step={0.01}
                 value={[localItem.transform?.opacity ?? 1]}
-                onValueChange={(value) =>
-                  updateProperty({ transform: { opacity: value[0] } })
-                }
+                onValueChange={value => updateProperty({ transform: { opacity: value[0] } })}
                 disabled={isLocked}
               />
             </div>
@@ -239,9 +230,7 @@ export function PropertyPanel({
                 max={360}
                 step={1}
                 value={[localItem.transform?.rotation ?? 0]}
-                onValueChange={(value) =>
-                  updateProperty({ transform: { rotation: value[0] } })
-                }
+                onValueChange={value => updateProperty({ transform: { rotation: value[0] } })}
                 disabled={isLocked}
               />
             </div>
@@ -249,35 +238,35 @@ export function PropertyPanel({
             {(localItem.type === 'window' ||
               localItem.type === 'scene_ref' ||
               localItem.type === 'color') && (
-                <div>
-                  <Label htmlFor="borderRadius" className="block mb-2">
-                    圆角半径
-                  </Label>
-                  <Input
-                    id="borderRadius"
-                    type="number"
-                    value={localItem.transform?.borderRadius ?? 0}
-                    onChange={(e) =>
-                      updateProperty({
-                        transform: {
-                          borderRadius: Number.parseFloat(e.target.value) || 0,
-                        },
-                      })
-                    }
-                    placeholder="0"
-                    disabled={isLocked}
-                  />
-                </div>
-              )}
+              <div>
+                <Label htmlFor="borderRadius" className="block mb-2">
+                  圆角半径
+                </Label>
+                <Input
+                  id="borderRadius"
+                  type="number"
+                  value={localItem.transform?.borderRadius ?? 0}
+                  onChange={e =>
+                    updateProperty({
+                      transform: {
+                        borderRadius: Number.parseFloat(e.target.value) || 0,
+                      },
+                    })
+                  }
+                  placeholder="0"
+                  disabled={isLocked}
+                />
+              </div>
+            )}
           </div>
         </div>
 
-        {/* --- 插件化 PoC: 动态渲染插件属性 --- */}
+        {/* --- Plugin PoC: dynamically render plugin props --- */}
         {(() => {
           const pluginIdMap: Record<string, string> = {
-            'image': 'io.livemixer.image',
-            'video_input': 'io.livemixer.webcam',
-            'text': 'io.livemixer.text',
+            image: 'io.livemixer.image',
+            video_input: 'io.livemixer.webcam',
+            text: 'io.livemixer.text',
           };
           const pluginId = pluginIdMap[localItem.type] || localItem.type;
           const plugin = pluginRegistry.getPlugin(pluginId);
@@ -304,8 +293,10 @@ export function PropertyPanel({
                             min={schema.min ?? 0}
                             max={schema.max ?? 100}
                             step={schema.step ?? 1}
-                            value={[Number(localItem[key as keyof SceneItem] ?? schema.defaultValue)]}
-                            onValueChange={(value) => updateProperty({ [key]: value[0] })}
+                            value={[
+                              Number(localItem[key as keyof SceneItem] ?? schema.defaultValue),
+                            ]}
+                            onValueChange={value => updateProperty({ [key]: value[0] })}
                             disabled={isLocked}
                           />
                         </div>
@@ -318,7 +309,7 @@ export function PropertyPanel({
                           <Input
                             type="text"
                             value={localItem[key as keyof SceneItem] || schema.defaultValue}
-                            onChange={(e) => updateProperty({ [key]: e.target.value })}
+                            onChange={e => updateProperty({ [key]: e.target.value })}
                             disabled={isLocked}
                           />
                         </div>
@@ -334,7 +325,7 @@ export function PropertyPanel({
         })()}
         {/* ------------------------------------ */}
 
-        {/* 特定类型属性 */}
+        {/* Type-specific props */}
         {localItem.type === 'color' && (
           <div className="border-t border-[#3e3e42] pt-4">
             <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
@@ -346,14 +337,14 @@ export function PropertyPanel({
                 id="color"
                 type="color"
                 value={localItem.color || '#000000'}
-                onChange={(e) => updateProperty({ color: e.target.value })}
+                onChange={e => updateProperty({ color: e.target.value })}
                 className="w-14 h-10 p-1 cursor-pointer"
                 disabled={isLocked}
               />
               <Input
                 type="text"
                 value={localItem.color || '#000000'}
-                onChange={(e) => updateProperty({ color: e.target.value })}
+                onChange={e => updateProperty({ color: e.target.value })}
                 className="flex-1"
                 placeholder="#000000"
                 disabled={isLocked}
@@ -377,7 +368,7 @@ export function PropertyPanel({
                 <textarea
                   id="content"
                   value={localItem.content || ''}
-                  onChange={(e) => updateProperty({ content: e.target.value })}
+                  onChange={e => updateProperty({ content: e.target.value })}
                   placeholder="输入文本内容"
                   className="flex min-h-[80px] w-full rounded-md border border-[#3e3e42] bg-[#1e1e1e] px-3 py-2 text-sm text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
                   rows={3}
@@ -393,7 +384,7 @@ export function PropertyPanel({
                   id="fontSize"
                   type="number"
                   value={localItem.properties?.fontSize || 16}
-                  onChange={(e) =>
+                  onChange={e =>
                     updateProperty({
                       properties: {
                         ...localItem.properties,
@@ -415,7 +406,7 @@ export function PropertyPanel({
                     id="textColor"
                     type="color"
                     value={localItem.properties?.color || '#FFFFFF'}
-                    onChange={(e) =>
+                    onChange={e =>
                       updateProperty({
                         properties: {
                           ...localItem.properties,
@@ -429,7 +420,7 @@ export function PropertyPanel({
                   <Input
                     type="text"
                     value={localItem.properties?.color || '#FFFFFF'}
-                    onChange={(e) =>
+                    onChange={e =>
                       updateProperty({
                         properties: {
                           ...localItem.properties,
@@ -460,7 +451,7 @@ export function PropertyPanel({
               id="source"
               type="text"
               value={localItem.source || ''}
-              onChange={(e) => updateProperty({ source: e.target.value })}
+              onChange={e => updateProperty({ source: e.target.value })}
               placeholder="输入媒体源"
               disabled={isLocked}
             />
@@ -472,27 +463,27 @@ export function PropertyPanel({
           <div className="border-t border-[#3e3e42] pt-4">
             <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-blue-500 rounded"></span>
-              {localItem.type === 'timer' ? '定时器控制' : '时钟设置'}
+              {localItem.type === 'timer' ? 'Timer controls' : 'Clock settings'}
             </h4>
 
             {localItem.type === 'timer' && localItem.timerConfig && (
               <>
-                {/* 控制按钮 */}
+                {/* Control buttons */}
                 <div className="flex gap-2 mb-4">
                   <button
                     type="button"
                     onClick={() => {
-                      const config = localItem.timerConfig!
+                      const config = localItem.timerConfig!;
                       if (config.running) {
-                        // 暂停
-                        const now = performance.now() / 1000
-                        let pausedAt = 0
+                        // Pause
+                        const now = performance.now() / 1000;
+                        let pausedAt = 0;
 
                         if (config.mode === 'countdown' && config.startTime && config.duration) {
-                          const elapsed = now - config.startTime
-                          pausedAt = Math.max(0, config.duration - elapsed)
+                          const elapsed = now - config.startTime;
+                          pausedAt = Math.max(0, config.duration - elapsed);
                         } else if (config.mode === 'countup' && config.startTime) {
-                          pausedAt = now - config.startTime + (config.startValue || 0)
+                          pausedAt = now - config.startTime + (config.startValue || 0);
                         }
 
                         updateProperty({
@@ -502,15 +493,15 @@ export function PropertyPanel({
                             pausedAt,
                             startTime: undefined,
                           },
-                        })
+                        });
                       } else {
-                        // 启动/继续
-                        const now = performance.now() / 1000
-                        let startTime = now
+                        // Start or resume
+                        const now = performance.now() / 1000;
+                        let startTime = now;
 
                         if (config.mode === 'countdown' && config.pausedAt !== undefined) {
-                          // 从暂停位置继续
-                          startTime = now
+                          // Resume from paused position
+                          startTime = now;
                           updateProperty({
                             timerConfig: {
                               ...config,
@@ -519,9 +510,9 @@ export function PropertyPanel({
                               duration: config.pausedAt,
                               pausedAt: undefined,
                             },
-                          })
+                          });
                         } else if (config.mode === 'countup' && config.pausedAt !== undefined) {
-                          // 正计时从暂停位置继续
+                          // Count-up resume from pause
                           updateProperty({
                             timerConfig: {
                               ...config,
@@ -530,7 +521,7 @@ export function PropertyPanel({
                               startValue: config.pausedAt,
                               pausedAt: undefined,
                             },
-                          })
+                          });
                         } else {
                           updateProperty({
                             timerConfig: {
@@ -539,7 +530,7 @@ export function PropertyPanel({
                               startTime,
                               pausedAt: undefined,
                             },
-                          })
+                          });
                         }
                       }
                     }}
@@ -562,16 +553,17 @@ export function PropertyPanel({
                   <button
                     type="button"
                     onClick={() => {
-                      const config = localItem.timerConfig!
+                      const config = localItem.timerConfig!;
                       updateProperty({
                         timerConfig: {
                           ...config,
                           running: false,
-                          currentTime: config.mode === 'countdown' ? config.duration : config.startValue,
+                          currentTime:
+                            config.mode === 'countdown' ? config.duration : config.startValue,
                           startTime: undefined,
                           pausedAt: undefined,
                         },
-                      })
+                      });
                     }}
                     disabled={isLocked}
                     className="px-4 py-2 bg-[#1e1e1e] hover:bg-[#2d2d30] disabled:cursor-not-allowed text-white rounded-lg transition-colors border border-[#3e3e42] flex items-center gap-2"
@@ -581,7 +573,7 @@ export function PropertyPanel({
                   </button>
                 </div>
 
-                {/* 模式显示 */}
+                {/* Mode display */}
                 <div className="mb-4">
                   <Label className="block mb-2">模式</Label>
                   <div className="text-sm text-gray-300 bg-[#1e1e1e] px-3 py-2 rounded border border-[#3e3e42] capitalize">
@@ -589,7 +581,7 @@ export function PropertyPanel({
                   </div>
                 </div>
 
-                {/* 倒计时时长设置 */}
+                {/* Countdown duration */}
                 {localItem.timerConfig.mode === 'countdown' && (
                   <div className="mb-4">
                     <Label htmlFor="duration" className="block mb-2">
@@ -600,7 +592,7 @@ export function PropertyPanel({
                       type="number"
                       min="1"
                       value={localItem.timerConfig.duration || 0}
-                      onChange={(e) =>
+                      onChange={e =>
                         updateProperty({
                           timerConfig: {
                             ...localItem.timerConfig!,
@@ -615,7 +607,7 @@ export function PropertyPanel({
               </>
             )}
 
-            {/* 显示格式 */}
+            {/* Display format */}
             <div className="mb-4">
               <Label htmlFor="format" className="block mb-2">
                 显示格式
@@ -623,7 +615,7 @@ export function PropertyPanel({
               <select
                 id="format"
                 value={localItem.timerConfig?.format || 'HH:MM:SS'}
-                onChange={(e) =>
+                onChange={e =>
                   updateProperty({
                     timerConfig: {
                       ...localItem.timerConfig!,
@@ -640,7 +632,7 @@ export function PropertyPanel({
               </select>
             </div>
 
-            {/* 字体大小 */}
+            {/* Font size */}
             <div className="mb-4">
               <Label htmlFor="timer-fontSize" className="block mb-2">
                 字体大小
@@ -651,7 +643,7 @@ export function PropertyPanel({
                 min="12"
                 max="200"
                 value={localItem.properties?.fontSize || 48}
-                onChange={(e) =>
+                onChange={e =>
                   updateProperty({
                     properties: {
                       ...localItem.properties,
@@ -663,7 +655,7 @@ export function PropertyPanel({
               />
             </div>
 
-            {/* 颜色 */}
+            {/* Color */}
             <div>
               <Label htmlFor="timer-color" className="block mb-2">
                 颜色
@@ -673,7 +665,7 @@ export function PropertyPanel({
                   id="timer-color"
                   type="color"
                   value={localItem.properties?.color || '#FFFFFF'}
-                  onChange={(e) =>
+                  onChange={e =>
                     updateProperty({
                       properties: {
                         ...localItem.properties,
@@ -687,7 +679,7 @@ export function PropertyPanel({
                 <Input
                   type="text"
                   value={localItem.properties?.color || '#FFFFFF'}
-                  onChange={(e) =>
+                  onChange={e =>
                     updateProperty({
                       properties: {
                         ...localItem.properties,
@@ -704,7 +696,7 @@ export function PropertyPanel({
           </div>
         )}
 
-        {/* 图像和媒体源 URL 编辑 */}
+        {/* Image and media source URL editor */}
         {(localItem.type === 'image' || localItem.type === 'media') && (
           <div className="border-t border-[#3e3e42] pt-4">
             <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
@@ -712,16 +704,17 @@ export function PropertyPanel({
               {localItem.type === 'image' ? '图像源' : '媒体源'}
             </h4>
 
-            {/* 输入方式选择 */}
+            {/* Input method selection */}
             <div className="flex gap-2 mb-4">
               <button
                 type="button"
                 onClick={() => setUrlInputMethod('url')}
                 disabled={isLocked}
-                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${urlInputMethod === 'url'
-                  ? 'bg-blue-500 border-blue-500 text-white'
-                  : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${
+                  urlInputMethod === 'url'
+                    ? 'bg-blue-500 border-blue-500 text-white'
+                    : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <LinkIcon className="w-3.5 h-3.5" />
                 <span>URL</span>
@@ -730,17 +723,18 @@ export function PropertyPanel({
                 type="button"
                 onClick={() => setUrlInputMethod('file')}
                 disabled={isLocked}
-                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${urlInputMethod === 'file'
-                  ? 'bg-blue-500 border-blue-500 text-white'
-                  : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${
+                  urlInputMethod === 'file'
+                    ? 'bg-blue-500 border-blue-500 text-white'
+                    : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <Upload className="w-3.5 h-3.5" />
                 <span>本地文件</span>
               </button>
             </div>
 
-            {/* URL 输入 */}
+            {/* URL input */}
             {urlInputMethod === 'url' && (
               <div>
                 <Label htmlFor="url" className="block mb-2">
@@ -750,14 +744,14 @@ export function PropertyPanel({
                   id="url"
                   type="url"
                   value={localItem.url || ''}
-                  onChange={(e) => updateProperty({ url: e.target.value })}
+                  onChange={e => updateProperty({ url: e.target.value })}
                   placeholder="https://example.com/image.jpg"
                   disabled={isLocked}
                 />
               </div>
             )}
 
-            {/* 文件上传 */}
+            {/* File upload */}
             {urlInputMethod === 'file' && (
               <div>
                 <Label htmlFor="file-upload" className="block mb-2">
@@ -774,10 +768,11 @@ export function PropertyPanel({
                   />
                   <label
                     htmlFor="file-upload"
-                    className={`flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg transition-colors text-sm text-gray-300 ${isLocked
-                      ? 'cursor-not-allowed opacity-50'
-                      : 'cursor-pointer hover:bg-[#2d2d30]'
-                      }`}
+                    className={`flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg transition-colors text-sm text-gray-300 ${
+                      isLocked
+                        ? 'cursor-not-allowed opacity-50'
+                        : 'cursor-pointer hover:bg-[#2d2d30]'
+                    }`}
                   >
                     <Upload className="w-4 h-4" />
                     <span>点击选择{localItem.type === 'image' ? '图片' : '媒体'}文件</span>
@@ -785,7 +780,8 @@ export function PropertyPanel({
                 </div>
                 {localItem.url && (
                   <p className="text-xs text-gray-500 mt-2">
-                    当前: {localItem.url.substring(0, 50)}{localItem.url.length > 50 ? '...' : ''}
+                    当前: {localItem.url.substring(0, 50)}
+                    {localItem.url.length > 50 ? '...' : ''}
                   </p>
                 )}
               </div>
@@ -794,5 +790,5 @@ export function PropertyPanel({
         )}
       </div>
     </div>
-  )
+  );
 }
