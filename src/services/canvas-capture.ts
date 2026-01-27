@@ -1,22 +1,22 @@
 /**
- * Canvas 捕获工具
- * 用于从 Canvas 元素创建 MediaStream
+ * Canvas capture utility
+ * Creates a MediaStream from a Canvas element
  */
 export class CanvasCaptureService {
   private stream: MediaStream | null = null
 
   /**
-   * 从 Canvas 元素捕获媒体流
-   * @param canvas Canvas 元素
-   * @param fps 帧率 (默认 30)
+   * Capture a media stream from a Canvas element
+   * @param canvas Canvas element
+   * @param fps Frame rate (default 30)
    * @returns MediaStream
    */
   captureStream(canvas: HTMLCanvasElement, fps = 30): MediaStream {
-    // 使用 Canvas API 捕获流
+    // Use Canvas API to capture the stream
     const stream = canvas.captureStream(fps)
 
     if (!stream) {
-      throw new Error('无法从 Canvas 捕获媒体流')
+      throw new Error('Failed to capture media stream from Canvas')
     }
 
     this.stream = stream
@@ -24,7 +24,7 @@ export class CanvasCaptureService {
   }
 
   /**
-   * 停止捕获
+   * Stop capture
    */
   stopCapture(): void {
     if (this.stream) {
@@ -36,12 +36,12 @@ export class CanvasCaptureService {
   }
 
   /**
-   * 获取当前流
+   * Get current stream
    */
   getStream(): MediaStream | null {
     return this.stream
   }
 }
 
-// 导出单例实例
+// Export singleton instance
 export const canvasCaptureService = new CanvasCaptureService()
