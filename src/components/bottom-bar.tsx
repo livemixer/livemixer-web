@@ -1,7 +1,19 @@
-import { ChevronDown, ChevronUp, Eye, EyeOff, Lock, LockOpen, Play, Plus, Settings, Square, Trash2 } from 'lucide-react'
-import { useState } from 'react'
-import type { Scene } from '../types/protocol'
-import { AddSourceDialog, type SourceType } from './add-source-dialog'
+import {
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  EyeOff,
+  Lock,
+  LockOpen,
+  Play,
+  Plus,
+  Settings,
+  Square,
+  Trash2,
+} from 'lucide-react';
+import { useState } from 'react';
+import type { Scene } from '../types/protocol';
+import { AddSourceDialog, type SourceType } from './add-source-dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,33 +23,28 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from './ui/alert-dialog'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from './ui/tooltip'
+} from './ui/alert-dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface BottomBarProps {
-  scenes: Scene[]
-  activeSceneId: string | null
-  onSceneSelect: (sceneId: string) => void
-  selectedItemId: string | null
-  onSelectItem: (itemId: string) => void
-  isStreaming: boolean
-  onToggleStreaming: () => void
-  onSettingsClick: () => void
-  onAddScene: () => void
-  onDeleteScene: (sceneId: string) => void
-  onMoveSceneUp: (sceneId: string) => void
-  onMoveSceneDown: (sceneId: string) => void
-  onAddItem: (sourceType: SourceType) => void
-  onDeleteItem: (itemId: string) => void
-  onMoveItemUp: (itemId: string) => void
-  onMoveItemDown: (itemId: string) => void
-  onToggleItemVisibility: (itemId: string) => void
-  onToggleItemLock: (itemId: string) => void
+  scenes: Scene[];
+  activeSceneId: string | null;
+  onSceneSelect: (sceneId: string) => void;
+  selectedItemId: string | null;
+  onSelectItem: (itemId: string) => void;
+  isStreaming: boolean;
+  onToggleStreaming: () => void;
+  onSettingsClick: () => void;
+  onAddScene: () => void;
+  onDeleteScene: (sceneId: string) => void;
+  onMoveSceneUp: (sceneId: string) => void;
+  onMoveSceneDown: (sceneId: string) => void;
+  onAddItem: (sourceType: SourceType) => void;
+  onDeleteItem: (itemId: string) => void;
+  onMoveItemUp: (itemId: string) => void;
+  onMoveItemDown: (itemId: string) => void;
+  onToggleItemVisibility: (itemId: string) => void;
+  onToggleItemLock: (itemId: string) => void;
 }
 
 export function BottomBar({
@@ -60,70 +67,60 @@ export function BottomBar({
   onToggleItemVisibility,
   onToggleItemLock,
 }: BottomBarProps) {
-  const activeScene = scenes.find((s) => s.id === activeSceneId)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [deleteItemDialogOpen, setDeleteItemDialogOpen] = useState(false)
-  const [addSourceDialogOpen, setAddSourceDialogOpen] = useState(false)
-  const sceneToDelete = activeScene
-  const itemToDelete = activeScene?.items.find(
-    (item) => item.id === selectedItemId,
-  )
+  const activeScene = scenes.find(s => s.id === activeSceneId);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteItemDialogOpen, setDeleteItemDialogOpen] = useState(false);
+  const [addSourceDialogOpen, setAddSourceDialogOpen] = useState(false);
+  const sceneToDelete = activeScene;
+  const itemToDelete = activeScene?.items.find(item => item.id === selectedItemId);
 
   return (
     <TooltipProvider>
       <div className="w-full h-full flex">
-        {/* 场景区域 - 30% */}
+        {/* Scene area - 30% */}
         <div className="w-[30%] flex flex-col border-r border-[#3e3e42] overflow-hidden">
           <div className="px-4 py-2 border-b border-[#3e3e42] text-center">
             <h3 className="text-sm font-semibold text-gray-300">场景</h3>
           </div>
           <div className="flex-1 overflow-y-auto p-3">
             <div className="space-y-2">
-              {scenes.map((scene) => (
+              {scenes.map(scene => (
                 <Tooltip key={scene.id}>
                   <TooltipTrigger asChild>
                     <div
                       role="button"
                       tabIndex={0}
                       onClick={() => onSceneSelect(scene.id)}
-                      onKeyDown={(e) => {
+                      onKeyDown={e => {
                         if (e.key === 'Enter' || e.key === ' ') {
-                          onSceneSelect(scene.id)
+                          onSceneSelect(scene.id);
                         }
                       }}
                       className={`
                         px-3 py-2 rounded cursor-pointer transition-colors text-sm select-none
-                        ${activeSceneId === scene.id
-                          ? 'bg-blue-500/80 text-white'
-                          : 'bg-[#1e1e1e] text-gray-300 hover:bg-[#3e3e42]'
+                        ${
+                          activeSceneId === scene.id
+                            ? 'bg-blue-500/80 text-white'
+                            : 'bg-[#1e1e1e] text-gray-300 hover:bg-[#3e3e42]'
                         }
                       `}
                     >
                       <div className="font-medium">{scene.name}</div>
-                      <div className="text-xs opacity-70">
-                        {scene.items.length} 个元素
-                      </div>
+                      <div className="text-xs opacity-70">{scene.items.length} 个元素</div>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent
-                    side="right"
-                    className="bg-[#2d2d30] border-[#3e3e42] text-white"
-                  >
+                  <TooltipContent side="right" className="bg-[#2d2d30] border-[#3e3e42] text-white">
                     <div className="space-y-1">
                       <div className="font-medium">{scene.name}</div>
-                      <div className="text-xs text-gray-400">
-                        ID: {scene.id}
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        {scene.items.length} 个元素
-                      </div>
+                      <div className="text-xs text-gray-400">ID: {scene.id}</div>
+                      <div className="text-xs text-gray-400">{scene.items.length} 个元素</div>
                     </div>
                   </TooltipContent>
                 </Tooltip>
               ))}
             </div>
           </div>
-          {/* 场景操作按钮 - 底部 */}
+          {/* Scene actions - footer */}
           <div className="border-t border-[#3e3e42] p-2 flex items-center justify-center gap-2 bg-[#1a1a1a]">
             <Tooltip>
               <TooltipTrigger asChild>
@@ -175,7 +172,10 @@ export function BottomBar({
                 <button
                   type="button"
                   onClick={() => activeSceneId && onMoveSceneDown(activeSceneId)}
-                  disabled={!activeSceneId || scenes.findIndex(s => s.id === activeSceneId) === scenes.length - 1}
+                  disabled={
+                    !activeSceneId ||
+                    scenes.findIndex(s => s.id === activeSceneId) === scenes.length - 1
+                  }
                   className="p-2 hover:bg-[#3e3e42] rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronDown className="w-4 h-4 text-gray-300" />
@@ -188,7 +188,7 @@ export function BottomBar({
           </div>
         </div>
 
-        {/* 源区域（属于当前场景）- 45% */}
+        {/* Sources area (within active scene) - 45% */}
         <div className="flex-1 flex flex-col border-r border-[#3e3e42] overflow-hidden">
           <div className="px-4 py-2 border-b border-[#3e3e42] text-center">
             <h3 className="text-sm font-semibold text-gray-300">
@@ -198,15 +198,16 @@ export function BottomBar({
           <div className="flex-1 overflow-y-auto p-3">
             {activeScene ? (
               <div className="space-y-2">
-                {activeScene.items.map((item) => (
+                {activeScene.items.map(item => (
                   <Tooltip key={item.id}>
                     <TooltipTrigger asChild>
                       <div
                         className={`
                           px-3 py-2 rounded transition-colors select-none flex items-center gap-2
-                          ${selectedItemId === item.id
-                            ? 'bg-blue-500/80 text-white'
-                            : 'bg-[#1e1e1e] text-gray-300 hover:bg-[#3e3e42]'
+                          ${
+                            selectedItemId === item.id
+                              ? 'bg-blue-500/80 text-white'
+                              : 'bg-[#1e1e1e] text-gray-300 hover:bg-[#3e3e42]'
                           }
                           ${item.visible === false ? 'opacity-50' : ''}
                         `}
@@ -215,9 +216,9 @@ export function BottomBar({
                           role="button"
                           tabIndex={0}
                           onClick={() => onSelectItem(item.id)}
-                          onKeyDown={(e) => {
+                          onKeyDown={e => {
                             if (e.key === 'Enter' || e.key === ' ') {
-                              onSelectItem(item.id)
+                              onSelectItem(item.id);
                             }
                           }}
                           className="flex-1 cursor-pointer"
@@ -225,13 +226,13 @@ export function BottomBar({
                           <div className="text-sm font-medium">{item.id}</div>
                           <div className="text-xs opacity-70">{item.type}</div>
                         </div>
-                        {/* 可见性和锁定按钮 */}
+                        {/* Visibility and lock buttons */}
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              onToggleItemVisibility(item.id)
+                            onClick={e => {
+                              e.stopPropagation();
+                              onToggleItemVisibility(item.id);
                             }}
                             className="p-1 hover:bg-black/20 rounded transition-colors"
                             title={item.visible === false ? '显示' : '隐藏'}
@@ -244,9 +245,9 @@ export function BottomBar({
                           </button>
                           <button
                             type="button"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              onToggleItemLock(item.id)
+                            onClick={e => {
+                              e.stopPropagation();
+                              onToggleItemLock(item.id);
                             }}
                             className="p-1 hover:bg-black/20 rounded transition-colors"
                             title={item.locked ? '解锁' : '锁定'}
@@ -266,11 +267,10 @@ export function BottomBar({
                     >
                       <div className="space-y-1">
                         <div className="font-medium">{item.id}</div>
+                        <div className="text-xs text-gray-400">类型: {item.type}</div>
                         <div className="text-xs text-gray-400">
-                          类型: {item.type}
-                        </div>
-                        <div className="text-xs text-gray-400">
-                          状态: {item.visible === false ? '隐藏' : '可见'} | {item.locked ? '锁定' : '未锁定'}
+                          状态: {item.visible === false ? '隐藏' : '可见'} |{' '}
+                          {item.locked ? '锁定' : '未锁定'}
                         </div>
                       </div>
                     </TooltipContent>
@@ -278,12 +278,10 @@ export function BottomBar({
                 ))}
               </div>
             ) : (
-              <div className="text-sm text-gray-500 text-center py-4">
-                请选择一个场景
-              </div>
+              <div className="text-sm text-gray-500 text-center py-4">请选择一个场景</div>
             )}
           </div>
-          {/* 源操作按钮 - 底部 */}
+          {/* Source actions - footer */}
           <div className="border-t border-[#3e3e42] p-2 flex items-center justify-center gap-2 bg-[#1a1a1a]">
             <Tooltip>
               <TooltipTrigger asChild>
@@ -324,7 +322,7 @@ export function BottomBar({
                   disabled={
                     !selectedItemId ||
                     !activeScene ||
-                    activeScene.items.findIndex((i) => i.id === selectedItemId) === 0
+                    activeScene.items.findIndex(i => i.id === selectedItemId) === 0
                   }
                   className="p-2 hover:bg-[#3e3e42] rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
@@ -343,8 +341,8 @@ export function BottomBar({
                   disabled={
                     !selectedItemId ||
                     !activeScene ||
-                    activeScene.items.findIndex((i) => i.id === selectedItemId) ===
-                    activeScene.items.length - 1
+                    activeScene.items.findIndex(i => i.id === selectedItemId) ===
+                      activeScene.items.length - 1
                   }
                   className="p-2 hover:bg-[#3e3e42] rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
@@ -358,7 +356,7 @@ export function BottomBar({
           </div>
         </div>
 
-        {/* 控制按钮区域 - 25% */}
+        {/* Control area - 25% */}
         <div className="w-[25%] flex flex-col overflow-hidden">
           <div className="px-4 py-2 border-b border-[#3e3e42] text-center">
             <h3 className="text-sm font-semibold text-gray-300">控制</h3>
@@ -369,9 +367,10 @@ export function BottomBar({
               onClick={onToggleStreaming}
               className={`
                 w-full px-4 py-3 rounded font-medium transition-all flex items-center justify-center gap-2
-                ${isStreaming
-                  ? 'bg-red-600 hover:bg-red-700 text-white'
-                  : 'bg-green-600 hover:bg-green-700 text-white'
+                ${
+                  isStreaming
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
                 }
               `}
             >
@@ -400,7 +399,7 @@ export function BottomBar({
         </div>
       </div>
 
-      {/* 删除场景确认对话框 */}
+      {/* Delete scene confirmation dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="shadow-2xl">
           <AlertDialogHeader>
@@ -418,7 +417,7 @@ export function BottomBar({
             <AlertDialogAction
               onClick={() => {
                 if (activeSceneId) {
-                  onDeleteScene(activeSceneId)
+                  onDeleteScene(activeSceneId);
                 }
               }}
             >
@@ -428,7 +427,7 @@ export function BottomBar({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* 删除源确认对话框 */}
+      {/* Delete source confirmation dialog */}
       <AlertDialog open={deleteItemDialogOpen} onOpenChange={setDeleteItemDialogOpen}>
         <AlertDialogContent className="shadow-2xl">
           <AlertDialogHeader>
@@ -436,9 +435,7 @@ export function BottomBar({
             <AlertDialogDescription>
               你确定要删除源 "{itemToDelete?.id}" 吗？
               <br />
-              <span className="text-yellow-500 font-medium">
-                此操作无法撤销。
-              </span>
+              <span className="text-yellow-500 font-medium">此操作无法撤销。</span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-3">
@@ -446,7 +443,7 @@ export function BottomBar({
             <AlertDialogAction
               onClick={() => {
                 if (selectedItemId) {
-                  onDeleteItem(selectedItemId)
+                  onDeleteItem(selectedItemId);
                 }
               }}
             >
@@ -456,12 +453,12 @@ export function BottomBar({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* 添加源选择对话框 */}
+      {/* Add-source selection dialog */}
       <AddSourceDialog
         open={addSourceDialogOpen}
         onOpenChange={setAddSourceDialogOpen}
         onSelectSourceType={onAddItem}
       />
     </TooltipProvider>
-  )
+  );
 }

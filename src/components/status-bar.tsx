@@ -1,11 +1,11 @@
-import { Cpu, HardDrive, Wifi } from 'lucide-react'
+import { Cpu, HardDrive, Wifi } from 'lucide-react';
 
 interface StatusBarProps {
-  fps?: number
-  cpuUsage?: number
-  isStreaming?: boolean
-  streamDuration?: string
-  outputResolution?: string
+  fps?: number;
+  cpuUsage?: number;
+  isStreaming?: boolean;
+  streamDuration?: string;
+  outputResolution?: string;
 }
 
 export function StatusBar({
@@ -17,7 +17,7 @@ export function StatusBar({
 }: StatusBarProps) {
   return (
     <div className="h-7 flex-shrink-0 bg-[#1e1e1e] border-t border-[#3e3e42] flex items-center px-4 text-xs text-gray-400">
-      {/* 左侧：推流状态 */}
+      {/* Left: streaming status */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5">
           <Wifi className="w-3.5 h-3.5" />
@@ -33,10 +33,10 @@ export function StatusBar({
         )}
       </div>
 
-      {/* 中间：间隔 */}
+      {/* Middle spacer */}
       <div className="flex-1" />
 
-      {/* 右侧：系统信息 */}
+      {/* Right: system info */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5">
           <span className="text-gray-500">输出:</span>
@@ -52,5 +52,5 @@ export function StatusBar({
         </div>
       </div>
     </div>
-  )
+  );
 }

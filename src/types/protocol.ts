@@ -23,8 +23,8 @@ export interface SceneItem {
   zIndex: number
   layout: Layout
   transform?: Transform
-  visible?: boolean // 可见性
-  locked?: boolean // 属性锁定
+  visible?: boolean // Visibility
+  locked?: boolean // Property locked
   // color type
   color?: string
   // text type
@@ -43,19 +43,19 @@ export interface SceneItem {
   refSceneId?: string
   // timer/clock type
   timerConfig?: {
-    mode: 'countdown' | 'countup' | 'clock' // 倒计时/正计时/时钟
-    duration?: number // 倒计时总时长（秒）
-    startValue?: number // 正计时起始值（秒）
-    format?: string // 显示格式，如 'HH:MM:SS' 或 'MM:SS'
-    running?: boolean // 是否运行中
-    currentTime?: number // 当前时间值（秒）
-    startTime?: number // 开始时间戳（用于精确计时）
-    pausedAt?: number // 暂停时的时间值
+    mode: 'countdown' | 'countup' | 'clock' // Countdown/Countup/Clock
+    duration?: number // Total countdown duration (seconds)
+    startValue?: number // Count-up start value (seconds)
+    format?: string // Display format, e.g. 'HH:MM:SS' or 'MM:SS'
+    running?: boolean // Whether running
+    currentTime?: number // Current time value (seconds)
+    startTime?: number // Start timestamp (for precision)
+    pausedAt?: number // Time value when paused
   }
   // livekit_stream type
   livekitStream?: {
-    participantIdentity: string // 参会者 ID
-    streamSource: 'camera' | 'screen_share' // 流来源：摄像头或屏幕共享
+    participantIdentity: string // Participant ID
+    streamSource: 'camera' | 'screen_share' // Stream source: camera or screen share
   }
 }
 
