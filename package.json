@@ -5,7 +5,7 @@
   "type": "module",
   "description": "An open-source live video mixer and streaming application based on LiveKit RTC",
   "author": "LiveMixer Team",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/livemixer/livemixer-web.git"
