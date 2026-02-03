@@ -1,70 +1,70 @@
-import type { ProtocolData } from '../types/protocol'
-import { ToolbarMenu } from './toolbar-menu'
+import githubIcon from '../assets/github_white.svg';
+import { ToolbarMenu } from './toolbar-menu';
 
 interface ToolbarProps {
-  data: ProtocolData
-  updateData: (data: ProtocolData) => void
+  data: ProtocolData;
+  updateData: (data: ProtocolData) => void;
 }
 
 export function Toolbar({ data, updateData }: ToolbarProps) {
   const handleImport = () => {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = '.json'
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0]
-      if (!file) return
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = e => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
 
-      const reader = new FileReader()
-      reader.onload = (event) => {
+      const reader = new FileReader();
+      reader.onload = event => {
         try {
-          const content = event.target?.result as string
-          const importedData = JSON.parse(content) as ProtocolData
+          const content = event.target?.result as string;
+          const importedData = JSON.parse(content) as ProtocolData;
 
           // 验证导入的数据结构
           if (!importedData.version || !importedData.scenes || !importedData.canvas) {
-            alert('无效的配置文件格式')
-            return
+            alert('无效的配置文件格式');
+            return;
           }
 
-          updateData(importedData)
-          console.log('成功导入配置')
+          updateData(importedData);
+          console.log('成功导入配置');
         } catch (error) {
-          console.error('导入失败:', error)
-          alert('导入失败：文件格式错误')
+          console.error('导入失败:', error);
+          alert('导入失败：文件格式错误');
         }
-      }
-      reader.readAsText(file)
-    }
-    input.click()
-  }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
 
   const handleExport = () => {
     try {
-      const jsonString = JSON.stringify(data, null, 2)
-      const blob = new Blob([jsonString], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `livemixer-config-${new Date().getTime()}.json`
-      a.click()
-      URL.revokeObjectURL(url)
-      console.log('成功导出配置')
+      const jsonString = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `livemixer-config-${new Date().getTime()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      console.log('成功导出配置');
     } catch (error) {
-      console.error('导出失败:', error)
-      alert('导出失败')
+      console.error('导出失败:', error);
+      alert('导出失败');
     }
-  }
+  };
 
   const handleCheckUpdate = () => {
-    console.log('检查更新')
+    console.log('检查更新');
     // TODO: 实现检查更新功能
-  }
+  };
 
   const handleAbout = () => {
-    console.log('关于')
+    console.log('关于');
     // TODO: 显示关于对话框
-  }
+  };
 
   return (
     <div className="flex items-center gap-4 flex-1">
@@ -117,6 +117,18 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
           { label: '关于', onClick: handleAbout },
         ]}
       />
+
+      {/* GitHub 链接 */}
+      <div className="flex-1" />
+      <a
+        href="https://github.com/livemixer/livemixer-web"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-300 hover:text-white hover:bg-[#3e3e42] transition-colors rounded"
+        title="访问 GitHub 仓库"
+      >
+        <img src={githubIcon} alt="GitHub" className="w-5 h-5" />
+      </a>
     </div>
-  )
+  );
 }
