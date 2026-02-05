@@ -16,19 +16,19 @@ export function StatusBar({
   outputResolution = '1920x1080',
 }: StatusBarProps) {
   return (
-    <div className="h-7 flex-shrink-0 bg-[#1e1e1e] border-t border-[#3e3e42] flex items-center px-4 text-xs text-gray-400">
+    <div className="h-8 flex-shrink-0 bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-950 border-t border-neutral-700/50 flex items-center px-4 text-xs text-neutral-400">
       {/* Left: streaming status */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5">
           <Wifi className="w-3.5 h-3.5" />
-          <span className={isStreaming ? 'text-green-500' : 'text-gray-500'}>
+          <span className={isStreaming ? 'text-success-500 font-medium' : 'text-neutral-500'}>
             {isStreaming ? '直播中' : '未直播'}
           </span>
         </div>
         {isStreaming && (
           <div className="flex items-center gap-1.5">
-            <span className="text-gray-500">时长:</span>
-            <span className="font-mono">{streamDuration}</span>
+            <span className="text-neutral-500">时长:</span>
+            <span className="font-mono text-neutral-300">{streamDuration}</span>
           </div>
         )}
       </div>
@@ -39,16 +39,16 @@ export function StatusBar({
       {/* Right: system info */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5">
-          <span className="text-gray-500">输出:</span>
-          <span className="font-mono">{outputResolution}</span>
+          <span className="text-neutral-500">输出:</span>
+          <span className="font-mono text-neutral-300">{outputResolution}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <Cpu className="w-3.5 h-3.5" />
-          <span className="font-mono">{cpuUsage.toFixed(1)}%</span>
+          <span className="font-mono text-neutral-300">{cpuUsage.toFixed(1)}%</span>
         </div>
         <div className="flex items-center gap-1.5">
           <HardDrive className="w-3.5 h-3.5" />
-          <span className="font-mono">{fps} FPS</span>
+          <span className="font-mono text-neutral-300">{fps} FPS</span>
         </div>
       </div>
     </div>

@@ -1,5 +1,3 @@
-import type Konva from 'konva';
-
 export type PluginControlType = 'number' | 'string' | 'color' | 'boolean' | 'select' | 'image' | 'video' | 'group';
 
 export interface PropsSchemaItem {

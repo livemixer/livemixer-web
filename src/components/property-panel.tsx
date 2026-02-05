@@ -56,14 +56,14 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
   };
 
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="p-4 border-b border-[#3e3e42] bg-[#2d2d30]">
-        <h3 className="text-sm font-semibold text-gray-200">属性</h3>
+    <div className="h-full overflow-y-auto bg-gradient-to-b from-neutral-900 to-neutral-850">
+      <div className="p-4 border-b border-neutral-700/50 bg-neutral-900/80 sticky top-0 backdrop-blur-sm">
+        <h3 className="text-sm font-semibold text-white">属性</h3>
       </div>
 
       {/* Locked item notice */}
       {isLocked && (
-        <div className="mx-4 mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2 text-sm text-red-400">
+        <div className="mx-4 mt-4 p-3 bg-error-500/10 border border-error-500/30 rounded-lg flex items-center gap-2 text-sm text-error-400">
           <Lock className="w-4 h-4" />
           <span>该元素已锁定，无法编辑属性</span>
         </div>
@@ -74,14 +74,14 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
         <div className="space-y-4">
           <div>
             <Label className="block mb-2">元素 ID</Label>
-            <div className="text-sm text-gray-300 bg-[#1e1e1e] px-3 py-2 rounded border border-[#3e3e42]">
+            <div className="text-sm text-neutral-300 bg-neutral-800/50 px-3 py-2 rounded-lg border border-neutral-700/50">
               {localItem.id}
             </div>
           </div>
 
           <div>
             <Label className="block mb-2">类型</Label>
-            <div className="text-sm text-gray-300 bg-[#1e1e1e] px-3 py-2 rounded border border-[#3e3e42] capitalize">
+            <div className="text-sm text-neutral-300 bg-neutral-800/50 px-3 py-2 rounded-lg border border-neutral-700/50 capitalize">
               {localItem.type}
             </div>
           </div>
