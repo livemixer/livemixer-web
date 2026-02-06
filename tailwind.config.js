@@ -2,7 +2,7 @@
 export default {
   content: [
     './index.html',
-    './src/**/*.{js,ts,jsx,tsx,vue}', // 检查此路径是否匹配你的文件
+    './src/**/*.{js,ts,jsx,tsx,vue}',
   ],
   theme: { extend: {} },
   plugins: [],
