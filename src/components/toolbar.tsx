@@ -122,7 +122,7 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
         ]}
       />
 
-      {/* GitHub 链接 */}
+      {/* GitHub link */}
       <div className="flex-1" />
       <a
         href="https://github.com/livemixer/livemixer-web"
