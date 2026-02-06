@@ -1,3 +1,4 @@
+import githubIcon from '../assets/github_white.svg';
 import type { ProtocolData } from '../types/protocol';
 import { ToolbarMenu } from './toolbar-menu';
 
@@ -58,12 +59,15 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
 
   const handleCheckUpdate = () => {
     console.log('检查更新');
+
     // TODO: Implement update check
+
   };
 
   const handleAbout = () => {
     console.log('关于');
     // TODO: Show About dialog
+
   };
 
   return (
@@ -117,6 +121,18 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
           { label: '关于', onClick: handleAbout },
         ]}
       />
+
+      {/* GitHub link */}
+      <div className="flex-1" />
+      <a
+        href="https://github.com/livemixer/livemixer-web"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-300 hover:text-white hover:bg-[#3e3e42] transition-colors rounded"
+        title="访问 GitHub 仓库"
+      >
+        <img src={githubIcon} alt="GitHub" className="w-5 h-5" />
+      </a>
     </div>
   );
 }

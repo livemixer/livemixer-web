@@ -8,9 +8,8 @@ import { LiveKitStreamItem } from './livekit-stream-item';
 
 // Plugin renderer: isolates hooks context to avoid Rules of Hooks violations
 const PluginRenderer = memo(
-  ({ plugin, commonProps, item }: { plugin: unknown; commonProps: unknown; item: SceneItem }) => {
-    const renderFn = (plugin as { render?: (props: unknown) => React.ReactNode })?.render;
-    return renderFn ? renderFn({ ...commonProps, item }) : null;
+  ({ plugin, commonProps, item }: { plugin: any; commonProps: any; item: SceneItem }) => {
+    return plugin.render({ ...commonProps, item });
   },
 );
 
@@ -35,29 +34,18 @@ function formatTime(seconds: number, format: string): string {
   return `${pad(minutes)}:${pad(secs)}`;
 }
 
-// Format clock display (current time)
-function formatClock(format: string): string {
-  const now = new Date();
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
-  const seconds = now.getSeconds();
-
-  const pad = (num: number) => String(num).padStart(2, '0');
-
-  if (format === 'HH:MM:SS') {
-    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-  }
-  if (format === 'HH:MM') {
-    return `${pad(hours)}:${pad(minutes)}`;
-  }
-  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-}
+// Format current time
+// Reset scale
+const now = new Date();
+const hours = now.getHours();
+const minutes = now.getMinutes();
+const seconds = now.getSeconds();
 
 // Image component: loads and renders images
-const ImageItem = memo(({ item, commonProps }: { item: SceneItem; commonProps: unknown }) => {
+const ImageItem = memo(({ item, commonProps }: { item: SceneItem; commonProps: any }) => {
   const [image] = useImage(item.url || '', 'anonymous');
 
-  const { ref: nodeRef, ...restProps } = commonProps as { ref: unknown };
+  const { ref: nodeRef, ...restProps } = commonProps;
 
   return (
     <KonvaImage
