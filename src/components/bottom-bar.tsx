@@ -79,7 +79,7 @@ export function BottomBar({
       <div className="w-full h-full flex bg-linear-to-r from-neutral-900 via-neutral-850 to-neutral-900">
         {/* Scene area - 30% */}
         <div className="w-[30%] flex flex-col border-r border-neutral-700/30 overflow-hidden">
-          <div className="px-4 py-3 border-b border-neutral-700/30 text-center bg-neutral-900/80 sticky top-0">
+          <div className="px-4 py-2 border-b border-neutral-700/30 text-center bg-neutral-900/80 sticky top-0">
             <h3 className="text-sm font-semibold text-white">场景</h3>
           </div>
           <div className="flex-1 overflow-y-auto p-3">
@@ -91,7 +91,7 @@ export function BottomBar({
                       type="button"
                       onClick={() => onSceneSelect(scene.id)}
                       className={`
-                        px-3 py-2 rounded-lg cursor-pointer transition-all text-sm select-none border
+                          w-full px-3 py-2 rounded-lg cursor-pointer transition-all text-sm select-none border text-left
                         ${
                           activeSceneId === scene.id
                             ? 'bg-gradient-to-r from-primary-600 to-primary-500 text-white border-primary-400 shadow-lg'
