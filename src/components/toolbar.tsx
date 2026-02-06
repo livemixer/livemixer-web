@@ -1,4 +1,5 @@
 import githubIcon from '../assets/github_white.svg';
+import type { ProtocolData } from '../types/protocol';
 import { ToolbarMenu } from './toolbar-menu';
 
 interface ToolbarProps {
@@ -21,7 +22,7 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
           const content = event.target?.result as string;
           const importedData = JSON.parse(content) as ProtocolData;
 
-          // 验证导入的数据结构
+          // Validate imported data structure
           if (!importedData.version || !importedData.scenes || !importedData.canvas) {
             alert('无效的配置文件格式');
             return;
@@ -58,12 +59,15 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
 
   const handleCheckUpdate = () => {
     console.log('检查更新');
-    // TODO: 实现检查更新功能
+
+    // TODO: Implement update check
+
   };
 
   const handleAbout = () => {
     console.log('关于');
-    // TODO: 显示关于对话框
+    // TODO: Show About dialog
+
   };
 
   return (

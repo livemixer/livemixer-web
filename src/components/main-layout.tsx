@@ -1,14 +1,14 @@
-import type { ReactNode } from 'react'
+import type { ReactNode } from 'react';
 
 interface MainLayoutProps {
-  logo?: ReactNode
-  toolbar?: ReactNode
-  userSection?: ReactNode
-  canvas?: ReactNode
-  leftSidebar?: ReactNode
-  rightSidebar?: ReactNode
-  bottomBar?: ReactNode
-  statusBar?: ReactNode
+  logo?: ReactNode;
+  toolbar?: ReactNode;
+  userSection?: ReactNode;
+  canvas?: ReactNode;
+  leftSidebar?: ReactNode;
+  rightSidebar?: ReactNode;
+  bottomBar?: ReactNode;
+  statusBar?: ReactNode;
 }
 
 export function MainLayout({
@@ -23,33 +23,33 @@ export function MainLayout({
 }: MainLayoutProps) {
   return (
     <div className="flex flex-col w-full h-full bg-[#1e1e1e] text-white overflow-hidden">
-      {/* 顶部工具栏 */}
+      {/* Top toolbar */}
       <div className="h-12 flex-shrink-0 bg-[#2d2d30] border-b border-[#3e3e42] flex items-center px-4 gap-4">
-        {/* Logo 区域 */}
+        {/* Logo area */}
         {logo && <div className="flex-shrink-0">{logo}</div>}
         <div className="flex-1">{toolbar}</div>
-        {/* 用户信息区域 */}
+        {/* User info area */}
         {userSection && <div className="flex-shrink-0">{userSection}</div>}
       </div>
 
-      {/* 主内容区域 */}
+      {/* Main content area */}
       <div className="flex-1 flex overflow-hidden min-h-0">
-        {/* 左侧预留区域 */}
+        {/* Left reserved area */}
         {leftSidebar && (
           <div className="w-80 flex-shrink-0 bg-[#252526] border-r border-[#3e3e42] flex flex-col overflow-hidden">
             {leftSidebar}
           </div>
         )}
 
-        {/* 中间画布区域 */}
+        {/* Center canvas area */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {/* 画布区域 */}
+          {/* Canvas region */}
           <div className="flex-1 bg-[#1e1e1e] flex items-center justify-center overflow-hidden min-h-0">
             {canvas}
           </div>
         </div>
 
-        {/* 右侧边栏 */}
+        {/* Right sidebar */}
         {rightSidebar && (
           <div className="w-80 flex-shrink-0 bg-[#252526] border-l border-[#3e3e42] flex flex-col overflow-hidden">
             {rightSidebar}
@@ -57,15 +57,15 @@ export function MainLayout({
         )}
       </div>
 
-      {/* 底部区域 */}
+      {/* Bottom area */}
       {bottomBar && (
         <div className="h-56 flex-shrink-0 bg-[#2d2d30] border-t border-[#3e3e42] flex overflow-hidden">
           {bottomBar}
         </div>
       )}
 
-      {/* 状态栏 */}
+      {/* Status bar */}
       {statusBar && statusBar}
     </div>
-  )
+  );
 }

@@ -1,138 +1,138 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
-// 非敏感配置接口（可以持久化到 localStorage）
+// Non-sensitive settings interface (safe to persist to localStorage)
 interface PersistentSettings {
-    // 常规设置
-    language: string
-    theme: string
+  // General settings
+  language: string
+  theme: string
 
-    // 直播设置（非敏感部分）
-    streamService: string
-    livekitUrl: string
+  // Streaming settings (non-sensitive)
+  streamService: string
+  livekitUrl: string
 
-    // 拉流设置（非敏感部分）
-    livekitPullUrl: string
+  // Pull settings (non-sensitive)
+  livekitPullUrl: string
 
-    // 输出设置
-    videoBitrate: string
-    audioBitrate: string
-    videoEncoder: string
-    audioEncoder: string
+  // Output settings
+  videoBitrate: string
+  audioBitrate: string
+  videoEncoder: string
+  audioEncoder: string
 
-    // 音频设置
-    audioDevice: string
-    sampleRate: string
-    channels: string
+  // Audio settings
+  audioDevice: string
+  sampleRate: string
+  channels: string
 
-    // 视频设置
-    baseResolution: string
-    outputResolution: string
-    fps: string
-    scaleFilter: string
-    customWidth?: string
-    customHeight?: string
+  // Video settings
+  baseResolution: string
+  outputResolution: string
+  fps: string
+  scaleFilter: string
+  customWidth?: string
+  customHeight?: string
 }
 
-// 敏感配置接口（仅存储在内存中，不持久化）
+// Sensitive settings interface (in-memory only, not persisted)
 interface SensitiveSettings {
-    livekitToken: string
-    livekitPullToken: string
+  livekitToken: string
+  livekitPullToken: string
 }
 
-// 完整设置状态接口
+// Full settings state interface
 interface SettingsState extends PersistentSettings, SensitiveSettings {
-    // 更新持久化配置的方法
-    updatePersistentSettings: (settings: Partial<PersistentSettings>) => void
+  // Update persisted settings
+  updatePersistentSettings: (settings: Partial<PersistentSettings>) => void
 
-    // 更新敏感配置的方法
-    updateSensitiveSettings: (settings: Partial<SensitiveSettings>) => void
+  // Update sensitive settings
+  updateSensitiveSettings: (settings: Partial<SensitiveSettings>) => void
 
-    // 重置所有设置
-    resetSettings: () => void
+  // Reset all settings
+  resetSettings: () => void
 }
 
-// 默认配置
+// Default configuration
 const defaultPersistentSettings: PersistentSettings = {
-    // 常规设置
-    language: 'zh-CN',
-    theme: 'dark',
+  // General settings
+  language: 'zh-CN',
+  theme: 'dark',
 
-    // 直播设置
-    streamService: 'custom',
-    livekitUrl: '',
+  // Streaming settings
+  streamService: 'custom',
+  livekitUrl: '',
 
-    // 拉流设置
-    livekitPullUrl: '',
+  // Pull settings
+  livekitPullUrl: '',
 
-    // 输出设置
-    videoBitrate: '5000',
-    audioBitrate: '48000',
-    videoEncoder: 'vp8',
-    audioEncoder: 'opus',
+  // Output settings
+  videoBitrate: '5000',
+  audioBitrate: '48000',
+  videoEncoder: 'vp8',
+  audioEncoder: 'opus',
 
-    // 音频设置
-    audioDevice: 'default',
-    sampleRate: '48000',
-    channels: 'stereo',
+  // Audio settings
+  audioDevice: 'default',
+  sampleRate: '48000',
+  channels: 'stereo',
 
-    // 视频设置
-    baseResolution: '1920x1080',
-    outputResolution: '1920x1080',
-    fps: '30',
-    scaleFilter: 'bilinear',
+  // Video settings
+  baseResolution: '1920x1080',
+  outputResolution: '1920x1080',
+  fps: '30',
+  scaleFilter: 'bilinear',
 }
 
 const defaultSensitiveSettings: SensitiveSettings = {
-    livekitToken: '',
-    livekitPullToken: '',
+  livekitToken: '',
+  livekitPullToken: '',
 }
 
-// 创建 Zustand store
+// Create Zustand store
 export const useSettingsStore = create<SettingsState>()(
-    persist(
-        (set) => ({
-            // 初始状态：合并持久化配置和敏感配置
-            ...defaultPersistentSettings,
-            ...defaultSensitiveSettings,
+  persist(
+    (set) => ({
+      // Initial state: merge persisted and sensitive settings
+      ...defaultPersistentSettings,
+      ...defaultSensitiveSettings,
 
-            // 更新持久化配置（会自动保存到 localStorage）
-            updatePersistentSettings: (settings) =>
-                set((state) => ({
-                    ...state,
-                    ...settings,
-                })),
+      // Update persisted settings (auto-saved to localStorage)
+      updatePersistentSettings: (settings) =>
+        set((state) => ({
+          ...state,
+          ...settings,
+        })),
 
-            // 更新敏感配置（仅更新内存，不持久化）
-            updateSensitiveSettings: (settings) =>
-                set((state) => ({
-                    ...state,
-                    ...settings,
-                })),
+      // Update sensitive settings (in-memory only, not persisted)
+      updateSensitiveSettings: (settings) =>
+        set((state) => ({
+          ...state,
+          ...settings,
+        })),
 
-            // 重置所有设置
-            resetSettings: () =>
-                set({
-                    ...defaultPersistentSettings,
-                    ...defaultSensitiveSettings,
-                }),
+      // Reset all settings
+      resetSettings: () =>
+        set({
+          ...defaultPersistentSettings,
+          ...defaultSensitiveSettings,
         }),
-        {
-            name: 'livemixer-settings', // localStorage key
-            storage: createJSONStorage(() => localStorage),
+    }),
+    {
+      name: 'livemixer-settings', // localStorage key
+      storage: createJSONStorage(() => localStorage),
 
-            // 仅持久化非敏感配置
-            partialize: (state) => {
-                const {
-                    livekitToken: _livekitToken,
-                    livekitPullToken: _livekitPullToken,
-                    updatePersistentSettings: _updatePersistentSettings,
-                    updateSensitiveSettings: _updateSensitiveSettings,
-                    resetSettings: _resetSettings,
-                    ...persistentState
-                } = state
-                return persistentState
-            },
-        },
-    ),
+      // Persist only non-sensitive settings
+      partialize: (state) => {
+        const {
+          livekitToken: _livekitToken,
+          livekitPullToken: _livekitPullToken,
+          updatePersistentSettings: _updatePersistentSettings,
+          updateSensitiveSettings: _updateSensitiveSettings,
+          resetSettings: _resetSettings,
+          ...persistentState
+        } = state
+        return persistentState
+      },
+    },
+  ),
 )
