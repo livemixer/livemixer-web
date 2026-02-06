@@ -48,25 +48,25 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[600px] p-0 flex flex-col bg-[#1e1e1e]">
-        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0 bg-white rounded-t-lg relative">
+      <DialogContent className="max-w-4xl h-[600px] p-0 flex flex-col bg-gradient-to-b from-neutral-850 to-neutral-900 border-neutral-700/50">
+        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0 bg-gradient-to-r from-primary-600 to-primary-500 rounded-t-xl relative">
           <div className="flex items-center gap-3">
             <img src={lmsLogo} alt="Logo" className="w-8 h-8" />
-            <DialogTitle className="text-gray-900">设置</DialogTitle>
+            <DialogTitle className="text-white">设置</DialogTitle>
           </div>
         </DialogHeader>
 
         <div className="flex flex-1 min-h-0">
           {/* Left sidebar */}
-          <div className="w-48 border-r border-[#3e3e42] bg-[#1a1a1a] flex-shrink-0">
+          <div className="w-48 border-r border-neutral-700/30 bg-neutral-900/50 flex-shrink-0">
             <div className="flex flex-col p-2">
               <button
                 type="button"
                 onClick={() => setActiveTab('general')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
+                className={`px-4 py-2 text-left rounded-lg text-sm transition-all ${
                   activeTab === 'general'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                    ? 'bg-primary-600/20 text-primary-400 border border-primary-500/30'
+                    : 'text-neutral-400 hover:text-white hover:bg-neutral-700/30'
                 }`}
               >
                 常规
@@ -74,10 +74,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               <button
                 type="button"
                 onClick={() => setActiveTab('streaming')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
+                className={`px-4 py-2 text-left rounded-lg text-sm transition-all ${
                   activeTab === 'streaming'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                    ? 'bg-primary-600/20 text-primary-400 border border-primary-500/30'
+                    : 'text-neutral-400 hover:text-white hover:bg-neutral-700/30'
                 }`}
               >
                 直播（推流）

@@ -4,17 +4,17 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu'
+} from './ui/dropdown-menu';
 
 interface MenuItem {
-  label?: string
-  onClick?: () => void
-  divider?: boolean
+  label?: string;
+  onClick?: () => void;
+  divider?: boolean;
 }
 
 interface ToolbarMenuProps {
-  label: string
-  items: MenuItem[]
+  label: string;
+  items: MenuItem[];
 }
 
 export function ToolbarMenu({ label, items }: ToolbarMenuProps) {
@@ -23,27 +23,24 @@ export function ToolbarMenu({ label, items }: ToolbarMenuProps) {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="px-3 py-1.5 text-sm text-gray-300 hover:bg-[#3e3e42] hover:text-white transition-colors data-[state=open]:bg-[#3e3e42] data-[state=open]:text-white"
+          className="px-3 py-1.5 text-sm text-neutral-300 hover:bg-neutral-700/50 hover:text-white transition-all rounded-md data-[state=open]:bg-neutral-700/50 data-[state=open]:text-white"
         >
           {label}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="min-w-[180px] bg-[#2d2d30] border-[#3e3e42] rounded-md shadow-xl"
+        className="min-w-[180px] bg-neutral-800/95 border-neutral-700/50 rounded-lg shadow-xl"
         align="start"
         sideOffset={2}
       >
         {items.map((item, index) =>
           item.divider ? (
-            <DropdownMenuSeparator
-              key={`divider-${index}`}
-              className="bg-[#3e3e42]"
-            />
+            <DropdownMenuSeparator key={`divider-${index}`} className="bg-neutral-700/30" />
           ) : (
             <DropdownMenuItem
               key={item.label || `item-${index}`}
               onClick={item.onClick}
-              className="text-sm text-gray-300 hover:bg-[#3e3e42] hover:text-white focus:bg-[#3e3e42] focus:text-white cursor-pointer"
+              className="text-sm text-neutral-300 hover:bg-neutral-700/50 hover:text-white focus:bg-neutral-700/50 focus:text-white cursor-pointer"
             >
               {item.label}
             </DropdownMenuItem>
@@ -51,5 +48,5 @@ export function ToolbarMenu({ label, items }: ToolbarMenuProps) {
         )}
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

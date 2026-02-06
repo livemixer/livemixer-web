@@ -47,7 +47,7 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `livemixer-config-${new Date().getTime()}.json`;
+      a.download = `livemixer-config-${Date.now()}.json`;
       a.click();
       URL.revokeObjectURL(url);
       console.log('成功导出配置');
