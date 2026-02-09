@@ -6,40 +6,44 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignoreUnknown": false
+    "ignoreUnknown": true,
+    "includes": [
+      "**/*.js",
+      "**/*.jsx",
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.json",
+      "!dist",
+      "!build",
+      "!node_modules"
+    ]
   },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
-    "indentWidth": 2
+    "indentWidth": 2,
+    "lineWidth": 100
   },
   "linter": {
     "enabled": true,
     "rules": {
       "recommended": true,
+      "a11y": {
+        "useAltText": "error"
+      },
       "style": {
-        "noNonNullAssertion": "off"
+        "useSelfClosingElements": "error"
       },
       "suspicious": {
-        "noUnknownAtRules": "off"
-      },
-      "complexity": {
-        "noUselessFragments": "warn"
+        "noExplicitAny": "off"
       }
     }
   },
   "javascript": {
     "formatter": {
       "quoteStyle": "single",
-      "semicolons": "asNeeded"
-    }
-  },
-  "assist": {
-    "enabled": true,
-    "actions": {
-      "source": {
-        "organizeImports": "on"
-      }
+      "jsxQuoteStyle": "double",
+      "trailingCommas": "all"
     }
   }
 }
