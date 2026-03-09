@@ -1,5 +1,6 @@
 import { Link as LinkIcon, Lock, Pause, Play, RotateCcw, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useI18n } from '../hooks/useI18n';
 import { pluginRegistry } from '../services/plugin-registry';
 import type { SceneItem } from '../types/protocol';
 import { Input } from './ui/input';
@@ -12,6 +13,7 @@ interface PropertyPanelProps {
 }
 
 export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps) {
+  const { t } = useI18n();
   const [localItem, setLocalItem] = useState<SceneItem | null>(selectedItem);
   const [urlInputMethod, setUrlInputMethod] = useState<'file' | 'url'>('url');
 
@@ -23,7 +25,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
   if (!selectedItem || !localItem) {
     return (
       <div className="h-full p-4 flex items-center justify-center text-gray-500 text-sm">
-        未选中任何元素
+        {t('property.noSelection')}
       </div>
     );
   }
@@ -58,14 +60,14 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
   return (
     <div className="h-full overflow-y-auto bg-gradient-to-b from-neutral-900 to-neutral-850">
       <div className="p-4 border-b border-neutral-700/50 bg-neutral-900/80 sticky top-0 backdrop-blur-sm">
-        <h3 className="text-sm font-semibold text-white">属性</h3>
+        <h3 className="text-sm font-semibold text-white">{t('property.title')}</h3>
       </div>
 
       {/* Locked item notice */}
       {isLocked && (
         <div className="mx-4 mt-4 p-3 bg-error-500/10 border border-error-500/30 rounded-lg flex items-center gap-2 text-sm text-error-400">
           <Lock className="w-4 h-4" />
-          <span>该元素已锁定，无法编辑属性</span>
+          <span>{t('property.locked')}</span>
         </div>
       )}
 
@@ -73,14 +75,14 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
         {/* Basic info */}
         <div className="space-y-4">
           <div>
-            <Label className="block mb-2">元素 ID</Label>
+            <Label className="block mb-2">{t('property.elementId')}</Label>
             <div className="text-sm text-neutral-300 bg-neutral-800/50 px-3 py-2 rounded-lg border border-neutral-700/50">
               {localItem.id}
             </div>
           </div>
 
           <div>
-            <Label className="block mb-2">类型</Label>
+            <Label className="block mb-2">{t('property.type')}</Label>
             <div className="text-sm text-neutral-300 bg-neutral-800/50 px-3 py-2 rounded-lg border border-neutral-700/50 capitalize">
               {localItem.type}
             </div>
@@ -88,7 +90,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
 
           <div>
             <Label htmlFor="zIndex" className="block mb-2">
-              层级 (Z-Index)
+              {t('property.zIndex')}
             </Label>
             <Input
               id="zIndex"
@@ -104,13 +106,13 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
         <div className="border-t border-[#3e3e42] pt-4">
           <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
             <span className="w-1 h-4 bg-blue-500 rounded"></span>
-            位置和大小
+            {t('property.positionAndSize')}
           </h4>
 
           <div className="grid grid-cols-2 gap-x-3 gap-y-4">
             <div>
               <Label htmlFor="x" className="block mb-2">
-                X 坐标
+                {t('property.x')}
               </Label>
               <Input
                 id="x"
@@ -129,7 +131,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
             </div>
             <div>
               <Label htmlFor="y" className="block mb-2">
-                Y 坐标
+                {t('property.y')}
               </Label>
               <Input
                 id="y"
@@ -148,7 +150,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
             </div>
             <div>
               <Label htmlFor="width" className="block mb-2">
-                宽度
+                {t('property.width')}
               </Label>
               <Input
                 id="width"
@@ -167,7 +169,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
             </div>
             <div>
               <Label htmlFor="height" className="block mb-2">
-                高度
+                {t('property.height')}
               </Label>
               <Input
                 id="height"
@@ -191,14 +193,14 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
         <div className="border-t border-[#3e3e42] pt-4">
           <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
             <span className="w-1 h-4 bg-blue-500 rounded"></span>
-            变换
+            {t('property.transform')}
           </h4>
 
           <div className="space-y-5">
             <div>
               <div className="flex justify-between items-center mb-3">
                 <Label htmlFor="opacity" className="text-xs">
-                  透明度
+                  {t('property.opacity')}
                 </Label>
                 <span className="text-xs text-gray-300 font-mono bg-[#1e1e1e] px-2 py-1 rounded border border-[#3e3e42]">
                   {((localItem.transform?.opacity ?? 1) * 100).toFixed(0)}%
@@ -218,7 +220,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
             <div>
               <div className="flex justify-between items-center mb-3">
                 <Label htmlFor="rotation" className="text-xs">
-                  旋转角度
+                  {t('property.rotation')}
                 </Label>
                 <span className="text-xs text-gray-300 font-mono bg-[#1e1e1e] px-2 py-1 rounded border border-[#3e3e42]">
                   {Math.round(localItem.transform?.rotation ?? 0)}°
@@ -238,26 +240,26 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
             {(localItem.type === 'window' ||
               localItem.type === 'scene_ref' ||
               localItem.type === 'color') && (
-              <div>
-                <Label htmlFor="borderRadius" className="block mb-2">
-                  圆角半径
-                </Label>
-                <Input
-                  id="borderRadius"
-                  type="number"
-                  value={localItem.transform?.borderRadius ?? 0}
-                  onChange={e =>
-                    updateProperty({
-                      transform: {
-                        borderRadius: Number.parseFloat(e.target.value) || 0,
-                      },
-                    })
-                  }
-                  placeholder="0"
-                  disabled={isLocked}
-                />
-              </div>
-            )}
+                <div>
+                  <Label htmlFor="borderRadius" className="block mb-2">
+                    {t('property.borderRadius')}
+                  </Label>
+                  <Input
+                    id="borderRadius"
+                    type="number"
+                    value={localItem.transform?.borderRadius ?? 0}
+                    onChange={e =>
+                      updateProperty({
+                        transform: {
+                          borderRadius: Number.parseFloat(e.target.value) || 0,
+                        },
+                      })
+                    }
+                    placeholder="0"
+                    disabled={isLocked}
+                  />
+                </div>
+              )}
           </div>
         </div>
 
@@ -276,7 +278,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
               <div className="border-t border-[#3e3e42] pt-4">
                 <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
                   <span className="w-1 h-4 bg-purple-500 rounded"></span>
-                  插件属性 ({plugin.name})
+                  {t('property.pluginProps', { name: plugin.name })}
                 </h4>
                 <div className="space-y-4">
                   {Object.entries(plugin.propsSchema).map(([key, schema]) => {
@@ -284,7 +286,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
                       return (
                         <div key={key}>
                           <div className="flex justify-between items-center mb-3">
-                            <Label className="text-xs">{schema.label}</Label>
+                            <Label className="text-xs">{schema.labelKey ? t(schema.labelKey) : schema.label}</Label>
                             <span className="text-xs text-gray-300 font-mono bg-[#1e1e1e] px-2 py-1 rounded border border-[#3e3e42]">
                               {localItem[key as keyof SceneItem] || schema.defaultValue}
                             </span>
@@ -305,7 +307,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
                     if (schema.type === 'image' || schema.type === 'string') {
                       return (
                         <div key={key}>
-                          <Label className="block mb-2">{schema.label}</Label>
+                          <Label className="block mb-2">{schema.labelKey ? t(schema.labelKey) : schema.label}</Label>
                           <Input
                             type="text"
                             value={localItem[key as keyof SceneItem] || schema.defaultValue}
@@ -330,7 +332,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
           <div className="border-t border-[#3e3e42] pt-4">
             <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-blue-500 rounded"></span>
-              颜色
+              {t('property.color')}
             </h4>
             <div className="flex items-center gap-2">
               <Input
@@ -357,19 +359,19 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
           <div className="border-t border-[#3e3e42] pt-4">
             <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-blue-500 rounded"></span>
-              文本
+              {t('property.text')}
             </h4>
 
             <div className="space-y-4">
               <div>
                 <Label htmlFor="content" className="block mb-2">
-                  内容
+                  {t('property.content')}
                 </Label>
                 <textarea
                   id="content"
                   value={localItem.content || ''}
                   onChange={e => updateProperty({ content: e.target.value })}
-                  placeholder="输入文本内容"
+                  placeholder={t('property.contentPlaceholder')}
                   className="flex min-h-[80px] w-full rounded-md border border-[#3e3e42] bg-[#1e1e1e] px-3 py-2 text-sm text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
                   rows={3}
                   disabled={isLocked}
@@ -378,7 +380,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
 
               <div>
                 <Label htmlFor="fontSize" className="block mb-2">
-                  字号大小
+                  {t('property.fontSize')}
                 </Label>
                 <Input
                   id="fontSize"
@@ -399,7 +401,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
 
               <div>
                 <Label htmlFor="textColor" className="block mb-2">
-                  文字颜色
+                  {t('property.textColor')}
                 </Label>
                 <div className="flex items-center gap-2">
                   <Input
@@ -442,17 +444,17 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
           <div className="border-t border-[#3e3e42] pt-4">
             <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-blue-500 rounded"></span>
-              媒体源
+              {t('property.mediaSource')}
             </h4>
             <Label htmlFor="source" className="block mb-2">
-              源地址
+              {t('property.sourceUrl')}
             </Label>
             <Input
               id="source"
               type="text"
               value={localItem.source || ''}
               onChange={e => updateProperty({ source: e.target.value })}
-              placeholder="输入媒体源"
+              placeholder={t('property.sourceUrlPlaceholder')}
               disabled={isLocked}
             />
           </div>
@@ -463,7 +465,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
           <div className="border-t border-[#3e3e42] pt-4">
             <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-blue-500 rounded"></span>
-              {localItem.type === 'timer' ? 'Timer controls' : 'Clock settings'}
+              {localItem.type === 'timer' ? t('property.timerControls') : t('property.clockSettings')}
             </h4>
 
             {localItem.type === 'timer' && localItem.timerConfig && (
@@ -540,12 +542,12 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
                     {localItem.timerConfig.running ? (
                       <>
                         <Pause className="w-4 h-4" />
-                        <span>暂停</span>
+                        <span>{t('property.pause')}</span>
                       </>
                     ) : (
                       <>
                         <Play className="w-4 h-4" />
-                        <span>启动</span>
+                        <span>{t('property.start')}</span>
                       </>
                     )}
                   </button>
@@ -569,15 +571,15 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
                     className="px-4 py-2 bg-[#1e1e1e] hover:bg-[#2d2d30] disabled:cursor-not-allowed text-white rounded-lg transition-colors border border-[#3e3e42] flex items-center gap-2"
                   >
                     <RotateCcw className="w-4 h-4" />
-                    <span>重置</span>
+                    <span>{t('property.reset')}</span>
                   </button>
                 </div>
 
                 {/* Mode display */}
                 <div className="mb-4">
-                  <Label className="block mb-2">模式</Label>
+                  <Label className="block mb-2">{t('property.mode')}</Label>
                   <div className="text-sm text-gray-300 bg-[#1e1e1e] px-3 py-2 rounded border border-[#3e3e42] capitalize">
-                    {localItem.timerConfig.mode === 'countdown' ? '倒计时' : '正计时'}
+                    {localItem.timerConfig.mode === 'countdown' ? t('property.countdown') : t('property.countup')}
                   </div>
                 </div>
 
@@ -585,7 +587,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
                 {localItem.timerConfig.mode === 'countdown' && (
                   <div className="mb-4">
                     <Label htmlFor="duration" className="block mb-2">
-                      时长（秒）
+                      {t('property.durationSeconds')}
                     </Label>
                     <Input
                       id="duration"
@@ -610,7 +612,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
             {/* Display format */}
             <div className="mb-4">
               <Label htmlFor="format" className="block mb-2">
-                显示格式
+                {t('property.displayFormat')}
               </Label>
               <select
                 id="format"
@@ -635,7 +637,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
             {/* Font size */}
             <div className="mb-4">
               <Label htmlFor="timer-fontSize" className="block mb-2">
-                字体大小
+                {t('property.fontSize')}
               </Label>
               <Input
                 id="timer-fontSize"
@@ -658,7 +660,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
             {/* Color */}
             <div>
               <Label htmlFor="timer-color" className="block mb-2">
-                颜色
+                {t('property.color')}
               </Label>
               <div className="flex items-center gap-2">
                 <Input
@@ -701,7 +703,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
           <div className="border-t border-[#3e3e42] pt-4">
             <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-blue-500 rounded"></span>
-              {localItem.type === 'image' ? '图像源' : '媒体源'}
+              {localItem.type === 'image' ? t('property.imageSource') : t('property.mediaSource')}
             </h4>
 
             {/* Input method selection */}
@@ -710,11 +712,10 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
                 type="button"
                 onClick={() => setUrlInputMethod('url')}
                 disabled={isLocked}
-                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${
-                  urlInputMethod === 'url'
-                    ? 'bg-blue-500 border-blue-500 text-white'
-                    : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${urlInputMethod === 'url'
+                  ? 'bg-blue-500 border-blue-500 text-white'
+                  : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <LinkIcon className="w-3.5 h-3.5" />
                 <span>URL</span>
@@ -723,14 +724,13 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
                 type="button"
                 onClick={() => setUrlInputMethod('file')}
                 disabled={isLocked}
-                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${
-                  urlInputMethod === 'file'
-                    ? 'bg-blue-500 border-blue-500 text-white'
-                    : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${urlInputMethod === 'file'
+                  ? 'bg-blue-500 border-blue-500 text-white'
+                  : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <Upload className="w-3.5 h-3.5" />
-                <span>本地文件</span>
+                <span>{t('property.localFile')}</span>
               </button>
             </div>
 
@@ -738,7 +738,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
             {urlInputMethod === 'url' && (
               <div>
                 <Label htmlFor="url" className="block mb-2">
-                  {localItem.type === 'image' ? '图片 URL' : '媒体 URL'}
+                  {localItem.type === 'image' ? t('property.imageUrl') : t('property.mediaUrl')}
                 </Label>
                 <Input
                   id="url"
@@ -755,7 +755,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
             {urlInputMethod === 'file' && (
               <div>
                 <Label htmlFor="file-upload" className="block mb-2">
-                  选择文件
+                  {t('property.selectFile')}
                 </Label>
                 <div className="relative">
                   <Input
@@ -768,19 +768,18 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
                   />
                   <label
                     htmlFor="file-upload"
-                    className={`flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg transition-colors text-sm text-gray-300 ${
-                      isLocked
-                        ? 'cursor-not-allowed opacity-50'
-                        : 'cursor-pointer hover:bg-[#2d2d30]'
-                    }`}
+                    className={`flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg transition-colors text-sm text-gray-300 ${isLocked
+                      ? 'cursor-not-allowed opacity-50'
+                      : 'cursor-pointer hover:bg-[#2d2d30]'
+                      }`}
                   >
                     <Upload className="w-4 h-4" />
-                    <span>点击选择{localItem.type === 'image' ? '图片' : '媒体'}文件</span>
+                    <span>{t('property.clickToSelect', { type: localItem.type === 'image' ? t('property.image') : t('property.media') })}</span>
                   </label>
                 </div>
                 {localItem.url && (
                   <p className="text-xs text-gray-500 mt-2">
-                    当前: {localItem.url.substring(0, 50)}
+                    {t('property.current')}: {localItem.url.substring(0, 50)}
                     {localItem.url.length > 50 ? '...' : ''}
                   </p>
                 )}

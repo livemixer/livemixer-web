@@ -1,5 +1,6 @@
 import { Link as LinkIcon, Upload } from 'lucide-react';
 import { useState } from 'react';
+import { useI18n } from '../hooks/useI18n';
 import type { SourceType } from './add-source-dialog';
 import {
   Dialog,
@@ -31,6 +32,7 @@ export function ConfigureSourceDialog({
   sourceType,
   onConfirm,
 }: ConfigureSourceDialogProps) {
+  const { t } = useI18n();
   const [inputMethod, setInputMethod] = useState<'file' | 'url'>('file');
   const [url, setUrl] = useState('');
   const [fileName, setFileName] = useState('');
@@ -39,22 +41,22 @@ export function ConfigureSourceDialog({
   const getTitle = () => {
     switch (sourceType) {
       case 'image':
-        return '配置图像源';
+        return t('configureSource.imageTitle');
       case 'media':
-        return '配置媒体源';
+        return t('configureSource.mediaTitle');
       default:
-        return '配置源';
+        return t('configureSource.defaultTitle');
     }
   };
 
   const getDescription = () => {
     switch (sourceType) {
       case 'image':
-        return '上传本地图片文件或输入图片 URL 地址';
+        return t('configureSource.imageDescription');
       case 'media':
-        return '上传本地视频/音频文件或输入媒体 URL 地址';
+        return t('configureSource.mediaDescription');
       default:
-        return '配置源内容';
+        return t('configureSource.defaultDescription');
     }
   };
 
@@ -128,26 +130,24 @@ export function ConfigureSourceDialog({
             <button
               type="button"
               onClick={() => setInputMethod('file')}
-              className={`flex-1 px-4 py-2 rounded-lg border transition-colors flex items-center justify-center gap-2 ${
-                inputMethod === 'file'
+              className={`flex-1 px-4 py-2 rounded-lg border transition-colors flex items-center justify-center gap-2 ${inputMethod === 'file'
                   ? 'bg-blue-500 border-blue-500 text-white'
                   : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
-              }`}
+                }`}
             >
               <Upload className="w-4 h-4" />
-              <span>本地文件</span>
+              <span>{t('property.localFile')}</span>
             </button>
             <button
               type="button"
               onClick={() => setInputMethod('url')}
-              className={`flex-1 px-4 py-2 rounded-lg border transition-colors flex items-center justify-center gap-2 ${
-                inputMethod === 'url'
+              className={`flex-1 px-4 py-2 rounded-lg border transition-colors flex items-center justify-center gap-2 ${inputMethod === 'url'
                   ? 'bg-blue-500 border-blue-500 text-white'
                   : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
-              }`}
+                }`}
             >
               <LinkIcon className="w-4 h-4" />
-              <span>URL 地址</span>
+              <span>{t('configureSource.urlAddress')}</span>
             </button>
           </div>
 
@@ -155,7 +155,7 @@ export function ConfigureSourceDialog({
           {inputMethod === 'file' && (
             <div className="space-y-2">
               <Label htmlFor="file-upload" className="text-gray-300">
-                选择文件
+                {t('property.selectFile')}
               </Label>
               <div className="relative">
                 <Input
@@ -170,10 +170,10 @@ export function ConfigureSourceDialog({
                   className="flex items-center justify-center gap-2 px-4 py-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg cursor-pointer hover:bg-[#2d2d30] transition-colors"
                 >
                   <Upload className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-300">{fileName || '点击选择文件'}</span>
+                  <span className="text-gray-300">{fileName || t('configureSource.clickToSelectFile')}</span>
                 </label>
               </div>
-              {fileName && <p className="text-xs text-gray-500">已选择: {fileName}</p>}
+              {fileName && <p className="text-xs text-gray-500">{t('configureSource.selected')}: {fileName}</p>}
             </div>
           )}
 
@@ -181,7 +181,7 @@ export function ConfigureSourceDialog({
           {inputMethod === 'url' && (
             <div className="space-y-2">
               <Label htmlFor="url-input" className="text-gray-300">
-                URL 地址
+                {t('configureSource.urlAddress')}
               </Label>
               <Input
                 id="url-input"
@@ -201,7 +201,7 @@ export function ConfigureSourceDialog({
             onClick={handleClose}
             className="px-4 py-2 bg-[#1e1e1e] hover:bg-[#2d2d30] text-white rounded-lg transition-colors border border-[#3e3e42]"
           >
-            取消
+            {t('dialog.cancel')}
           </button>
           <button
             type="button"
@@ -209,7 +209,7 @@ export function ConfigureSourceDialog({
             disabled={!isValid()}
             className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            确认
+            {t('dialog.confirm')}
           </button>
         </DialogFooter>
       </DialogContent>

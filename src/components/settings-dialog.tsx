@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSettingsStore } from '@/store/setting';
+import { useI18n } from '../hooks/useI18n';
 import lmsLogo from '../assets/lms.svg';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Input } from './ui/input';
@@ -12,6 +13,9 @@ interface SettingsDialogProps {
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [activeTab, setActiveTab] = useState('general');
+
+  // Get i18n functions
+  const { t, changeLanguage } = useI18n();
 
   // Get settings and update helpers from the store
   const {
@@ -46,13 +50,52 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     updateSensitiveSettings,
   } = useSettingsStore();
 
+  // Local state for pending language change (applied on confirm)
+  const [pendingLanguage, setPendingLanguage] = useState(language);
+
+  // Sync pending language when dialog opens
+  useEffect(() => {
+    if (open) {
+      setPendingLanguage(language);
+    }
+  }, [open, language]);
+
+  // Apply language change to i18n engine
+  const applyLanguageChange = async (newLanguage: string) => {
+    // Update store
+    updatePersistentSettings({ language: newLanguage });
+    // Sync with i18n engine (convert zh-CN -> zh, en-US -> en)
+    const i18nLang = newLanguage.startsWith('zh') ? 'zh' : 'en';
+    await changeLanguage(i18nLang);
+  };
+
+  // Handle language selection change (only updates local state)
+  const handleLanguageSelect = (newLanguage: string) => {
+    setPendingLanguage(newLanguage);
+  };
+
+  // Handle apply button - apply language change
+  const handleApply = async () => {
+    if (pendingLanguage !== language) {
+      await applyLanguageChange(pendingLanguage);
+    }
+  };
+
+  // Handle confirm button - apply language change and close
+  const handleConfirm = async () => {
+    if (pendingLanguage !== language) {
+      await applyLanguageChange(pendingLanguage);
+    }
+    onOpenChange(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl h-[600px] p-0 flex flex-col bg-gradient-to-b from-neutral-850 to-neutral-900 border-neutral-700/50">
         <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0 bg-gradient-to-r from-primary-600 to-primary-500 rounded-t-xl relative">
           <div className="flex items-center gap-3">
             <img src={lmsLogo} alt="Logo" className="w-8 h-8" />
-            <DialogTitle className="text-white">设置</DialogTitle>
+            <DialogTitle className="text-white">{t('settings.title')}</DialogTitle>
           </div>
         </DialogHeader>
 
@@ -63,68 +106,62 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               <button
                 type="button"
                 onClick={() => setActiveTab('general')}
-                className={`px-4 py-2 text-left rounded-lg text-sm transition-all ${
-                  activeTab === 'general'
-                    ? 'bg-primary-600/20 text-primary-400 border border-primary-500/30'
-                    : 'text-neutral-400 hover:text-white hover:bg-neutral-700/30'
-                }`}
+                className={`px-4 py-2 text-left rounded-lg text-sm transition-all ${activeTab === 'general'
+                  ? 'bg-primary-600/20 text-primary-400 border border-primary-500/30'
+                  : 'text-neutral-400 hover:text-white hover:bg-neutral-700/30'
+                  }`}
               >
-                常规
+                {t('settings.tabs.general')}
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('streaming')}
-                className={`px-4 py-2 text-left rounded-lg text-sm transition-all ${
-                  activeTab === 'streaming'
-                    ? 'bg-primary-600/20 text-primary-400 border border-primary-500/30'
-                    : 'text-neutral-400 hover:text-white hover:bg-neutral-700/30'
-                }`}
+                className={`px-4 py-2 text-left rounded-lg text-sm transition-all ${activeTab === 'streaming'
+                  ? 'bg-primary-600/20 text-primary-400 border border-primary-500/30'
+                  : 'text-neutral-400 hover:text-white hover:bg-neutral-700/30'
+                  }`}
               >
-                直播（推流）
+                {t('settings.tabs.streaming')}
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('pulling')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
-                  activeTab === 'pulling'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                }`}
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'pulling'
+                  ? 'bg-[#2a2a2a] text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                  }`}
               >
-                拉流
+                {t('settings.tabs.pulling')}
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('output')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
-                  activeTab === 'output'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                }`}
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'output'
+                  ? 'bg-[#2a2a2a] text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                  }`}
               >
-                输出
+                {t('settings.tabs.output')}
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('audio')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
-                  activeTab === 'audio'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                }`}
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'audio'
+                  ? 'bg-[#2a2a2a] text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                  }`}
               >
-                音频
+                {t('settings.tabs.audio')}
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('video')}
-                className={`px-4 py-2 text-left rounded text-sm transition-colors ${
-                  activeTab === 'video'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
-                }`}
+                className={`px-4 py-2 text-left rounded text-sm transition-colors ${activeTab === 'video'
+                  ? 'bg-[#2a2a2a] text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                  }`}
               >
-                视频
+                {t('settings.tabs.video')}
               </button>
             </div>
           </div>
@@ -133,14 +170,14 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           <div className="flex-1 overflow-auto p-6 min-w-0">
             {activeTab === 'general' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">常规设置</h2>
+                <h2 className="text-lg font-semibold text-white">{t('settings.tabs.general')}</h2>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="language">语言</Label>
+                    <Label htmlFor="language">{t('settings.language.title')}</Label>
                     <select
                       id="language"
-                      value={language}
-                      onChange={e => updatePersistentSettings({ language: e.target.value })}
+                      value={pendingLanguage}
+                      onChange={e => handleLanguageSelect(e.target.value)}
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="zh-CN">简体中文</option>
@@ -148,15 +185,15 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="theme">主题</Label>
+                    <Label htmlFor="theme">{t('settings.theme.title')}</Label>
                     <select
                       id="theme"
                       value={theme}
                       onChange={e => updatePersistentSettings({ theme: e.target.value })}
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
-                      <option value="dark">深色</option>
-                      <option value="light">浅色</option>
+                      <option value="dark">{t('settings.theme.dark')}</option>
+                      <option value="light">{t('settings.theme.light')}</option>
                     </select>
                   </div>
                 </div>
@@ -165,10 +202,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             {activeTab === 'streaming' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">直播设置（推流）</h2>
+                <h2 className="text-lg font-semibold text-white">{t('settings.streaming.title')}</h2>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="streamService">推流服务</Label>
+                    <Label htmlFor="streamService">{t('settings.streaming.service')}</Label>
                     <select
                       id="streamService"
                       value={streamService}
@@ -179,12 +216,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       }
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
-                      <option value="custom">自定义</option>
+                      <option value="custom">{t('settings.streaming.custom')}</option>
                     </select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="livekitUrl">服务器地址</Label>
+                    <Label htmlFor="livekitUrl">{t('settings.streaming.serverUrl')}</Label>
                     <Input
                       id="livekitUrl"
                       value={livekitUrl}
@@ -193,7 +230,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           livekitUrl: e.target.value,
                         })
                       }
-                      placeholder="wss://your-livekit-server.com"
+                      placeholder={t('settings.streaming.serverUrlPlaceholder')}
                     />
                   </div>
                   <div className="space-y-2">
@@ -207,7 +244,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           livekitToken: e.target.value,
                         })
                       }
-                      placeholder="输入 Token"
+                      placeholder={t('settings.streaming.tokenPlaceholder')}
                     />
                   </div>
                 </div>
@@ -216,7 +253,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             {activeTab === 'pulling' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">拉流设置</h2>
+                <h2 className="text-lg font-semibold text-white">{t('settings.pulling.title')}</h2>
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="livekitPullUrl">服务器地址</Label>
@@ -228,7 +265,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           livekitPullUrl: e.target.value,
                         })
                       }
-                      placeholder="wss://your-livekit-server.com"
+                      placeholder={t('settings.streaming.serverUrlPlaceholder')}
                     />
                   </div>
                   <div className="space-y-2">
@@ -242,12 +279,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           livekitPullToken: e.target.value,
                         })
                       }
-                      placeholder="输入 Token"
+                      placeholder={t('settings.streaming.tokenPlaceholder')}
                     />
                   </div>
                   <div className="pt-4 border-t border-[#3e3e42]">
                     <p className="text-sm text-gray-400">
-                      配置拉流后，可以在左侧参会者面板中查看其他参会者，并将他们的摄像头或屏幕共享添加到场景中。
+                      {t('settings.pulling.description')}
                     </p>
                   </div>
                 </div>
@@ -256,10 +293,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             {activeTab === 'output' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">输出设置</h2>
+                <h2 className="text-lg font-semibold text-white">{t('settings.output.title')}</h2>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="videoBitrate">视频码率 (kbps)</Label>
+                    <Label htmlFor="videoBitrate">{t('settings.output.videoBitrate')}</Label>
                     <Input
                       id="videoBitrate"
                       type="number"
@@ -276,7 +313,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="audioBitrate">音频码率 (bps)</Label>
+                    <Label htmlFor="audioBitrate">{t('settings.output.audioBitrate')}</Label>
                     <select
                       id="audioBitrate"
                       value={audioBitrate}
@@ -297,7 +334,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="videoEncoder">视频编码器</Label>
+                    <Label htmlFor="videoEncoder">{t('settings.output.videoEncoder')}</Label>
                     <select
                       id="videoEncoder"
                       value={videoEncoder}
@@ -317,7 +354,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="audioEncoder">音频编码器</Label>
+                    <Label htmlFor="audioEncoder">{t('settings.output.audioEncoder')}</Label>
                     <select
                       id="audioEncoder"
                       value={audioEncoder}
@@ -339,10 +376,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             {activeTab === 'audio' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">音频设置</h2>
+                <h2 className="text-lg font-semibold text-white">{t('settings.audio.title')}</h2>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="audioDevice">音频设备</Label>
+                    <Label htmlFor="audioDevice">{t('settings.audio.device')}</Label>
                     <select
                       id="audioDevice"
                       value={audioDevice}
@@ -353,11 +390,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       }
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
-                      <option value="default">默认</option>
+                      <option value="default">{t('settings.audio.default')}</option>
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="sampleRate">采样率</Label>
+                    <Label htmlFor="sampleRate">{t('settings.audio.sampleRate')}</Label>
                     <select
                       id="sampleRate"
                       value={sampleRate}
@@ -369,15 +406,15 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="channels">声道</Label>
+                    <Label htmlFor="channels">{t('settings.audio.channels')}</Label>
                     <select
                       id="channels"
                       value={channels}
                       onChange={e => updatePersistentSettings({ channels: e.target.value })}
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
-                      <option value="stereo">立体声</option>
-                      <option value="mono">单声道</option>
+                      <option value="stereo">{t('settings.audio.stereo')}</option>
+                      <option value="mono">{t('settings.audio.mono')}</option>
                     </select>
                   </div>
                 </div>
@@ -386,10 +423,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             {activeTab === 'video' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">视频设置</h2>
+                <h2 className="text-lg font-semibold text-white">{t('settings.video.title')}</h2>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="baseResolution">基础画布分辨率</Label>
+                    <Label htmlFor="baseResolution">{t('settings.video.baseResolution')}</Label>
                     <select
                       id="baseResolution"
                       value={baseResolution}
@@ -404,14 +441,14 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       <option value="1280x720">1280x720</option>
                       <option value="2560x1440">2560x1440</option>
                       <option value="3840x2160">3840x2160</option>
-                      <option value="custom">自定义</option>
+                      <option value="custom">{t('settings.video.custom')}</option>
                     </select>
                   </div>
 
                   {baseResolution === 'custom' && (
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="customWidth">宽度</Label>
+                        <Label htmlFor="customWidth">{t('settings.video.width')}</Label>
                         <Input
                           id="customWidth"
                           type="number"
@@ -425,7 +462,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="customHeight">高度</Label>
+                        <Label htmlFor="customHeight">{t('settings.video.height')}</Label>
                         <Input
                           id="customHeight"
                           type="number"
@@ -442,7 +479,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   )}
 
                   <div className="space-y-2">
-                    <Label htmlFor="outputResolution">输出分辨率</Label>
+                    <Label htmlFor="outputResolution">{t('settings.video.outputResolution')}</Label>
                     <select
                       id="outputResolution"
                       value={outputResolution}
@@ -457,12 +494,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       <option value="1280x720">1280x720</option>
                       <option value="2560x1440">2560x1440</option>
                       <option value="3840x2160">3840x2160</option>
-                      <option value="same">与基础画布相同</option>
+                      <option value="same">{t('settings.video.sameAsBase')}</option>
                     </select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="fps">帧率 (FPS)</Label>
+                    <Label htmlFor="fps">{t('settings.video.fps')}</Label>
                     <select
                       id="fps"
                       value={fps}
@@ -477,7 +514,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="scaleFilter">缩放滤镜</Label>
+                    <Label htmlFor="scaleFilter">{t('settings.video.scaleFilter')}</Label>
                     <select
                       id="scaleFilter"
                       value={scaleFilter}
@@ -488,8 +525,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       }
                       className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
-                      <option value="bilinear">双线性</option>
-                      <option value="bicubic">双三次</option>
+                      <option value="bilinear">{t('settings.video.bilinear')}</option>
+                      <option value="bicubic">{t('settings.video.bicubic')}</option>
                       <option value="lanczos">Lanczos</option>
                     </select>
                   </div>
@@ -506,28 +543,21 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             onClick={() => onOpenChange(false)}
             className="px-8 py-3 text-sm rounded bg-[#2a2a2a] text-white hover:bg-[#3a3a3a] transition-colors min-w-[90px]"
           >
-            取消
+            {t('dialog.cancel')}
           </button>
           <button
             type="button"
-            onClick={() => {
-              // Apply settings without closing (already saved to the store)
-              console.log('设置已应用');
-            }}
+            onClick={handleApply}
             className="px-8 py-3 text-sm rounded bg-[#2a2a2a] text-white hover:bg-[#3a3a3a] transition-colors min-w-[90px]"
           >
-            应用
+            {t('dialog.apply')}
           </button>
           <button
             type="button"
-            onClick={() => {
-              // Save settings and close (already saved to the store)
-              console.log('设置已保存');
-              onOpenChange(false);
-            }}
+            onClick={handleConfirm}
             className="px-8 py-3 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors min-w-[90px]"
           >
-            确定
+            {t('dialog.confirm')}
           </button>
         </div>
       </DialogContent>

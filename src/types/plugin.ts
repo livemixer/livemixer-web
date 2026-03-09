@@ -1,14 +1,20 @@
+import type { IPluginI18n } from './i18n-engine';
+
 export type PluginControlType = 'number' | 'string' | 'color' | 'boolean' | 'select' | 'image' | 'video' | 'group';
 
 export interface PropsSchemaItem {
   label: string;
+  /** Translation key for label (optional, falls back to label) */
+  labelKey?: string;
   type: PluginControlType;
   defaultValue: any;
   min?: number;
   max?: number;
   step?: number;
-  options?: { label: string; value: any }[];
+  options?: { label: string; labelKey?: string; value: any }[];
   group?: string;
+  /** Translation key for group (optional) */
+  groupKey?: string;
 }
 
 export interface PropsSchema {
@@ -48,6 +54,9 @@ export interface ISourcePlugin {
 
   // Property definitions
   propsSchema: PropsSchema;
+
+  // Internationalization (optional)
+  i18n?: IPluginI18n;
 
   // Lifecycle
   onInit: (ctx: IPluginContext) => Promise<void> | void;

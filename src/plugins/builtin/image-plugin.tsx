@@ -5,7 +5,7 @@ import type { ISourcePlugin, IPluginContext } from '../../types/plugin';
 export const ImagePlugin: ISourcePlugin = {
   id: 'io.livemixer.image',
   version: '1.0.0',
-  name: '图像',
+  name: 'Image',
   category: 'media',
   engines: {
     host: '^1.0.0',
@@ -13,16 +13,40 @@ export const ImagePlugin: ISourcePlugin = {
   },
   propsSchema: {
     url: {
-      label: '图片 URL',
+      label: 'Image URL',
+      labelKey: 'plugins.io.livemixer.image.label.url',
       type: 'image',
       defaultValue: '',
     },
     borderRadius: {
-      label: '圆角',
+      label: 'Border Radius',
+      labelKey: 'plugins.io.livemixer.image.label.borderRadius',
       type: 'number',
       defaultValue: 0,
       min: 0,
       max: 100,
+    },
+  },
+  i18n: {
+    defaultLanguage: 'en',
+    supportedLanguages: ['en', 'zh'],
+    resources: {
+      en: {
+        'plugins.io.livemixer.image': {
+          label: {
+            url: 'Image URL',
+            borderRadius: 'Border Radius',
+          },
+        },
+      },
+      zh: {
+        'plugins.io.livemixer.image': {
+          label: {
+            url: '图片 URL',
+            borderRadius: '圆角',
+          },
+        },
+      },
     },
   },
   onInit: (ctx: IPluginContext) => {

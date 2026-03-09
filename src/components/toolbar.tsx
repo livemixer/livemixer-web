@@ -1,4 +1,5 @@
 import githubIcon from '../assets/github_white.svg';
+import { useI18n } from '../hooks/useI18n';
 import type { ProtocolData } from '../types/protocol';
 import { ToolbarMenu } from './toolbar-menu';
 
@@ -8,6 +9,8 @@ interface ToolbarProps {
 }
 
 export function Toolbar({ data, updateData }: ToolbarProps) {
+  const { t } = useI18n();
+
   const handleImport = () => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -73,52 +76,52 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
   return (
     <div className="flex items-center gap-4 flex-1">
       <ToolbarMenu
-        label="编辑"
+        label={t('toolbar.edit')}
         items={[
-          { label: '撤销', onClick: () => console.log('撤销') },
-          { label: '重做', onClick: () => console.log('重做') },
+          { label: t('toolbar.undo'), onClick: () => console.log('undo') },
+          { label: t('toolbar.redo'), onClick: () => console.log('redo') },
           { divider: true },
-          { label: '复制', onClick: () => console.log('复制') },
-          { label: '粘贴', onClick: () => console.log('粘贴') },
-          { label: '删除', onClick: () => console.log('删除') },
+          { label: t('toolbar.copy'), onClick: () => console.log('copy') },
+          { label: t('toolbar.paste'), onClick: () => console.log('paste') },
+          { label: t('toolbar.delete'), onClick: () => console.log('delete') },
         ]}
       />
 
       <ToolbarMenu
-        label="视图"
+        label={t('toolbar.view')}
         items={[
-          { label: '全屏', onClick: () => console.log('全屏') },
+          { label: t('toolbar.fullscreen'), onClick: () => console.log('fullscreen') },
           { divider: true },
-          { label: '显示网格', onClick: () => console.log('显示网格') },
-          { label: '显示参考线', onClick: () => console.log('显示参考线') },
+          { label: t('toolbar.showGrid'), onClick: () => console.log('show grid') },
+          { label: t('toolbar.showGuides'), onClick: () => console.log('show guides') },
         ]}
       />
 
       <ToolbarMenu
-        label="配置"
+        label={t('toolbar.config')}
         items={[
-          { label: '导入', onClick: handleImport },
-          { label: '导出', onClick: handleExport },
+          { label: t('toolbar.import'), onClick: handleImport },
+          { label: t('toolbar.export'), onClick: handleExport },
         ]}
       />
 
       <ToolbarMenu
-        label="工具"
+        label={t('toolbar.tools')}
         items={[
-          { label: '音频混合器', onClick: () => console.log('音频混合器') },
-          { label: '场景过渡', onClick: () => console.log('场景过渡') },
+          { label: t('toolbar.audioMixer'), onClick: () => console.log('audio mixer') },
+          { label: t('toolbar.sceneTransition'), onClick: () => console.log('scene transition') },
           { divider: true },
-          { label: '插件管理', onClick: () => console.log('插件管理') },
+          { label: t('toolbar.pluginManager'), onClick: () => console.log('plugin manager') },
         ]}
       />
 
       <ToolbarMenu
-        label="帮助"
+        label={t('toolbar.help')}
         items={[
-          { label: '检查更新', onClick: handleCheckUpdate },
+          { label: t('toolbar.checkUpdate'), onClick: handleCheckUpdate },
           { divider: true },
-          { label: '使用文档', onClick: () => console.log('使用文档') },
-          { label: '关于', onClick: handleAbout },
+          { label: t('toolbar.documentation'), onClick: () => console.log('documentation') },
+          { label: t('toolbar.about'), onClick: handleAbout },
         ]}
       />
 
