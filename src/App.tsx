@@ -152,7 +152,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     const newSceneId = `scene-${nextNumber}`;
     const newScene = {
       id: newSceneId,
-      name: `场景 ${nextNumber}`,
+      name: t('scene.defaultName', { number: nextNumber }),
       active: false,
       items: [],
     };
@@ -169,7 +169,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
   // 删除场景
   const handleDeleteScene = (sceneId: string) => {
     if (data.scenes.length <= 1) {
-      alert('至少需要保留一个场景');
+      alert(t('scene.atLeastOne'));
       return;
     }
 
@@ -837,7 +837,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
                   : 'bg-blue-600 hover:bg-blue-700 text-white'
                   }`}
               >
-                {isPulling ? '断开拉流' : '连接拉流'}
+                {isPulling ? t('status.disconnectPull') : t('status.connectPull')}
               </button>
             </div>
           </div>

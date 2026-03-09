@@ -42,6 +42,7 @@ export const zh: LanguageResource = {
         items: '个元素',
         selectPrompt: '请选择一个场景',
         deleteWarning: '此操作无法撤销，场景中的所有元素都将被删除。',
+        defaultName: '场景 {{number}}',
     },
     source: {
         title: '源',
@@ -208,6 +209,8 @@ export const zh: LanguageResource = {
         fps: 'FPS',
         cpu: 'CPU',
         resolution: '分辨率',
+        connectPull: '连接拉流',
+        disconnectPull: '断开拉流',
     },
     participants: {
         title: '参会者',
@@ -283,5 +286,18 @@ export const zh: LanguageResource = {
         urlAddress: 'URL 地址',
         clickToSelectFile: '点击选择文件',
         selected: '已选择',
+    },
+    configureTimer: {
+        timerTitle: '配置定时器',
+        clockTitle: '配置时钟',
+        timerDescription: '设置定时器模式和时长',
+        clockDescription: '设置时钟显示格式',
+        timerMode: '定时器模式',
+        countdown: '倒计时',
+        countup: '正计时',
+        setDuration: '设置时长',
+        hours: '时',
+        minutes: '分',
+        seconds: '秒',
     },
 };

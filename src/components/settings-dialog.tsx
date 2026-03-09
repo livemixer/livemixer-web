@@ -256,7 +256,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 <h2 className="text-lg font-semibold text-white">{t('settings.pulling.title')}</h2>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="livekitPullUrl">服务器地址</Label>
+                    <Label htmlFor="livekitPullUrl">{t('settings.streaming.serverUrl')}</Label>
                     <Input
                       id="livekitPullUrl"
                       value={livekitPullUrl}
@@ -269,7 +269,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="livekitPullToken">Token</Label>
+                    <Label htmlFor="livekitPullToken">{t('settings.streaming.token')}</Label>
                     <Input
                       id="livekitPullToken"
                       type="password"

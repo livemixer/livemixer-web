@@ -42,6 +42,7 @@ export const en: LanguageResource = {
         items: 'items',
         selectPrompt: 'Please select a scene',
         deleteWarning: 'This action cannot be undone. All elements in the scene will be deleted.',
+        defaultName: 'Scene {{number}}',
     },
     source: {
         title: 'Source',
@@ -208,6 +209,8 @@ export const en: LanguageResource = {
         fps: 'FPS',
         cpu: 'CPU',
         resolution: 'Resolution',
+        connectPull: 'Connect Pull',
+        disconnectPull: 'Disconnect Pull',
     },
     participants: {
         title: 'Participants',
@@ -283,5 +286,18 @@ export const en: LanguageResource = {
         urlAddress: 'URL Address',
         clickToSelectFile: 'Click to select file',
         selected: 'Selected',
+    },
+    configureTimer: {
+        timerTitle: 'Configure Timer',
+        clockTitle: 'Configure Clock',
+        timerDescription: 'Set timer mode and duration',
+        clockDescription: 'Set clock display format',
+        timerMode: 'Timer Mode',
+        countdown: 'Countdown',
+        countup: 'Count Up',
+        setDuration: 'Set Duration',
+        hours: 'Hours',
+        minutes: 'Minutes',
+        seconds: 'Seconds',
     },
 };
