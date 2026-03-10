@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { I18nEngine } from '../types/i18n-engine';
 
 interface I18nContextValue {
@@ -59,13 +59,16 @@ export function I18nProvider({ engine, children }: I18nProviderProps) {
         [engine]
     );
 
-    const value: I18nContextValue = {
-        engine,
-        language,
-        t,
-        changeLanguage,
-        exists,
-    };
+    const value: I18nContextValue = useMemo(
+        () => ({
+            engine,
+            language,
+            t,
+            changeLanguage,
+            exists,
+        }),
+        [engine, language, t, changeLanguage, exists]
+    );
 
     return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
