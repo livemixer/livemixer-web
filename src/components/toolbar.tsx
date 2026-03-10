@@ -27,15 +27,15 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
 
           // Validate imported data structure
           if (!importedData.version || !importedData.scenes || !importedData.canvas) {
-            alert('无效的配置文件格式');
+            alert(t('toolbar.importInvalidFormat'));
             return;
           }
 
           updateData(importedData);
-          console.log('成功导入配置');
+          console.log('Config imported successfully');
         } catch (error) {
-          console.error('导入失败:', error);
-          alert('导入失败：文件格式错误');
+          console.error('Import failed:', error);
+          alert(t('toolbar.importFailed'));
         }
       };
       reader.readAsText(file);
@@ -53,22 +53,22 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
       a.download = `livemixer-config-${Date.now()}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      console.log('成功导出配置');
+      console.log('Config exported successfully');
     } catch (error) {
-      console.error('导出失败:', error);
-      alert('导出失败');
+      console.error('Export failed:', error);
+      alert(t('toolbar.exportFailed'));
     }
   };
 
   const handleCheckUpdate = () => {
-    console.log('检查更新');
+    console.log('Check for updates');
 
     // TODO: Implement update check
 
   };
 
   const handleAbout = () => {
-    console.log('关于');
+    console.log('About');
     // TODO: Show About dialog
 
   };
@@ -132,7 +132,7 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-300 hover:text-white hover:bg-[#3e3e42] transition-colors rounded"
-        title="访问 GitHub 仓库"
+        title={t('toolbar.visitGitHub')}
       >
         <img src={githubIcon} alt="GitHub" className="w-5 h-5" />
       </a>

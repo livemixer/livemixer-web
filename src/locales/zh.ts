@@ -26,6 +26,9 @@ export const zh: LanguageResource = {
         config: '配置',
         import: '导入',
         export: '导出',
+        importInvalidFormat: '无效的配置文件格式',
+        importFailed: '导入失败：文件格式错误',
+        exportFailed: '导出失败',
         tools: '工具',
         audioMixer: '音频混合器',
         sceneTransition: '场景过渡',
@@ -34,6 +37,7 @@ export const zh: LanguageResource = {
         checkUpdate: '检查更新',
         documentation: '使用文档',
         about: '关于',
+        visitGitHub: '访问 GitHub 仓库',
     },
     scene: {
         title: '场景',
