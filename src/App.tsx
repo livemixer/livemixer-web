@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import lmsLogo from './assets/lms.svg';
+import { I18nProvider } from './contexts/I18nContext';
+import { useI18n } from './hooks/useI18n';
 import type { SourceType } from './components/add-source-dialog';
 import { BottomBar } from './components/bottom-bar';
 import { ConfigureSourceDialog, type SourceConfig } from './components/configure-source-dialog';
@@ -12,16 +14,102 @@ import { SettingsDialog } from './components/settings-dialog';
 import { StatusBar } from './components/status-bar';
 import { Toolbar } from './components/toolbar';
 import { canvasCaptureService } from './services/canvas-capture';
+import { createI18nEngine } from './services/i18n-engine';
 import { liveKitPullService } from './services/livekit-pull';
 import { pluginRegistry } from './services/plugin-registry';
 import { streamingService } from './services/streaming';
+import { coreResources, supportedLanguages } from './locales';
 import { useProtocolStore } from './store/protocol';
 import { useSettingsStore } from './store/setting';
+import type { I18nEngine } from './types/i18n-engine';
 import type { LiveMixerExtensions } from './types/extensions';
 import type { SceneItem } from './types/protocol';
 import './App.css';
 
 function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
+  // i18n engine state
+  const [i18nEngine, setI18nEngine] = useState<I18nEngine | null>(null);
+  const [i18nReady, setI18nReady] = useState(false);
+
+  // Initialize i18n engine
+  useEffect(() => {
+    const initI18n = async () => {
+      let engine: I18nEngine;
+
+      // Get saved language from localStorage (sync with settings store)
+      const savedSettings = localStorage.getItem('livemixer-settings');
+      let initialLanguage = 'en';
+      if (savedSettings) {
+        try {
+          const settings = JSON.parse(savedSettings);
+          // Convert zh-CN -> zh, en-US -> en
+          initialLanguage = settings.language?.startsWith('zh') ? 'zh' : 'en';
+        } catch {
+          // Ignore parse error, use default
+        }
+      }
+
+      if (extensions?.i18nEngine) {
+        // Use host-provided i18n engine
+        engine = extensions.i18nEngine;
+      } else {
+        // Create built-in i18n engine
+        engine = await createI18nEngine({
+          defaultLanguage: initialLanguage,
+          supportedLanguages: Array.from(supportedLanguages),
+          coreResources,
+        });
+      }
+
+      // Apply host overrides if provided
+      if (extensions?.i18nOverrides) {
+        for (const [lang, namespaces] of Object.entries(extensions.i18nOverrides)) {
+          for (const [namespace, resource] of Object.entries(namespaces)) {
+            engine.addResource(lang, namespace, resource, { layer: 'host' });
+          }
+        }
+      }
+
+      // Apply user overrides if provided
+      if (extensions?.i18nUserOverrides) {
+        for (const [lang, namespaces] of Object.entries(extensions.i18nUserOverrides)) {
+          for (const [namespace, resource] of Object.entries(namespaces)) {
+            engine.addResource(lang, namespace, resource, { layer: 'user' });
+          }
+        }
+      }
+
+      // Set i18n engine in plugin registry so plugins can register their i18n resources
+      pluginRegistry.setI18nEngine(engine);
+
+      setI18nEngine(engine);
+      setI18nReady(true);
+    };
+
+    initI18n();
+  }, [extensions?.i18nEngine, extensions?.i18nOverrides, extensions?.i18nUserOverrides]);
+
+  // Show loading state while i18n is initializing
+  if (!i18nReady || !i18nEngine) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-[#1e1e1e] text-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4" />
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <I18nProvider engine={i18nEngine}>
+      <AppContent extensions={extensions} />
+    </I18nProvider>
+  );
+}
+
+function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
+  const { t } = useI18n();
   // 从 protocol store 获取配置
   const { data, updateData } = useProtocolStore();
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
@@ -64,7 +152,7 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
     const newSceneId = `scene-${nextNumber}`;
     const newScene = {
       id: newSceneId,
-      name: `场景 ${nextNumber}`,
+      name: t('scene.defaultName', { number: nextNumber }),
       active: false,
       items: [],
     };
@@ -81,7 +169,7 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
   // 删除场景
   const handleDeleteScene = (sceneId: string) => {
     if (data.scenes.length <= 1) {
-      alert('至少需要保留一个场景');
+      alert(t('scene.atLeastOne'));
       return;
     }
 
@@ -230,7 +318,7 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
             width: 400,
             height: 100,
           },
-          content: '文本内容',
+          content: t('property.defaultTextContent'),
           properties: {
             fontSize: 32,
             color: '#ffffff',
@@ -744,13 +832,12 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
               <button
                 type="button"
                 onClick={handleTogglePulling}
-                className={`w-full py-2 px-4 rounded text-sm font-medium transition-colors ${
-                  isPulling
-                    ? 'bg-red-600 hover:bg-red-700 text-white'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
+                className={`w-full py-2 px-4 rounded text-sm font-medium transition-colors ${isPulling
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  }`}
               >
-                {isPulling ? '断开拉流' : '连接拉流'}
+                {isPulling ? t('status.disconnectPull') : t('status.connectPull')}
               </button>
             </div>
           </div>

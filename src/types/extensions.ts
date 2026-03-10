@@ -1,4 +1,14 @@
+import type { I18nEngine, LanguageResource } from './i18n-engine'
 import type { ProtocolData } from './protocol'
+
+/**
+ * I18n override bundle for host/user to provide custom translations
+ */
+export interface I18nOverrideBundle {
+  [lang: string]: {
+    [namespace: string]: LanguageResource
+  }
+}
 
 /**
  * user info interface
@@ -91,4 +101,24 @@ export interface LiveMixerExtensions {
       divider?: boolean
     }>
   }>
+
+  /**
+   * Optional custom i18n engine implementation
+   * If provided, livemixer-web will use this instead of the built-in engine
+   * Useful for integrating with host application's i18n system
+   */
+  i18nEngine?: I18nEngine
+
+  /**
+   * Optional i18n override resources
+   * Allows host to provide custom translations that override plugin defaults
+   * Applied at 'host' layer priority
+   */
+  i18nOverrides?: I18nOverrideBundle
+
+  /**
+   * Optional user-level i18n overrides
+   * Applied at 'user' layer priority (highest)
+   */
+  i18nUserOverrides?: I18nOverrideBundle
 }

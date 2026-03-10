@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useI18n } from '../hooks/useI18n';
 import type { SourceType } from './add-source-dialog';
 import {
   Dialog,
@@ -33,6 +34,7 @@ export function ConfigureTimerDialog({
   sourceType,
   onConfirm,
 }: ConfigureTimerDialogProps) {
+  const { t } = useI18n();
   const [mode, setMode] = useState<'countdown' | 'countup' | 'clock'>(
     sourceType === 'clock' ? 'clock' : 'countdown'
   );
@@ -44,13 +46,13 @@ export function ConfigureTimerDialog({
   const [color, setColor] = useState('#FFFFFF');
 
   const getTitle = () => {
-    if (sourceType === 'clock') return '配置时钟';
-    return '配置定时器';
+    if (sourceType === 'clock') return t('configureTimer.clockTitle');
+    return t('configureTimer.timerTitle');
   };
 
   const getDescription = () => {
-    if (sourceType === 'clock') return '设置时钟显示格式';
-    return '设置定时器模式和时长';
+    if (sourceType === 'clock') return t('configureTimer.clockDescription');
+    return t('configureTimer.timerDescription');
   };
 
   const handleConfirm = () => {
@@ -102,29 +104,27 @@ export function ConfigureTimerDialog({
           {/* Mode selection (timer only) */}
           {sourceType === 'timer' && (
             <div className="space-y-2">
-              <Label className="text-gray-300">定时器模式</Label>
+              <Label className="text-gray-300">{t('configureTimer.timerMode')}</Label>
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => setMode('countdown')}
-                  className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
-                    mode === 'countdown'
+                  className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${mode === 'countdown'
                       ? 'bg-blue-500 border-blue-500 text-white'
                       : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
-                  }`}
+                    }`}
                 >
-                  倒计时
+                  {t('configureTimer.countdown')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setMode('countup')}
-                  className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
-                    mode === 'countup'
+                  className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${mode === 'countup'
                       ? 'bg-blue-500 border-blue-500 text-white'
                       : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
-                  }`}
+                    }`}
                 >
-                  正计时
+                  {t('configureTimer.countup')}
                 </button>
               </div>
             </div>
@@ -133,10 +133,10 @@ export function ConfigureTimerDialog({
           {/* Duration settings (countdown only) */}
           {sourceType === 'timer' && mode === 'countdown' && (
             <div className="space-y-2">
-              <Label className="text-gray-300">设置时长</Label>
+              <Label className="text-gray-300">{t('configureTimer.setDuration')}</Label>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <Label className="text-xs text-gray-400">时</Label>
+                  <Label className="text-xs text-gray-400">{t('configureTimer.hours')}</Label>
                   <Input
                     type="number"
                     min="0"
@@ -147,7 +147,7 @@ export function ConfigureTimerDialog({
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-gray-400">分</Label>
+                  <Label className="text-xs text-gray-400">{t('configureTimer.minutes')}</Label>
                   <Input
                     type="number"
                     min="0"
@@ -158,7 +158,7 @@ export function ConfigureTimerDialog({
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-gray-400">秒</Label>
+                  <Label className="text-xs text-gray-400">{t('configureTimer.seconds')}</Label>
                   <Input
                     type="number"
                     min="0"
@@ -174,27 +174,25 @@ export function ConfigureTimerDialog({
 
           {/* Display format */}
           <div className="space-y-2">
-            <Label className="text-gray-300">显示格式</Label>
+            <Label className="text-gray-300">{t('property.displayFormat')}</Label>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setFormat('HH:MM:SS')}
-                className={`flex-1 px-3 py-2 rounded-lg border text-sm transition-colors ${
-                  format === 'HH:MM:SS'
+                className={`flex-1 px-3 py-2 rounded-lg border text-sm transition-colors ${format === 'HH:MM:SS'
                     ? 'bg-blue-500 border-blue-500 text-white'
                     : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
-                }`}
+                  }`}
               >
                 HH:MM:SS
               </button>
               <button
                 type="button"
                 onClick={() => setFormat('MM:SS')}
-                className={`flex-1 px-3 py-2 rounded-lg border text-sm transition-colors ${
-                  format === 'MM:SS'
+                className={`flex-1 px-3 py-2 rounded-lg border text-sm transition-colors ${format === 'MM:SS'
                     ? 'bg-blue-500 border-blue-500 text-white'
                     : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
-                }`}
+                  }`}
               >
                 MM:SS
               </button>
@@ -202,11 +200,10 @@ export function ConfigureTimerDialog({
                 <button
                   type="button"
                   onClick={() => setFormat('HH:MM')}
-                  className={`flex-1 px-3 py-2 rounded-lg border text-sm transition-colors ${
-                    format === 'HH:MM'
+                  className={`flex-1 px-3 py-2 rounded-lg border text-sm transition-colors ${format === 'HH:MM'
                       ? 'bg-blue-500 border-blue-500 text-white'
                       : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
-                  }`}
+                    }`}
                 >
                   HH:MM
                 </button>
@@ -217,7 +214,7 @@ export function ConfigureTimerDialog({
           {/* Style settings */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-gray-300">字体大小</Label>
+              <Label className="text-gray-300">{t('property.fontSize')}</Label>
               <Input
                 type="number"
                 min="12"
@@ -228,7 +225,7 @@ export function ConfigureTimerDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-gray-300">颜色</Label>
+              <Label className="text-gray-300">{t('property.color')}</Label>
               <Input
                 type="color"
                 value={color}
@@ -245,7 +242,7 @@ export function ConfigureTimerDialog({
             onClick={handleClose}
             className="px-4 py-2 bg-[#1e1e1e] hover:bg-[#2d2d30] text-white rounded-lg transition-colors border border-[#3e3e42]"
           >
-            取消
+            {t('dialog.cancel')}
           </button>
           <button
             type="button"
@@ -253,7 +250,7 @@ export function ConfigureTimerDialog({
             disabled={!isValid()}
             className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            确认
+            {t('dialog.confirm')}
           </button>
         </DialogFooter>
       </DialogContent>

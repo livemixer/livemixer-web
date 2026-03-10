@@ -34,12 +34,23 @@ function formatTime(seconds: number, format: string): string {
   return `${pad(minutes)}:${pad(secs)}`;
 }
 
-// Format current time
-// Reset scale
-const now = new Date();
-const hours = now.getHours();
-const minutes = now.getMinutes();
-const seconds = now.getSeconds();
+// Format current time for clock display
+function formatClock(format: string): string {
+  const now = new Date();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  const seconds = now.getSeconds();
+
+  const pad = (n: number) => n.toString().padStart(2, '0');
+
+  if (format === 'HH:MM:SS') {
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  }
+  if (format === 'HH:MM') {
+    return `${pad(hours)}:${pad(minutes)}`;
+  }
+  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+}
 
 // Image component: loads and renders images
 const ImageItem = memo(({ item, commonProps }: { item: SceneItem; commonProps: any }) => {
@@ -368,12 +379,12 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(funct
       ref: isChildItem
         ? undefined
         : (node: Konva.Node | null) => {
-            if (node) {
-              shapeRefs.current.set(item.id, node);
-            } else {
-              shapeRefs.current.delete(item.id);
-            }
-          },
+          if (node) {
+            shapeRefs.current.set(item.id, node);
+          } else {
+            shapeRefs.current.delete(item.id);
+          }
+        },
       // 高亮选中的控件
       ...(isSelected && {
         shadowColor: isLocked ? '#ff6b6b' : '#00a8ff', // 锁定时用红色

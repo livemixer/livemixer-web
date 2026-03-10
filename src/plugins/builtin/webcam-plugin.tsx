@@ -5,7 +5,7 @@ import type { ISourcePlugin, IPluginContext } from '../../types/plugin';
 export const WebCamPlugin: ISourcePlugin = {
   id: 'io.livemixer.webcam',
   version: '1.0.0',
-  name: '摄像头',
+  name: 'Webcam',
   category: 'media',
   engines: {
     host: '^1.0.0',
@@ -13,17 +13,41 @@ export const WebCamPlugin: ISourcePlugin = {
   },
   propsSchema: {
     deviceId: {
-      label: '设备 ID',
+      label: 'Device ID',
+      labelKey: 'plugins.io.livemixer.webcam.label.deviceId',
       type: 'string',
       defaultValue: '',
     },
     opacity: {
-      label: '不透明度',
+      label: 'Opacity',
+      labelKey: 'plugins.io.livemixer.webcam.label.opacity',
       type: 'number',
       defaultValue: 1,
       min: 0,
       max: 1,
       step: 0.1,
+    },
+  },
+  i18n: {
+    defaultLanguage: 'en',
+    supportedLanguages: ['en', 'zh'],
+    resources: {
+      en: {
+        'plugins.io.livemixer.webcam': {
+          label: {
+            deviceId: 'Device ID',
+            opacity: 'Opacity',
+          },
+        },
+      },
+      zh: {
+        'plugins.io.livemixer.webcam': {
+          label: {
+            deviceId: '设备 ID',
+            opacity: '不透明度',
+          },
+        },
+      },
     },
   },
   onInit: (ctx: IPluginContext) => {

@@ -10,6 +10,7 @@ import {
   Video,
   Volume2,
 } from 'lucide-react';
+import { useI18n } from '../hooks/useI18n';
 import { pluginRegistry } from '../services/plugin-registry';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 
@@ -40,65 +41,67 @@ interface AddSourceDialogProps {
 }
 
 export function AddSourceDialog({ open, onOpenChange, onSelectSourceType }: AddSourceDialogProps) {
+  const { t } = useI18n();
+
   const sourceTypes: SourceTypeOption[] = [
     {
       type: 'image',
-      name: '图像',
-      description: '添加图片文件',
+      name: t('addSource.image.name'),
+      description: t('addSource.image.description'),
       icon: <Image className="w-6 h-6" />,
     },
     {
       type: 'media',
-      name: '媒体源',
-      description: '添加视频或音频文件',
+      name: t('addSource.media.name'),
+      description: t('addSource.media.description'),
       icon: <Video className="w-6 h-6" />,
     },
     {
       type: 'text',
-      name: '文本',
-      description: '添加文本内容',
+      name: t('addSource.text.name'),
+      description: t('addSource.text.description'),
       icon: <Type className="w-6 h-6" />,
     },
     {
       type: 'screen',
-      name: '显示器采集',
-      description: '捕获整个显示器画面',
+      name: t('addSource.screen.name'),
+      description: t('addSource.screen.description'),
       icon: <Monitor className="w-6 h-6" />,
     },
     {
       type: 'window',
-      name: '窗口采集',
-      description: '捕获指定窗口画面',
+      name: t('addSource.window.name'),
+      description: t('addSource.window.description'),
       icon: <ScreenShare className="w-6 h-6" />,
     },
     {
       type: 'video_input',
-      name: '视频采集设备',
-      description: '使用摄像头或视频设备',
+      name: t('addSource.videoInput.name'),
+      description: t('addSource.videoInput.description'),
       icon: <Video className="w-6 h-6" />,
     },
     {
       type: 'audio_input',
-      name: '音频输入采集',
-      description: '捕获麦克风或其他音频输入',
+      name: t('addSource.audioInput.name'),
+      description: t('addSource.audioInput.description'),
       icon: <Mic className="w-6 h-6" />,
     },
     {
       type: 'audio_output',
-      name: '音频输出采集',
-      description: '捕获系统音频输出',
+      name: t('addSource.audioOutput.name'),
+      description: t('addSource.audioOutput.description'),
       icon: <Volume2 className="w-6 h-6" />,
     },
     {
       type: 'timer',
-      name: '定时器',
-      description: '添加倒计时或正计时',
+      name: t('addSource.timer.name'),
+      description: t('addSource.timer.description'),
       icon: <Timer className="w-6 h-6" />,
     },
     {
       type: 'clock',
-      name: '时钟',
-      description: '显示实时时钟',
+      name: t('addSource.clock.name'),
+      description: t('addSource.clock.description'),
       icon: <Clock className="w-6 h-6" />,
     },
   ];
@@ -118,14 +121,14 @@ export function AddSourceDialog({ open, onOpenChange, onSelectSourceType }: AddS
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-linear-to-b from-neutral-850 to-neutral-900 border-neutral-700/50 text-white max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-white">添加源</DialogTitle>
-          <DialogDescription className="text-neutral-400">选择要添加的源类型</DialogDescription>
+          <DialogTitle className="text-xl font-semibold text-white">{t('addSource.title')}</DialogTitle>
+          <DialogDescription className="text-neutral-400">{t('addSource.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 mt-4">
           <div>
             <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">
-              内置源
+              {t('addSource.builtin')}
             </h3>
             <div className="grid grid-cols-2 gap-3">
               {sourceTypes.map(sourceType => (
@@ -152,7 +155,7 @@ export function AddSourceDialog({ open, onOpenChange, onSelectSourceType }: AddS
           {externalPlugins.length > 0 && (
             <div>
               <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">
-                已安装插件
+                {t('addSource.installedPlugins')}
               </h3>
               <div className="grid grid-cols-2 gap-3">
                 {externalPlugins.map(plugin => (
