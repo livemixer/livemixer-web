@@ -262,6 +262,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     // --- 插件化 PoC: 尝试通过插件获取默认属性 ---
     const pluginIdMap: Record<string, string> = {
       image: 'io.livemixer.image',
+      media: 'io.livemixer.mediasource',
       video_input: 'io.livemixer.webcam',
       text: 'io.livemixer.text',
     };
@@ -289,8 +290,8 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
             width: 400,
             height: 300,
           },
-          url: config?.url || '',
           ...pluginDefaultProps,
+          url: config?.url || '',
         };
         break;
       case 'media':
@@ -304,6 +305,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
             width: 400,
             height: 300,
           },
+          ...pluginDefaultProps,
           url: config?.url || '',
         };
         break;

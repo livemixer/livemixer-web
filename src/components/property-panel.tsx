@@ -22,6 +22,15 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
     setLocalItem(selectedItem);
   }, [selectedItem]);
 
+  // Auto-detect input method based on URL type
+  useEffect(() => {
+    if (localItem?.url?.startsWith('blob:')) {
+      setUrlInputMethod('file');
+    } else {
+      setUrlInputMethod('url');
+    }
+  }, [localItem?.id, localItem?.url]);
+
   if (!selectedItem || !localItem) {
     return (
       <div className="h-full p-4 flex items-center justify-center text-gray-500 text-sm">
@@ -267,6 +276,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
         {(() => {
           const pluginIdMap: Record<string, string> = {
             image: 'io.livemixer.image',
+            media: 'io.livemixer.mediasource',
             video_input: 'io.livemixer.webcam',
             text: 'io.livemixer.text',
           };
@@ -274,6 +284,10 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
           const plugin = pluginRegistry.getPlugin(pluginId);
 
           if (plugin && plugin.propsSchema) {
+            // Filter out 'url' as it's handled by the dedicated Media Source section
+            const schemaEntries = Object.entries(plugin.propsSchema).filter(([key]) => key !== 'url');
+            if (schemaEntries.length === 0) return null;
+
             return (
               <div className="border-t border-[#3e3e42] pt-4">
                 <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
@@ -281,7 +295,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
                   {t('property.pluginProps', { name: plugin.name })}
                 </h4>
                 <div className="space-y-4">
-                  {Object.entries(plugin.propsSchema).map(([key, schema]) => {
+                  {schemaEntries.map(([key, schema]) => {
                     if (schema.type === 'number') {
                       return (
                         <div key={key}>
@@ -304,7 +318,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
                         </div>
                       );
                     }
-                    if (schema.type === 'image' || schema.type === 'string') {
+                    if (schema.type === 'image' || schema.type === 'string' || schema.type === 'video') {
                       return (
                         <div key={key}>
                           <Label className="block mb-2">{schema.labelKey ? t(schema.labelKey) : schema.label}</Label>
@@ -317,6 +331,26 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
                         </div>
                       );
                     }
+                    if (schema.type === 'boolean') {
+                      const boolVal = localItem[key as keyof SceneItem] ?? schema.defaultValue;
+                      return (
+                        <div key={key} className="flex items-center justify-between">
+                          <Label className="text-xs">{schema.labelKey ? t(schema.labelKey) : schema.label}</Label>
+                          <button
+                            type="button"
+                            onClick={() => !isLocked && updateProperty({ [key]: !boolVal })}
+                            disabled={isLocked}
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${boolVal ? 'bg-primary-500' : 'bg-[#3e3e42]'
+                              } ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          >
+                            <span
+                              className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${boolVal ? 'translate-x-5' : 'translate-x-1'
+                                }`}
+                            />
+                          </button>
+                        </div>
+                      );
+                    }
                     return null;
                   })}
                 </div>
@@ -326,6 +360,104 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
           return null;
         })()}
         {/* ------------------------------------ */}
+
+        {/* Image and media source URL editor - moved above plugin props for better UX */}
+        {(localItem.type === 'image' || localItem.type === 'media') && (
+          <div className="border-t border-[#3e3e42] pt-4">
+            <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+              <span className="w-1 h-4 bg-blue-500 rounded"></span>
+              {localItem.type === 'image' ? t('property.imageSource') : t('property.mediaSource')}
+            </h4>
+
+            {/* Input method selection */}
+            <div className="flex gap-2 mb-4">
+              <button
+                type="button"
+                onClick={() => setUrlInputMethod('url')}
+                disabled={isLocked}
+                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${urlInputMethod === 'url'
+                  ? 'bg-blue-500 border-blue-500 text-white'
+                  : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                <LinkIcon className="w-3.5 h-3.5" />
+                <span>URL</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setUrlInputMethod('file')}
+                disabled={isLocked}
+                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${urlInputMethod === 'file'
+                  ? 'bg-blue-500 border-blue-500 text-white'
+                  : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>{t('property.localFile')}</span>
+              </button>
+            </div>
+
+            {/* URL input */}
+            {urlInputMethod === 'url' && (
+              <div>
+                <Label htmlFor="url" className="block mb-2">
+                  {localItem.type === 'image' ? t('property.imageUrl') : t('property.mediaUrl')}
+                </Label>
+                <Input
+                  id="url"
+                  type="url"
+                  value={localItem.url || ''}
+                  onChange={e => updateProperty({ url: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                  disabled={isLocked}
+                />
+              </div>
+            )}
+
+            {/* File upload */}
+            {urlInputMethod === 'file' && (
+              <div>
+                {/* Current file display - moved above select button */}
+                {localItem.url && (
+                  <div className="mb-3 p-2.5 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg">
+                    <div className="text-xs text-gray-400 mb-1">{t('property.current')}</div>
+                    <div className="text-xs text-blue-400 font-mono break-all">
+                      {localItem.url.startsWith('blob:')
+                        ? `${localItem.url.substring(0, 30)}... (Local File)`
+                        : localItem.url.length > 50
+                          ? `${localItem.url.substring(0, 50)}...`
+                          : localItem.url
+                      }
+                    </div>
+                  </div>
+                )}
+                <Label htmlFor="file-upload" className="block mb-2">
+                  {t('property.selectFile')}
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="file-upload"
+                    type="file"
+                    accept={localItem.type === 'image' ? 'image/*' : 'video/*,audio/*'}
+                    onChange={handleFileChange}
+                    disabled={isLocked}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="file-upload"
+                    className={`flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg transition-colors text-sm text-gray-300 ${isLocked
+                      ? 'cursor-not-allowed opacity-50'
+                      : 'cursor-pointer hover:bg-[#2d2d30]'
+                      }`}
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>{t('property.clickToSelect', { type: localItem.type === 'image' ? t('property.image') : t('property.media') })}</span>
+                  </label>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Type-specific props */}
         {localItem.type === 'color' && (
@@ -695,96 +827,6 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
                 />
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Image and media source URL editor */}
-        {(localItem.type === 'image' || localItem.type === 'media') && (
-          <div className="border-t border-[#3e3e42] pt-4">
-            <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
-              <span className="w-1 h-4 bg-blue-500 rounded"></span>
-              {localItem.type === 'image' ? t('property.imageSource') : t('property.mediaSource')}
-            </h4>
-
-            {/* Input method selection */}
-            <div className="flex gap-2 mb-4">
-              <button
-                type="button"
-                onClick={() => setUrlInputMethod('url')}
-                disabled={isLocked}
-                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${urlInputMethod === 'url'
-                  ? 'bg-blue-500 border-blue-500 text-white'
-                  : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                <LinkIcon className="w-3.5 h-3.5" />
-                <span>URL</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setUrlInputMethod('file')}
-                disabled={isLocked}
-                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${urlInputMethod === 'file'
-                  ? 'bg-blue-500 border-blue-500 text-white'
-                  : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                <Upload className="w-3.5 h-3.5" />
-                <span>{t('property.localFile')}</span>
-              </button>
-            </div>
-
-            {/* URL input */}
-            {urlInputMethod === 'url' && (
-              <div>
-                <Label htmlFor="url" className="block mb-2">
-                  {localItem.type === 'image' ? t('property.imageUrl') : t('property.mediaUrl')}
-                </Label>
-                <Input
-                  id="url"
-                  type="url"
-                  value={localItem.url || ''}
-                  onChange={e => updateProperty({ url: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
-                  disabled={isLocked}
-                />
-              </div>
-            )}
-
-            {/* File upload */}
-            {urlInputMethod === 'file' && (
-              <div>
-                <Label htmlFor="file-upload" className="block mb-2">
-                  {t('property.selectFile')}
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="file-upload"
-                    type="file"
-                    accept={localItem.type === 'image' ? 'image/*' : 'video/*,audio/*'}
-                    onChange={handleFileChange}
-                    disabled={isLocked}
-                    className="hidden"
-                  />
-                  <label
-                    htmlFor="file-upload"
-                    className={`flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg transition-colors text-sm text-gray-300 ${isLocked
-                      ? 'cursor-not-allowed opacity-50'
-                      : 'cursor-pointer hover:bg-[#2d2d30]'
-                      }`}
-                  >
-                    <Upload className="w-4 h-4" />
-                    <span>{t('property.clickToSelect', { type: localItem.type === 'image' ? t('property.image') : t('property.media') })}</span>
-                  </label>
-                </div>
-                {localItem.url && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    {t('property.current')}: {localItem.url.substring(0, 50)}
-                    {localItem.url.length > 50 ? '...' : ''}
-                  </p>
-                )}
-              </div>
-            )}
           </div>
         )}
       </div>
