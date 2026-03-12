@@ -114,7 +114,7 @@ export function AddSourceDialog({ open, onOpenChange, onSelectSourceType }: AddS
   const externalPlugins = pluginRegistry
     .getAllPlugins()
     .filter(
-      p => !['io.livemixer.image', 'io.livemixer.webcam', 'io.livemixer.text'].includes(p.id),
+      p => !['io.livemixer.image', 'io.livemixer.mediasource', 'io.livemixer.webcam', 'io.livemixer.text'].includes(p.id),
     );
 
   return (

@@ -131,8 +131,8 @@ export function ConfigureSourceDialog({
               type="button"
               onClick={() => setInputMethod('file')}
               className={`flex-1 px-4 py-2 rounded-lg border transition-colors flex items-center justify-center gap-2 ${inputMethod === 'file'
-                  ? 'bg-blue-500 border-blue-500 text-white'
-                  : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                ? 'bg-blue-500 border-blue-500 text-white'
+                : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
                 }`}
             >
               <Upload className="w-4 h-4" />
@@ -142,8 +142,8 @@ export function ConfigureSourceDialog({
               type="button"
               onClick={() => setInputMethod('url')}
               className={`flex-1 px-4 py-2 rounded-lg border transition-colors flex items-center justify-center gap-2 ${inputMethod === 'url'
-                  ? 'bg-blue-500 border-blue-500 text-white'
-                  : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                ? 'bg-blue-500 border-blue-500 text-white'
+                : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
                 }`}
             >
               <LinkIcon className="w-4 h-4" />

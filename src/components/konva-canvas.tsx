@@ -7,6 +7,7 @@ import type { Scene, SceneItem, Transform } from '../types/protocol';
 import { LiveKitStreamItem } from './livekit-stream-item';
 
 // Plugin renderer: isolates hooks context to avoid Rules of Hooks violations
+// Note: using shallow comparison to ensure plugin re-renders when item changes
 const PluginRenderer = memo(
   ({ plugin, commonProps, item }: { plugin: any; commonProps: any; item: SceneItem }) => {
     return plugin.render({ ...commonProps, item });
@@ -396,6 +397,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(funct
     // --- Plugin PoC: check for registered plugin ---
     const pluginIdMap: Record<string, string> = {
       image: 'io.livemixer.image',
+      media: 'io.livemixer.mediasource',
       video_input: 'io.livemixer.webcam',
       text: 'io.livemixer.text',
     };
@@ -414,10 +416,6 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(funct
       }
 
       case 'image':
-        return <ImageItem item={item} commonProps={commonProps} />;
-
-      case 'media':
-        // Media uses image component (poster or placeholder)
         return <ImageItem item={item} commonProps={commonProps} />;
 
       case 'text': {
