@@ -115,8 +115,9 @@ export const MediaSourcePlugin: ISourcePlugin = {
         // Initialize or get cached video element
         // eslint-disable-next-line react-hooks/rules-of-hooks
         useEffect(() => {
-            if (!url) {
+            if (!url || url.trim() === '') {
                 setVideoElement(null);
+                videoRef.current = null;
                 return;
             }
 
@@ -129,6 +130,7 @@ export const MediaSourcePlugin: ISourcePlugin = {
                 video.crossOrigin = 'anonymous';
                 video.playsInline = true;
                 video.style.display = 'none';
+                document.body.appendChild(video);
                 videoCache.set(url, video);
             }
 
@@ -143,6 +145,7 @@ export const MediaSourcePlugin: ISourcePlugin = {
 
             const handleError = () => {
                 console.error('MediaSource: video error', video?.error);
+                setVideoElement(null);
             };
 
             video.addEventListener('canplay', handleCanPlay);
@@ -156,7 +159,11 @@ export const MediaSourcePlugin: ISourcePlugin = {
                 video.volume = volume;
                 // Load and play
                 video.load();
-                video.play().catch(err => console.warn('MediaSource: autoplay failed', err));
+                video.play().catch(err => {
+                    console.warn('MediaSource: autoplay failed', err);
+                    // Don't set videoElement to null on autoplay failure
+                    // The video might still be playable after user interaction
+                });
             }
 
             // If already ready, set immediately
@@ -213,13 +220,13 @@ export const MediaSourcePlugin: ISourcePlugin = {
                             cornerRadius={item.transform?.borderRadius || item.borderRadius || 0}
                         />
                     ) : (
-                        /* ── Loading state: show placeholder while video loads ── */
+                        /* ── Loading/Empty state: show placeholder ── */
                         <>
                             <Rect
                                 {...restProps}
                                 ref={nodeRef}
                                 fill="#1a1a2e"
-                                stroke="#4a4a8a"
+                                stroke={url ? "#4a4a8a" : "#ef4444"}
                                 strokeWidth={1}
                                 cornerRadius={8}
                                 opacity={0.8}
@@ -229,9 +236,9 @@ export const MediaSourcePlugin: ISourcePlugin = {
                                 y={restProps.y}
                                 width={w}
                                 height={h}
-                                text="Loading..."
-                                fontSize={Math.min(w, h) * 0.15}
-                                fill="#8888aa"
+                                text={url ? "Loading..." : "No media URL\nConfigure in properties"}
+                                fontSize={Math.min(w, h) * 0.12}
+                                fill={url ? "#8888aa" : "#ef4444"}
                                 align="center"
                                 verticalAlign="middle"
                                 listening={false}
