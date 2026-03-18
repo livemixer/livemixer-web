@@ -1,6 +1,7 @@
-import { Link as LinkIcon, Lock, Pause, Play, RotateCcw, Upload } from 'lucide-react';
+import { Link as LinkIcon, Lock, Monitor, Pause, Play, RotateCcw, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useI18n } from '../hooks/useI18n';
+import { notifyStreamCacheChange, streamCache } from '../plugins/builtin/screencapture-plugin';
 import { pluginRegistry } from '../services/plugin-registry';
 import type { SceneItem } from '../types/protocol';
 import { Input } from './ui/input';
@@ -277,6 +278,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
           const pluginIdMap: Record<string, string> = {
             image: 'io.livemixer.image',
             media: 'io.livemixer.mediasource',
+            screen_capture: 'io.livemixer.screencapture',
             video_input: 'io.livemixer.webcam',
             text: 'io.livemixer.text',
           };
@@ -360,6 +362,80 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
           return null;
         })()}
         {/* ------------------------------------ */}
+
+        {/* Screen Capture control panel */}
+        {localItem.type === 'screen_capture' && (
+          <div className="border-t border-[#3e3e42] pt-4">
+            <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+              <span className="w-1 h-4 bg-green-500 rounded"></span>
+              {t('property.screenCaptureSource')}
+            </h4>
+
+            {/* Current source info */}
+            <div className="mb-4 p-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg">
+              <div className="text-xs text-gray-400 mb-1">{t('property.currentSource')}</div>
+              <div className="text-sm text-gray-200 flex items-center gap-2">
+                <Monitor className="w-4 h-4 text-green-500" />
+                <span className="truncate">
+                  {(() => {
+                    const cached = streamCache.get(localItem.id);
+                    if (cached?.title) {
+                      return cached.title;
+                    }
+                    return t('property.noActiveCapture');
+                  })()}
+                </span>
+              </div>
+            </div>
+
+            {/* Re-select button */}
+            <button
+              type="button"
+              onClick={async () => {
+                if (isLocked) return;
+                try {
+                  // Stop current stream if exists
+                  const cached = streamCache.get(localItem.id);
+                  if (cached) {
+                    cached.stream.getTracks().forEach(track => track.stop());
+                    streamCache.delete(localItem.id);
+                  }
+                  // Request new screen capture
+                  const stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { displaySurface: 'monitor' } as MediaTrackConstraints,
+                    audio: false,
+                  });
+                  const videoTrack = stream.getVideoTracks()[0];
+                  const title = videoTrack?.label || 'Screen/Window Capture';
+                  // Create video element and cache
+                  const video = document.createElement('video');
+                  video.srcObject = stream;
+                  video.playsInline = true;
+                  video.muted = true;
+                  video.style.display = 'none';
+                  document.body.appendChild(video);
+                  video.play().catch(() => { });
+                  streamCache.set(localItem.id, { stream, video, title });
+                  // Handle stream end
+                  videoTrack.onended = () => {
+                    streamCache.delete(localItem.id);
+                  };
+                  // Notify plugin to update
+                  notifyStreamCacheChange(localItem.id);
+                  // Force refresh
+                  setLocalItem({ ...localItem });
+                } catch (err) {
+                  console.log('Screen capture selection cancelled');
+                }
+              }}
+              disabled={isLocked}
+              className="w-full py-2 px-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              <Monitor className="w-4 h-4" />
+              <span>{t('property.reselectSource')}</span>
+            </button>
+          </div>
+        )}
 
         {/* Image and media source URL editor - moved above plugin props for better UX */}
         {(localItem.type === 'image' || localItem.type === 'media') && (

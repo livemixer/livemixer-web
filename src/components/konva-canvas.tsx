@@ -398,6 +398,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(funct
     const pluginIdMap: Record<string, string> = {
       image: 'io.livemixer.image',
       media: 'io.livemixer.mediasource',
+      screen_capture: 'io.livemixer.screencapture',
       video_input: 'io.livemixer.webcam',
       text: 'io.livemixer.text',
     };

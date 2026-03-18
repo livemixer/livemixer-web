@@ -55,6 +55,7 @@ export const en: LanguageResource = {
             media: 'Media',
             text: 'Text',
             screen: 'Screen Capture',
+            screen_capture: 'Screen Capture',
             window: 'Window Capture',
             video_input: 'Video Input',
             audio_input: 'Audio Input',
@@ -125,6 +126,10 @@ export const en: LanguageResource = {
         text: 'Text',
         localFile: 'Local File',
         defaultTextContent: 'Text content',
+        screenCaptureSource: 'Screen Capture Source',
+        currentSource: 'Current Source',
+        noActiveCapture: 'No active capture',
+        reselectSource: 'Reselect Source',
     },
     settings: {
         title: 'Settings',
@@ -258,6 +263,10 @@ export const en: LanguageResource = {
         window: {
             name: 'Window Capture',
             description: 'Capture a specific window',
+        },
+        screenCapture: {
+            name: 'Screen Capture',
+            description: 'Capture and share your screen',
         },
         videoInput: {
             name: 'Video Capture Device',
