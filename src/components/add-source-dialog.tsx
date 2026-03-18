@@ -4,7 +4,6 @@ import {
   Mic,
   Monitor,
   Puzzle,
-  ScreenShare,
   Timer,
   Type,
   Video,
@@ -63,16 +62,10 @@ export function AddSourceDialog({ open, onOpenChange, onSelectSourceType }: AddS
       icon: <Type className="w-6 h-6" />,
     },
     {
-      type: 'screen',
-      name: t('addSource.screen.name'),
-      description: t('addSource.screen.description'),
+      type: 'screen_capture',
+      name: t('addSource.screenCapture.name'),
+      description: t('addSource.screenCapture.description'),
       icon: <Monitor className="w-6 h-6" />,
-    },
-    {
-      type: 'window',
-      name: t('addSource.window.name'),
-      description: t('addSource.window.description'),
-      icon: <ScreenShare className="w-6 h-6" />,
     },
     {
       type: 'video_input',
@@ -114,7 +107,7 @@ export function AddSourceDialog({ open, onOpenChange, onSelectSourceType }: AddS
   const externalPlugins = pluginRegistry
     .getAllPlugins()
     .filter(
-      p => !['io.livemixer.image', 'io.livemixer.mediasource', 'io.livemixer.webcam', 'io.livemixer.text'].includes(p.id),
+      p => !['io.livemixer.image', 'io.livemixer.mediasource', 'io.livemixer.screencapture', 'io.livemixer.webcam', 'io.livemixer.text'].includes(p.id),
     );
 
   return (

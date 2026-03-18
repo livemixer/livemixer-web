@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useRef, useState } from 'react';
 import lmsLogo from './assets/lms.svg';
 import { I18nProvider } from './contexts/I18nContext';
 import { useI18n } from './hooks/useI18n';
 import type { SourceType } from './components/add-source-dialog';
+import { notifyStreamCacheChange, streamCache } from './plugins/builtin/screencapture-plugin';
 import { BottomBar } from './components/bottom-bar';
 import { ConfigureSourceDialog, type SourceConfig } from './components/configure-source-dialog';
 import { ConfigureTimerDialog, type TimerConfig } from './components/configure-timer-dialog';
@@ -214,7 +215,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
   };
 
   // 添加新源到当前场景 - 第一步：选择源类型
-  const handleAddItem = (sourceType: SourceType) => {
+  const handleAddItem = async (sourceType: SourceType) => {
     // 对于图像和媒体源，需要进一步配置
     if (sourceType === 'image' || sourceType === 'media') {
       setPendingSourceType(sourceType);
@@ -226,6 +227,22 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     if (sourceType === 'timer' || sourceType === 'clock') {
       setPendingSourceType(sourceType);
       setConfigureTimerOpen(true);
+      return;
+    }
+
+    // Screen Capture 需要立即请求权限
+    if (sourceType === 'screen_capture') {
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: { displaySurface: 'monitor' } as MediaTrackConstraints,
+          audio: false,
+        });
+        // 用户选择了屏幕，创建项目并缓存流
+        createItem(sourceType, undefined, undefined, stream);
+      } catch (err) {
+        // 用户取消或出错，不创建项目
+        console.log('Screen capture cancelled by user');
+      }
       return;
     }
 
@@ -248,7 +265,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
   };
 
   // 创建源项的核心逻辑
-  const createItem = (sourceType: SourceType, config?: SourceConfig, timerConfig?: TimerConfig) => {
+  const createItem = (sourceType: SourceType, config?: SourceConfig, timerConfig?: TimerConfig, stream?: MediaStream) => {
     if (!activeSceneId) return;
 
     // 生成新的 ID，格式为 type-序号（类似 OBS）
@@ -263,6 +280,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     const pluginIdMap: Record<string, string> = {
       image: 'io.livemixer.image',
       media: 'io.livemixer.mediasource',
+      screen_capture: 'io.livemixer.screencapture',
       video_input: 'io.livemixer.webcam',
       text: 'io.livemixer.text',
     };
@@ -308,6 +326,38 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
           ...pluginDefaultProps,
           url: config?.url || '',
         };
+        break;
+      case 'screen_capture':
+        newItem = {
+          id: newItemId,
+          type: 'screen_capture',
+          zIndex: activeScene?.items.length || 0,
+          layout: {
+            x: 100,
+            y: 100,
+            width: 800,
+            height: 450,
+          },
+          ...pluginDefaultProps,
+        };
+        // Cache the stream for the plugin to use
+        if (stream) {
+          const video = document.createElement('video');
+          video.srcObject = stream;
+          video.playsInline = true;
+          video.muted = true;
+          video.style.display = 'none';
+          document.body.appendChild(video);
+          video.play().catch(() => { });
+          const title = stream.getVideoTracks()[0]?.label || 'Screen/Window Capture';
+          streamCache.set(newItemId, { stream, video, title });
+          // Handle stream end
+          stream.getVideoTracks()[0].onended = () => {
+            streamCache.delete(newItemId);
+          };
+          // Notify plugin after item is created
+          setTimeout(() => notifyStreamCacheChange(newItemId), 0);
+        }
         break;
       case 'text':
         newItem = {

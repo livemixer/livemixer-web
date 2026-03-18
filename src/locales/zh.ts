@@ -55,6 +55,7 @@ export const zh: LanguageResource = {
             media: '媒体',
             text: '文本',
             screen: '屏幕捕获',
+            screen_capture: '屏幕捕获',
             window: '窗口捕获',
             video_input: '视频输入',
             audio_input: '音频输入',
@@ -125,6 +126,10 @@ export const zh: LanguageResource = {
         text: '文本',
         localFile: '本地文件',
         defaultTextContent: '文本内容',
+        screenCaptureSource: '屏幕捕获源',
+        currentSource: '当前源',
+        noActiveCapture: '无活动捕获',
+        reselectSource: '重新选择源',
     },
     settings: {
         title: '设置',
@@ -258,6 +263,10 @@ export const zh: LanguageResource = {
         window: {
             name: '窗口采集',
             description: '捕获指定窗口画面',
+        },
+        screenCapture: {
+            name: '屏幕捕获',
+            description: '捕获并共享您的屏幕',
         },
         videoInput: {
             name: '视频采集设备',
