@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.tsx';
+import { PluginContextProvider } from './components/plugin-slot';
 import { ImagePlugin } from './plugins/builtin/image-plugin';
 import { MediaSourcePlugin } from './plugins/builtin/mediasource-plugin';
 import { ScreenCapturePlugin } from './plugins/builtin/screencapture-plugin';
@@ -18,6 +19,8 @@ pluginRegistry.register(TextPlugin);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <PluginContextProvider>
+      <App />
+    </PluginContextProvider>
   </StrictMode>
 );

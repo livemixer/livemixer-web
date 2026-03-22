@@ -1,25 +1,52 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Image as KonvaImage, Rect, Text } from 'react-konva';
 import type { ISourcePlugin, IPluginContext } from '../../types/plugin';
+import { mediaStreamManager } from '../../services/media-stream-manager';
 
-// Global stream cache to persist across re-renders
-export const streamCache = new Map<string, { stream: MediaStream; video: HTMLVideoElement; title?: string }>();
+// ============================================================================
+// Legacy exports - proxied to mediaStreamManager for backward compatibility
+// These exports are DEPRECATED and will be removed in future versions.
+// Use mediaStreamManager directly.
+// ============================================================================
 
-// Callbacks for cache change notifications
-const cacheCallbacks = new Map<string, Set<() => void>>();
-
-export function onStreamCacheChange(itemId: string, callback: () => void) {
-    if (!cacheCallbacks.has(itemId)) {
-        cacheCallbacks.set(itemId, new Set());
+/** @deprecated Use mediaStreamManager.getStream() instead */
+export const streamCache = {
+    get: (itemId: string) => {
+        const entry = mediaStreamManager.getStream(itemId);
+        if (!entry) return undefined;
+        return {
+            stream: entry.stream,
+            video: entry.video || null,
+            title: entry.metadata?.deviceLabel
+        };
+    },
+    set: (itemId: string, data: { stream: MediaStream; video?: HTMLVideoElement; title?: string }) => {
+        mediaStreamManager.setStream(itemId, {
+            stream: data.stream,
+            video: data.video,
+            metadata: {
+                deviceLabel: data.title,
+                sourceType: 'screen',
+                pluginId: 'io.livemixer.screencapture'
+            }
+        });
+    },
+    delete: (itemId: string) => {
+        mediaStreamManager.removeStream(itemId);
+    },
+    has: (itemId: string) => {
+        return mediaStreamManager.hasStream(itemId);
     }
-    cacheCallbacks.get(itemId)!.add(callback);
-    return () => {
-        cacheCallbacks.get(itemId)?.delete(callback);
-    };
+};
+
+/** @deprecated Use mediaStreamManager.onStreamChange() instead */
+export function onStreamCacheChange(itemId: string, callback: () => void) {
+    return mediaStreamManager.onStreamChange(itemId, callback);
 }
 
+/** @deprecated Use mediaStreamManager.notifyStreamChange() instead */
 export function notifyStreamCacheChange(itemId: string) {
-    cacheCallbacks.get(itemId)?.forEach(cb => cb());
+    mediaStreamManager.notifyStreamChange(itemId);
 }
 
 export const ScreenCapturePlugin: ISourcePlugin = {

@@ -1,5 +1,6 @@
 import type { I18nEngine, LanguageResource } from '../types/i18n-engine'
 import type { IPluginContext, ISourcePlugin } from '../types/plugin'
+import { pluginContextManager } from './plugin-context'
 
 class PluginRegistry {
   private plugins: Map<string, ISourcePlugin> = new Map()
@@ -92,6 +93,16 @@ class PluginRegistry {
 
     if (plugin.onInit) {
       plugin.onInit(context)
+    }
+
+    // Call onContextReady with full plugin context (if plugin supports it)
+    if (plugin.onContextReady) {
+      const fullContext = pluginContextManager.createContextForPlugin(
+        plugin.id,
+        plugin.version,
+        plugin.trustLevel || 'community'
+      )
+      plugin.onContextReady(fullContext)
     }
   }
 

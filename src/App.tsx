@@ -3,12 +3,10 @@ import lmsLogo from './assets/lms.svg';
 import { I18nProvider } from './contexts/I18nContext';
 import { useI18n } from './hooks/useI18n';
 import type { SourceType } from './components/add-source-dialog';
-import { notifyStreamCacheChange, streamCache } from './plugins/builtin/screencapture-plugin';
-import { notifyWebcamStreamCacheChange, webcamStreamCache } from './plugins/builtin/webcam';
 import { BottomBar } from './components/bottom-bar';
 import { ConfigureSourceDialog, type SourceConfig } from './components/configure-source-dialog';
 import { ConfigureTimerDialog, type TimerConfig } from './components/configure-timer-dialog';
-import { VideoInputDialog } from './plugins/builtin/webcam/video-input-dialog';
+import { DialogSlot } from './components/plugin-slot';
 import { KonvaCanvas, type KonvaCanvasHandle } from './components/konva-canvas';
 import { MainLayout } from './components/main-layout';
 import { ParticipantsPanel } from './components/participants-panel';
@@ -19,6 +17,8 @@ import { Toolbar } from './components/toolbar';
 import { canvasCaptureService } from './services/canvas-capture';
 import { createI18nEngine } from './services/i18n-engine';
 import { liveKitPullService } from './services/livekit-pull';
+import { mediaStreamManager } from './services/media-stream-manager';
+import { pluginContextManager } from './services/plugin-context';
 import { pluginRegistry } from './services/plugin-registry';
 import { streamingService } from './services/streaming';
 import { coreResources, supportedLanguages } from './locales';
@@ -123,7 +123,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
   const [pendingSourceType, setPendingSourceType] = useState<SourceType | null>(null);
   const [configureSourceOpen, setConfigureSourceOpen] = useState(false);
   const [configureTimerOpen, setConfigureTimerOpen] = useState(false);
-  const [videoInputDialogOpen, setVideoInputDialogOpen] = useState(false);
+  const [activePluginDialog, setActivePluginDialog] = useState<string | null>(null);
   const canvasRef = useRef<KonvaCanvasHandle>(null);
 
   // 从 store 获取 LiveKit 配置和输出设置
@@ -146,8 +146,42 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSceneId, data.scenes.find, data.scenes[0]]);
 
+  // Configure Plugin Context action handlers
+  useEffect(() => {
+    pluginContextManager.setActionHandlers({
+      scene: {
+        selectItem: (itemId) => setSelectedItemId(itemId),
+      },
+      ui: {
+        showDialog: (dialogId) => {
+          // Handle specific dialogs
+          if (dialogId === 'video-input') {
+            setActivePluginDialog('video-input-dialog');
+          }
+        },
+        closeDialog: (dialogId) => {
+          if (dialogId === 'video-input') {
+            setActivePluginDialog(null);
+          }
+        },
+      },
+    });
+  }, []);
+
   const activeScene = data.scenes.find(s => s.id === activeSceneId) || null;
   const selectedItem = activeScene?.items.find(item => item.id === selectedItemId) || null;
+
+  // Sync state to Plugin Context
+  useEffect(() => {
+    pluginContextManager.updateState({
+      scene: {
+        currentId: activeSceneId,
+        items: activeScene?.items || [],
+        selectedItemId,
+        selectedItem,
+      },
+    });
+  }, [activeSceneId, activeScene?.items, selectedItemId, selectedItem]);
 
   // 添加新场景
   const handleAddScene = () => {
@@ -251,7 +285,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     // Video Input - show device selection dialog
     if (sourceType === 'video_input') {
-      setVideoInputDialogOpen(true);
+      setActivePluginDialog('video-input-dialog');
       return;
     }
 
@@ -266,9 +300,14 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     setPendingSourceType(null);
   };
 
-  // 视频输入设备选择后创建
-  const handleVideoInputConfirm = (deviceId: string, deviceLabel: string, stream: MediaStream) => {
-    createItem('video_input', undefined, undefined, undefined, stream, deviceId, deviceLabel);
+  // 插件对话框确认处理器 (slot-based)
+  const handlePluginDialogConfirm = () => {
+    // For video-input-dialog, consume the pending stream
+    const pendingStream = mediaStreamManager.consumePendingStream();
+    if (pendingStream) {
+      createItem('video_input', undefined, undefined, undefined, pendingStream.stream, pendingStream.metadata?.deviceId, pendingStream.metadata?.deviceLabel);
+    }
+    setActivePluginDialog(null);
   };
 
   // 配置定时器/时钟后创建
@@ -372,13 +411,17 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
           document.body.appendChild(video);
           video.play().catch(() => { });
           const title = stream.getVideoTracks()[0]?.label || 'Screen/Window Capture';
-          streamCache.set(newItemId, { stream, video, title });
+          mediaStreamManager.setStream(newItemId, {
+            stream,
+            video,
+            metadata: { sourceType: 'screen', deviceLabel: title }
+          });
           // Handle stream end
           stream.getVideoTracks()[0].onended = () => {
-            streamCache.delete(newItemId);
+            mediaStreamManager.removeStream(newItemId);
           };
           // Notify plugin after item is created
-          setTimeout(() => notifyStreamCacheChange(newItemId), 0);
+          setTimeout(() => mediaStreamManager.notifyStreamChange(newItemId), 0);
         }
         break;
       case 'text':
@@ -450,18 +493,21 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
           video.style.display = 'none';
           document.body.appendChild(video);
           video.play().catch(() => { });
-          webcamStreamCache.set(newItemId, {
+          mediaStreamManager.setStream(newItemId, {
             stream: webcamStream,
             video,
-            deviceId: webcamDeviceId,
-            label: webcamDeviceLabel || 'Webcam'
+            metadata: {
+              deviceId: webcamDeviceId,
+              deviceLabel: webcamDeviceLabel || 'Webcam',
+              sourceType: 'webcam'
+            }
           });
           // Handle stream end
           webcamStream.getVideoTracks()[0].onended = () => {
-            webcamStreamCache.delete(newItemId);
+            mediaStreamManager.removeStream(newItemId);
           };
           // Notify plugin after item is created
-          setTimeout(() => notifyWebcamStreamCacheChange(newItemId), 0);
+          setTimeout(() => mediaStreamManager.notifyStreamChange(newItemId), 0);
         }
         break;
       case 'audio_input':
@@ -994,10 +1040,12 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         sourceType={pendingSourceType}
         onConfirm={handleConfigureTimer}
       />
-      <VideoInputDialog
-        open={videoInputDialogOpen}
-        onOpenChange={setVideoInputDialogOpen}
-        onConfirm={handleVideoInputConfirm}
+      <DialogSlot
+        activeDialog={activePluginDialog}
+        onClose={() => setActivePluginDialog(null)}
+        dialogProps={{
+          onConfirm: handlePluginDialogConfirm,
+        }}
       />
     </>
   );

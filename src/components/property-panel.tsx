@@ -1,8 +1,7 @@
 import { Link as LinkIcon, Lock, Monitor, Pause, Play, RotateCcw, Square, Upload, Video } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useI18n } from '../hooks/useI18n';
-import { notifyStreamCacheChange, streamCache } from '../plugins/builtin/screencapture-plugin';
-import { getVideoInputDevices, notifyWebcamStreamCacheChange, webcamStreamCache } from '../plugins/builtin/webcam';
+import { mediaStreamManager } from '../services/media-stream-manager';
 import { pluginRegistry } from '../services/plugin-registry';
 import type { SceneItem } from '../types/protocol';
 import { Input } from './ui/input';
@@ -35,8 +34,8 @@ function VideoInputPanel({
   // Check if stream is active
   useEffect(() => {
     const checkActive = () => {
-      const cached = webcamStreamCache.get(localItem.id);
-      setIsActive(!!cached && cached.stream.active);
+      const entry = mediaStreamManager.getStream(localItem.id);
+      setIsActive(!!entry && entry.stream.active);
     };
     checkActive();
     // Check periodically
@@ -67,7 +66,7 @@ function VideoInputPanel({
     }
     setIsLoadingDevices(true);
     try {
-      let videoDevices = await getVideoInputDevices();
+      let videoDevices = await mediaStreamManager.getVideoInputDevices();
 
       // If no devices found, try to get one via getUserMedia and extract info
       if (videoDevices.length === 0) {
@@ -133,14 +132,9 @@ function VideoInputPanel({
   }, [deviceChangeFlag]);
 
   const handleStopStream = () => {
-    const cached = webcamStreamCache.get(localItem.id);
-    if (cached) {
-      cached.stream.getTracks().forEach(track => track.stop());
-      if (cached.video && cached.video.parentNode) {
-        cached.video.parentNode.removeChild(cached.video);
-      }
-      webcamStreamCache.delete(localItem.id);
-      notifyWebcamStreamCacheChange(localItem.id);
+    const entry = mediaStreamManager.getStream(localItem.id);
+    if (entry) {
+      mediaStreamManager.removeStream(localItem.id);
       setIsActive(false);
       // Clear deviceId so user can select again
       updateProperty({ deviceId: '' });
@@ -169,18 +163,25 @@ function VideoInputPanel({
       video.style.display = 'none';
       document.body.appendChild(video);
       video.play().catch(() => { });
-      webcamStreamCache.set(localItem.id, { stream, video, deviceId: newDeviceId, label });
+      mediaStreamManager.setStream(localItem.id, {
+        stream,
+        video,
+        metadata: {
+          deviceId: newDeviceId,
+          deviceLabel: label,
+          sourceType: 'webcam'
+        }
+      });
 
       // Handle stream end
       videoTrack.onended = () => {
-        webcamStreamCache.delete(localItem.id);
-        notifyWebcamStreamCacheChange(localItem.id);
+        mediaStreamManager.removeStream(localItem.id);
         setIsActive(false);
       };
 
       // Update item and notify plugin
       updateProperty({ deviceId: newDeviceId });
-      notifyWebcamStreamCacheChange(localItem.id);
+      mediaStreamManager.notifyStreamChange(localItem.id);
       setLocalItem({ ...localItem, deviceId: newDeviceId });
       setIsActive(true);
     } catch (err) {
@@ -188,7 +189,7 @@ function VideoInputPanel({
     }
   };
 
-  const cached = webcamStreamCache.get(localItem.id);
+  const entry = mediaStreamManager.getStream(localItem.id);
 
   return (
     <div className="border-t border-[#3e3e42] pt-4">
@@ -203,7 +204,7 @@ function VideoInputPanel({
         <div className="text-sm text-gray-200 flex items-center gap-2">
           <Video className={`w-4 h-4 ${isActive ? 'text-green-500' : 'text-gray-500'}`} />
           <span className="truncate flex-1">
-            {isActive && cached?.label ? cached.label : t('property.noActiveCapture')}
+            {isActive && entry?.metadata?.deviceLabel ? entry.metadata.deviceLabel : t('property.noActiveCapture')}
           </span>
           {isActive && (
             <span className="text-xs text-green-500 bg-green-500/20 px-2 py-0.5 rounded">Live</span>
@@ -620,9 +621,9 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
                 <Monitor className="w-4 h-4 text-green-500" />
                 <span className="truncate">
                   {(() => {
-                    const cached = streamCache.get(localItem.id);
-                    if (cached?.title) {
-                      return cached.title;
+                    const entry = mediaStreamManager.getStream(localItem.id);
+                    if (entry?.metadata?.deviceLabel) {
+                      return entry.metadata.deviceLabel;
                     }
                     return t('property.noActiveCapture');
                   })()}
@@ -637,10 +638,9 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
                 if (isLocked) return;
                 try {
                   // Stop current stream if exists
-                  const cached = streamCache.get(localItem.id);
-                  if (cached) {
-                    cached.stream.getTracks().forEach(track => track.stop());
-                    streamCache.delete(localItem.id);
+                  const existingEntry = mediaStreamManager.getStream(localItem.id);
+                  if (existingEntry) {
+                    mediaStreamManager.removeStream(localItem.id);
                   }
                   // Request new screen capture
                   const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -657,13 +657,17 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
                   video.style.display = 'none';
                   document.body.appendChild(video);
                   video.play().catch(() => { });
-                  streamCache.set(localItem.id, { stream, video, title });
+                  mediaStreamManager.setStream(localItem.id, {
+                    stream,
+                    video,
+                    metadata: { sourceType: 'screen', deviceLabel: title }
+                  });
                   // Handle stream end
                   videoTrack.onended = () => {
-                    streamCache.delete(localItem.id);
+                    mediaStreamManager.removeStream(localItem.id);
                   };
                   // Notify plugin to update
-                  notifyStreamCacheChange(localItem.id);
+                  mediaStreamManager.notifyStreamChange(localItem.id);
                   // Force refresh
                   setLocalItem({ ...localItem });
                 } catch (err) {

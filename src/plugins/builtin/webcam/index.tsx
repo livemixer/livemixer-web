@@ -1,79 +1,94 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Group, Image as KonvaImage, Rect, Text } from 'react-konva';
 import type { ISourcePlugin, IPluginContext } from '../../../types/plugin';
+import type { IPluginContext as IPluginContextNew, SlotComponentProps } from '../../../types/plugin-context';
+import { mediaStreamManager } from '../../../services/media-stream-manager';
 import { VideoInputDialog } from './video-input-dialog';
 
-// Global stream cache to persist across re-renders
-export const webcamStreamCache = new Map<string, { stream: MediaStream; video: HTMLVideoElement; deviceId?: string; label?: string }>();
-
-// Temporary stream holder for dialog -> app communication
-// When VideoInputDialog confirms, it stores stream here before calling onConfirm
-// App.tsx retrieves it when creating the item
-export let pendingWebcamStream: {
-    stream: MediaStream;
-    deviceId: string;
-    label: string;
-} | null = null;
-
-export function setPendingWebcamStream(data: typeof pendingWebcamStream) {
-    pendingWebcamStream = data;
+// Slot-compatible wrapper for VideoInputDialog
+function VideoInputDialogSlot({ props }: SlotComponentProps) {
+    return (
+        <VideoInputDialog
+            open={props.open}
+            onClose={props.onClose}
+            onConfirm={props.onConfirm}
+        />
+    );
 }
 
-export function consumePendingWebcamStream() {
-    const data = pendingWebcamStream;
-    pendingWebcamStream = null;
-    return data;
-}
+// ============================================================================
+// Legacy exports - proxied to mediaStreamManager for backward compatibility
+// These exports are DEPRECATED and will be removed in future versions.
+// Use mediaStreamManager directly.
+// ============================================================================
 
-// Callbacks for cache change notifications
-const cacheCallbacks = new Map<string, Set<() => void>>();
-
-export function onWebcamStreamCacheChange(itemId: string, callback: () => void) {
-    if (!cacheCallbacks.has(itemId)) {
-        cacheCallbacks.set(itemId, new Set());
+/** @deprecated Use mediaStreamManager.getStream() instead */
+export const webcamStreamCache = {
+    get: (itemId: string) => {
+        const entry = mediaStreamManager.getStream(itemId);
+        if (!entry) return undefined;
+        return {
+            stream: entry.stream,
+            video: entry.video || null,
+            deviceId: entry.metadata?.deviceId,
+            label: entry.metadata?.deviceLabel
+        };
+    },
+    set: (itemId: string, data: { stream: MediaStream; video?: HTMLVideoElement; deviceId?: string; label?: string }) => {
+        mediaStreamManager.setStream(itemId, {
+            stream: data.stream,
+            video: data.video,
+            metadata: {
+                deviceId: data.deviceId,
+                deviceLabel: data.label,
+                sourceType: 'webcam',
+                pluginId: 'io.livemixer.webcam'
+            }
+        });
+    },
+    delete: (itemId: string) => {
+        mediaStreamManager.removeStream(itemId);
+    },
+    has: (itemId: string) => {
+        return mediaStreamManager.hasStream(itemId);
     }
-    cacheCallbacks.get(itemId)!.add(callback);
-    return () => {
-        cacheCallbacks.get(itemId)?.delete(callback);
+};
+
+/** @deprecated Use mediaStreamManager.setPendingStream() instead */
+export function setPendingWebcamStream(data: { stream: MediaStream; deviceId: string; label: string } | null) {
+    if (data) {
+        mediaStreamManager.setPendingStream({
+            stream: data.stream,
+            sourceType: 'webcam',
+            metadata: { deviceId: data.deviceId, deviceLabel: data.label }
+        });
+    }
+}
+
+/** @deprecated Use mediaStreamManager.consumePendingStream() instead */
+export function consumePendingWebcamStream() {
+    const data = mediaStreamManager.consumePendingStream();
+    if (!data) return null;
+    return {
+        stream: data.stream,
+        deviceId: data.metadata?.deviceId || '',
+        label: data.metadata?.deviceLabel || ''
     };
 }
 
-export function notifyWebcamStreamCacheChange(itemId: string) {
-    cacheCallbacks.get(itemId)?.forEach(cb => cb());
+/** @deprecated Use mediaStreamManager.onStreamChange() instead */
+export function onWebcamStreamCacheChange(itemId: string, callback: () => void) {
+    return mediaStreamManager.onStreamChange(itemId, callback);
 }
 
-// Get available video input devices
+/** @deprecated Use mediaStreamManager.notifyStreamChange() instead */
+export function notifyWebcamStreamCacheChange(itemId: string) {
+    mediaStreamManager.notifyStreamChange(itemId);
+}
+
+/** @deprecated Use mediaStreamManager.getVideoInputDevices() instead */
 export async function getVideoInputDevices(): Promise<MediaDeviceInfo[]> {
-    try {
-        // First try to enumerate without requesting permission
-        // If permission was already granted, we'll get labels
-        let devices = await navigator.mediaDevices.enumerateDevices();
-        let videoDevices = devices.filter(device => device.kind === 'videoinput');
-
-        // Check if we have labels (indicates permission was granted)
-        const hasLabels = videoDevices.some(d => d.label && d.label.length > 0);
-
-        if (!hasLabels && videoDevices.length > 0) {
-            // Permission not granted yet, request it
-            try {
-                const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
-                tempStream.getTracks().forEach(track => track.stop());
-
-                // Re-enumerate to get labels
-                devices = await navigator.mediaDevices.enumerateDevices();
-                videoDevices = devices.filter(device => device.kind === 'videoinput');
-            } catch (permErr) {
-                console.warn('Could not get camera permission:', permErr);
-                // Return devices without labels
-            }
-        }
-
-        console.log('getVideoInputDevices found:', videoDevices);
-        return videoDevices;
-    } catch (err) {
-        console.error('Error getting video devices:', err);
-        return [];
-    }
+    return mediaStreamManager.getVideoInputDevices();
 }
 
 export const WebCamPlugin: ISourcePlugin = {
@@ -156,6 +171,18 @@ export const WebCamPlugin: ISourcePlugin = {
     // UI configuration - register addDialog
     ui: {
         addDialog: VideoInputDialog,
+    },
+    // Called when full plugin context is ready
+    onContextReady: (ctx: IPluginContextNew) => {
+        ctx.logger.info('WebCam plugin context ready');
+
+        // Register dialog to slot system
+        ctx.registerSlot({
+            id: 'video-input-dialog',
+            slot: 'add-source-dialog',
+            component: VideoInputDialogSlot,
+            priority: 100,
+        });
     },
     onInit: (ctx: IPluginContext) => {
         ctx.logger.info('WebCam plugin initialized');
