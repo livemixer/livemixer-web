@@ -1,4 +1,10 @@
 import type { IPluginI18n } from './i18n-engine';
+import type {
+  IPluginContext as IPluginContextNew,
+  PluginUIConfig,
+  PluginPermission,
+  PluginTrustLevel,
+} from './plugin-context';
 
 export type PluginControlType = 'number' | 'string' | 'color' | 'boolean' | 'select' | 'image' | 'video' | 'group';
 
@@ -58,7 +64,32 @@ export interface ISourcePlugin {
   // Internationalization (optional)
   i18n?: IPluginI18n;
 
-  // Lifecycle
+  // ============ NEW: Plugin Context Integration ============
+
+  /** Trust level for permission system */
+  trustLevel?: PluginTrustLevel;
+
+  /** Permissions required by this plugin */
+  permissions?: PluginPermission[];
+
+  /** UI configuration - dialogs, panels, slots */
+  ui?: PluginUIConfig;
+
+  /** 
+   * Called when plugin context is ready
+   * Use this to register slots, subscribe to events, etc.
+   */
+  onContextReady?: (ctx: IPluginContextNew) => void;
+
+  /** 
+   * Public API exposed to other plugins
+   * Other plugins can access via ctx.getPluginAPI(pluginId)
+   */
+  api?: Record<string, any>;
+
+  // ============ Lifecycle ============
+
+  /** @deprecated Use onContextReady instead */
   onInit: (ctx: IPluginContext) => Promise<void> | void;
   onUpdate: (newProps: any) => void;
 
@@ -70,3 +101,7 @@ export interface ISourcePlugin {
 
   onDispose: () => void;
 }
+
+// Re-export for convenience
+export type { IPluginContextNew as IPluginContextExtended };
+export type { PluginUIConfig, PluginPermission, PluginTrustLevel };

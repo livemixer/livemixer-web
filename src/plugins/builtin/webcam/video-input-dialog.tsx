@@ -1,16 +1,29 @@
 import { Video, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useI18n } from '../hooks/useI18n';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
-import { Label } from './ui/label';
+import { useI18n } from '../../../hooks/useI18n';
+import type { AddDialogProps } from '../../../types/plugin-context';
+import type { SceneItem } from '../../../types/protocol';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
+import { Label } from '../../../components/ui/label';
+import { setPendingWebcamStream } from './index';
 
-interface VideoInputDialogProps {
+// Legacy interface for backward compatibility
+interface LegacyVideoInputDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onConfirm: (deviceId: string, deviceLabel: string, stream: MediaStream) => void;
 }
 
-export function VideoInputDialog({ open, onOpenChange, onConfirm }: VideoInputDialogProps) {
+// Support both legacy and new AddDialogProps interfaces
+type VideoInputDialogProps = LegacyVideoInputDialogProps | AddDialogProps;
+
+// Type guard to check if using legacy props
+function isLegacyProps(props: VideoInputDialogProps): props is LegacyVideoInputDialogProps {
+    return 'onOpenChange' in props;
+}
+
+export function VideoInputDialog(props: VideoInputDialogProps) {
+    const { open } = props;
     const { t } = useI18n();
     const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
     const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
@@ -147,10 +160,18 @@ export function VideoInputDialog({ open, onOpenChange, onConfirm }: VideoInputDi
         const device = devices.find(d => d.deviceId === selectedDeviceId);
         const label = device?.label || 'Webcam';
 
-        // Pass the stream to parent - don't stop it
-        onConfirm(selectedDeviceId, label, previewStream);
-        setPreviewStream(null); // Clear reference without stopping
-        onOpenChange(false);
+        if (isLegacyProps(props)) {
+            // Legacy mode: pass stream directly
+            props.onConfirm(selectedDeviceId, label, previewStream);
+            setPreviewStream(null);
+            props.onOpenChange(false);
+        } else {
+            // New mode: store stream in pending holder, pass item to onConfirm
+            setPendingWebcamStream({ stream: previewStream, deviceId: selectedDeviceId, label });
+            setPreviewStream(null);
+            props.onConfirm({ deviceId: selectedDeviceId } as Partial<SceneItem>);
+            props.onClose();
+        }
     };
 
     const handleCancel = () => {
@@ -158,7 +179,11 @@ export function VideoInputDialog({ open, onOpenChange, onConfirm }: VideoInputDi
             previewStream.getTracks().forEach(track => track.stop());
             setPreviewStream(null);
         }
-        onOpenChange(false);
+        if (isLegacyProps(props)) {
+            props.onOpenChange(false);
+        } else {
+            props.onClose();
+        }
     };
 
     return (
