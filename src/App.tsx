@@ -4,9 +4,11 @@ import { I18nProvider } from './contexts/I18nContext';
 import { useI18n } from './hooks/useI18n';
 import type { SourceType } from './components/add-source-dialog';
 import { notifyStreamCacheChange, streamCache } from './plugins/builtin/screencapture-plugin';
+import { notifyWebcamStreamCacheChange, webcamStreamCache } from './plugins/builtin/webcam-plugin';
 import { BottomBar } from './components/bottom-bar';
 import { ConfigureSourceDialog, type SourceConfig } from './components/configure-source-dialog';
 import { ConfigureTimerDialog, type TimerConfig } from './components/configure-timer-dialog';
+import { VideoInputDialog } from './components/video-input-dialog';
 import { KonvaCanvas, type KonvaCanvasHandle } from './components/konva-canvas';
 import { MainLayout } from './components/main-layout';
 import { ParticipantsPanel } from './components/participants-panel';
@@ -121,6 +123,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
   const [pendingSourceType, setPendingSourceType] = useState<SourceType | null>(null);
   const [configureSourceOpen, setConfigureSourceOpen] = useState(false);
   const [configureTimerOpen, setConfigureTimerOpen] = useState(false);
+  const [videoInputDialogOpen, setVideoInputDialogOpen] = useState(false);
   const canvasRef = useRef<KonvaCanvasHandle>(null);
 
   // 从 store 获取 LiveKit 配置和输出设置
@@ -246,6 +249,12 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       return;
     }
 
+    // Video Input - show device selection dialog
+    if (sourceType === 'video_input') {
+      setVideoInputDialogOpen(true);
+      return;
+    }
+
     // 其他类型直接创建
     createItem(sourceType);
   };
@@ -257,6 +266,11 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     setPendingSourceType(null);
   };
 
+  // 视频输入设备选择后创建
+  const handleVideoInputConfirm = (deviceId: string, deviceLabel: string, stream: MediaStream) => {
+    createItem('video_input', undefined, undefined, undefined, stream, deviceId, deviceLabel);
+  };
+
   // 配置定时器/时钟后创建
   const handleConfigureTimer = (config: TimerConfig) => {
     if (!pendingSourceType) return;
@@ -265,7 +279,15 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
   };
 
   // 创建源项的核心逻辑
-  const createItem = (sourceType: SourceType, config?: SourceConfig, timerConfig?: TimerConfig, stream?: MediaStream) => {
+  const createItem = (
+    sourceType: SourceType,
+    config?: SourceConfig,
+    timerConfig?: TimerConfig,
+    stream?: MediaStream,
+    webcamStream?: MediaStream,
+    webcamDeviceId?: string,
+    webcamDeviceLabel?: string
+  ) => {
     if (!activeSceneId) return;
 
     // 生成新的 ID，格式为 type-序号（类似 OBS）
@@ -416,9 +438,31 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
             width: 400,
             height: 300,
           },
-          source: 'video_device', // 待用户选择设备
           ...pluginDefaultProps,
+          deviceId: webcamDeviceId || '',
         };
+        // Cache the webcam stream for the plugin to use
+        if (webcamStream) {
+          const video = document.createElement('video');
+          video.srcObject = webcamStream;
+          video.playsInline = true;
+          video.muted = true;
+          video.style.display = 'none';
+          document.body.appendChild(video);
+          video.play().catch(() => { });
+          webcamStreamCache.set(newItemId, {
+            stream: webcamStream,
+            video,
+            deviceId: webcamDeviceId,
+            label: webcamDeviceLabel || 'Webcam'
+          });
+          // Handle stream end
+          webcamStream.getVideoTracks()[0].onended = () => {
+            webcamStreamCache.delete(newItemId);
+          };
+          // Notify plugin after item is created
+          setTimeout(() => notifyWebcamStreamCacheChange(newItemId), 0);
+        }
         break;
       case 'audio_input':
         newItem = {
@@ -949,6 +993,11 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         onOpenChange={setConfigureTimerOpen}
         sourceType={pendingSourceType}
         onConfirm={handleConfigureTimer}
+      />
+      <VideoInputDialog
+        open={videoInputDialogOpen}
+        onOpenChange={setVideoInputDialogOpen}
+        onConfirm={handleVideoInputConfirm}
       />
     </>
   );
