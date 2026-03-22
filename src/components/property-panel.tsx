@@ -2,7 +2,7 @@ import { Link as LinkIcon, Lock, Monitor, Pause, Play, RotateCcw, Square, Upload
 import { useEffect, useState } from 'react';
 import { useI18n } from '../hooks/useI18n';
 import { notifyStreamCacheChange, streamCache } from '../plugins/builtin/screencapture-plugin';
-import { getVideoInputDevices, notifyWebcamStreamCacheChange, webcamStreamCache } from '../plugins/builtin/webcam-plugin';
+import { getVideoInputDevices, notifyWebcamStreamCacheChange, webcamStreamCache } from '../plugins/builtin/webcam';
 import { pluginRegistry } from '../services/plugin-registry';
 import type { SceneItem } from '../types/protocol';
 import { Input } from './ui/input';
