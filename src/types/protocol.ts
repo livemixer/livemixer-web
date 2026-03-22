@@ -57,6 +57,11 @@ export interface SceneItem {
     participantIdentity: string // Participant ID
     streamSource: 'camera' | 'screen_share' // Stream source: camera or screen share
   }
+  // video_input (webcam) type
+  deviceId?: string
+  muted?: boolean
+  volume?: number
+  mirror?: boolean
 }
 
 export interface Scene {

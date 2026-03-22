@@ -1,7 +1,8 @@
-import { Link as LinkIcon, Lock, Monitor, Pause, Play, RotateCcw, Upload } from 'lucide-react';
+import { Link as LinkIcon, Lock, Monitor, Pause, Play, RotateCcw, Square, Upload, Video } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useI18n } from '../hooks/useI18n';
 import { notifyStreamCacheChange, streamCache } from '../plugins/builtin/screencapture-plugin';
+import { getVideoInputDevices, notifyWebcamStreamCacheChange, webcamStreamCache } from '../plugins/builtin/webcam-plugin';
 import { pluginRegistry } from '../services/plugin-registry';
 import type { SceneItem } from '../types/protocol';
 import { Input } from './ui/input';
@@ -11,6 +12,245 @@ import { Slider } from './ui/slider';
 interface PropertyPanelProps {
   selectedItem: SceneItem | null;
   onUpdateItem?: (itemId: string, updates: Partial<SceneItem>) => void;
+}
+
+// Video Input Panel Component
+function VideoInputPanel({
+  localItem,
+  isLocked,
+  updateProperty,
+  setLocalItem,
+}: {
+  localItem: SceneItem;
+  isLocked: boolean;
+  updateProperty: (updates: Partial<SceneItem>) => void;
+  setLocalItem: (item: SceneItem) => void;
+}) {
+  const { t } = useI18n();
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  const [isLoadingDevices, setIsLoadingDevices] = useState(false);
+  const [isActive, setIsActive] = useState(false);
+  const [deviceChangeFlag, setDeviceChangeFlag] = useState(0);
+
+  // Check if stream is active
+  useEffect(() => {
+    const checkActive = () => {
+      const cached = webcamStreamCache.get(localItem.id);
+      setIsActive(!!cached && cached.stream.active);
+    };
+    checkActive();
+    // Check periodically
+    const interval = setInterval(checkActive, 1000);
+    return () => clearInterval(interval);
+  }, [localItem.id]);
+
+  // Listen for device changes (e.g., user plugs in a new device)
+  useEffect(() => {
+    const handleDeviceChange = () => {
+      console.log('Device change detected');
+      if (!isActive) {
+        setDeviceChangeFlag(prev => prev + 1); // Trigger reload
+      }
+    };
+    navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange);
+    return () => {
+      navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
+    };
+  }, [isActive]);
+
+  const loadDevices = async (force = false, clearOnFail = false) => {
+    if (isActive) return; // Don't load if stream is active
+    // Skip if we already have devices and not forcing reload
+    if (!force && devices.length > 0) {
+      console.log('Skipping loadDevices, already have devices:', devices.length);
+      return;
+    }
+    setIsLoadingDevices(true);
+    try {
+      let videoDevices = await getVideoInputDevices();
+
+      // If no devices found, try to get one via getUserMedia and extract info
+      if (videoDevices.length === 0) {
+        try {
+          console.log('No devices from enumerateDevices, trying getUserMedia fallback...');
+          const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+          const videoTrack = tempStream.getVideoTracks()[0];
+
+          if (videoTrack) {
+            const settings = videoTrack.getSettings();
+            const fallbackDevice = {
+              deviceId: settings.deviceId || 'default',
+              kind: 'videoinput' as MediaDeviceKind,
+              label: videoTrack.label || 'Camera',
+              groupId: '',
+              toJSON: () => ({})
+            };
+            console.log('Using fallback device from stream:', fallbackDevice);
+            videoDevices = [fallbackDevice as MediaDeviceInfo];
+          }
+
+          // Stop the temp stream
+          tempStream.getTracks().forEach(track => track.stop());
+        } catch (fallbackErr) {
+          console.warn('Fallback getUserMedia also failed:', fallbackErr);
+          // Keep existing devices only if not clearing on fail (e.g., device was unplugged)
+          if (!clearOnFail && devices.length > 0) {
+            console.log('Keeping existing devices');
+            setIsLoadingDevices(false);
+            return;
+          }
+          // Device was unplugged, clear the list
+          console.log('Clearing devices (device likely unplugged)');
+        }
+      }
+
+      console.log('Setting devices:', videoDevices.length, videoDevices);
+      setDevices(videoDevices);
+    } catch (err) {
+      console.error('Failed to load devices:', err);
+    } finally {
+      setIsLoadingDevices(false);
+    }
+  };
+
+  // Debug: log devices state changes
+  useEffect(() => {
+    console.log('Devices state updated:', devices.length, 'isActive:', isActive);
+  }, [devices, isActive]);
+
+  useEffect(() => {
+    if (!isActive) {
+      loadDevices(true); // Force reload when stream stops
+    }
+  }, [isActive]);
+
+  // Reload devices when device change is detected
+  useEffect(() => {
+    if (deviceChangeFlag > 0 && !isActive) {
+      console.log('Reloading devices due to device change...');
+      loadDevices(true, true); // Force reload and clear on fail (device may be unplugged)
+    }
+  }, [deviceChangeFlag]);
+
+  const handleStopStream = () => {
+    const cached = webcamStreamCache.get(localItem.id);
+    if (cached) {
+      cached.stream.getTracks().forEach(track => track.stop());
+      if (cached.video && cached.video.parentNode) {
+        cached.video.parentNode.removeChild(cached.video);
+      }
+      webcamStreamCache.delete(localItem.id);
+      notifyWebcamStreamCacheChange(localItem.id);
+      setIsActive(false);
+      // Clear deviceId so user can select again
+      updateProperty({ deviceId: '' });
+      setLocalItem({ ...localItem, deviceId: '' });
+    }
+  };
+
+  const handleDeviceChange = async (newDeviceId: string) => {
+    if (!newDeviceId || isActive) return;
+
+    try {
+      // Request new stream with selected device
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { deviceId: { exact: newDeviceId } },
+        audio: true,
+      });
+      const videoTrack = stream.getVideoTracks()[0];
+      const label = videoTrack?.label || 'Webcam';
+
+      // Create video element and cache
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.playsInline = true;
+      video.muted = localItem.muted ?? true;
+      video.volume = localItem.volume ?? 1;
+      video.style.display = 'none';
+      document.body.appendChild(video);
+      video.play().catch(() => { });
+      webcamStreamCache.set(localItem.id, { stream, video, deviceId: newDeviceId, label });
+
+      // Handle stream end
+      videoTrack.onended = () => {
+        webcamStreamCache.delete(localItem.id);
+        notifyWebcamStreamCacheChange(localItem.id);
+        setIsActive(false);
+      };
+
+      // Update item and notify plugin
+      updateProperty({ deviceId: newDeviceId });
+      notifyWebcamStreamCacheChange(localItem.id);
+      setLocalItem({ ...localItem, deviceId: newDeviceId });
+      setIsActive(true);
+    } catch (err) {
+      console.error('Failed to start device:', err);
+    }
+  };
+
+  const cached = webcamStreamCache.get(localItem.id);
+
+  return (
+    <div className="border-t border-[#3e3e42] pt-4">
+      <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+        <span className="w-1 h-4 bg-purple-500 rounded"></span>
+        {t('property.videoInputSource')}
+      </h4>
+
+      {/* Current source info */}
+      <div className="mb-4 p-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg">
+        <div className="text-xs text-gray-400 mb-1">{t('property.currentSource')}</div>
+        <div className="text-sm text-gray-200 flex items-center gap-2">
+          <Video className={`w-4 h-4 ${isActive ? 'text-green-500' : 'text-gray-500'}`} />
+          <span className="truncate flex-1">
+            {isActive && cached?.label ? cached.label : t('property.noActiveCapture')}
+          </span>
+          {isActive && (
+            <span className="text-xs text-green-500 bg-green-500/20 px-2 py-0.5 rounded">Live</span>
+          )}
+        </div>
+      </div>
+
+      {/* Stop button - only show when active */}
+      {isActive && (
+        <button
+          type="button"
+          onClick={handleStopStream}
+          disabled={isLocked}
+          className="w-full mb-4 py-2 px-4 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+        >
+          <Square className="w-4 h-4" />
+          <span>{t('property.stopCapture')}</span>
+        </button>
+      )}
+
+      {/* Device selector */}
+      <div className="mb-4">
+        <Label className="text-xs text-gray-400 mb-2 block">{t('property.selectDevice')}</Label>
+        <select
+          value={localItem.deviceId || ''}
+          onChange={(e) => handleDeviceChange(e.target.value)}
+          onFocus={() => loadDevices()}
+          disabled={isLocked || isLoadingDevices || isActive}
+          className={`w-full py-2 px-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg text-white text-sm focus:outline-none focus:border-purple-500 ${isActive ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          <option value="">
+            {isActive
+              ? t('property.stopToChangeDevice')
+              : (isLoadingDevices ? 'Loading...' : (devices.length === 0 ? 'No devices found' : t('property.selectDevice')))}
+          </option>
+          {!isActive && devices.map(device => (
+            <option key={device.deviceId} value={device.deviceId}>
+              {device.label || `Device ${device.deviceId.slice(0, 8)}`}
+            </option>
+          ))}
+        </select>
+        {isActive && (
+          <p className="text-xs text-yellow-500 mt-1">{t('property.stopToChangeDevice')}</p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps) {
@@ -287,7 +527,9 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
 
           if (plugin && plugin.propsSchema) {
             // Filter out 'url' as it's handled by the dedicated Media Source section
-            const schemaEntries = Object.entries(plugin.propsSchema).filter(([key]) => key !== 'url');
+            const schemaEntries = Object.entries(plugin.propsSchema).filter(([key]) =>
+              key !== 'url' && key !== 'deviceId' // deviceId is handled by VideoInputPanel
+            );
             if (schemaEntries.length === 0) return null;
 
             return (
@@ -435,6 +677,16 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
               <span>{t('property.reselectSource')}</span>
             </button>
           </div>
+        )}
+
+        {/* Video Input control panel */}
+        {localItem.type === 'video_input' && (
+          <VideoInputPanel
+            localItem={localItem}
+            isLocked={isLocked}
+            updateProperty={updateProperty}
+            setLocalItem={setLocalItem}
+          />
         )}
 
         {/* Image and media source URL editor - moved above plugin props for better UX */}
