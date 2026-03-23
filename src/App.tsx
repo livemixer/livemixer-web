@@ -289,6 +289,12 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       return;
     }
 
+    // Audio Input - show device selection dialog
+    if (sourceType === 'audio_input') {
+      setActivePluginDialog('audio-input-dialog');
+      return;
+    }
+
     // 其他类型直接创建
     createItem(sourceType);
   };
@@ -302,10 +308,11 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
   // 插件对话框确认处理器 (slot-based)
   const handlePluginDialogConfirm = () => {
-    // For video-input-dialog, consume the pending stream
+    // Consume the pending stream (video_input or audio_input)
     const pendingStream = mediaStreamManager.consumePendingStream();
     if (pendingStream) {
-      createItem('video_input', undefined, undefined, undefined, pendingStream.stream, pendingStream.metadata?.deviceId, pendingStream.metadata?.deviceLabel);
+      const sourceType = pendingStream.sourceType === 'audio_input' ? 'audio_input' : 'video_input';
+      createItem(sourceType, undefined, undefined, undefined, pendingStream.stream, pendingStream.metadata?.deviceId, pendingStream.metadata?.deviceLabel);
     }
     setActivePluginDialog(null);
   };
@@ -343,6 +350,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       media: 'io.livemixer.mediasource',
       screen_capture: 'io.livemixer.screencapture',
       video_input: 'io.livemixer.webcam',
+      audio_input: 'io.livemixer.audioinput',
       text: 'io.livemixer.text',
     };
     const pluginId = pluginIdMap[sourceType] || sourceType;
@@ -510,7 +518,8 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
           setTimeout(() => mediaStreamManager.notifyStreamChange(newItemId), 0);
         }
         break;
-      case 'audio_input':
+      case 'audio_input': {
+        const audioStream = webcamStream; // reuse webcamStream param for audio stream
         newItem = {
           id: newItemId,
           type: 'audio_input',
@@ -518,12 +527,33 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
           layout: {
             x: 100,
             y: 100,
-            width: 200,
-            height: 100,
+            width: 300,
+            height: 80,
           },
-          source: 'audio_input_device', // 待用户选择设备
+          deviceId: webcamDeviceId,
+          muted: false,
+          volume: 1,
+          ...pluginDefaultProps,
         };
+        if (audioStream) {
+          const audioTrack = audioStream.getAudioTracks()[0];
+          mediaStreamManager.setStream(newItemId, {
+            stream: audioStream,
+            metadata: {
+              deviceId: webcamDeviceId,
+              deviceLabel: webcamDeviceLabel || 'Microphone',
+              sourceType: 'audio_input'
+            }
+          });
+          if (audioTrack) {
+            audioTrack.onended = () => {
+              mediaStreamManager.removeStream(newItemId);
+            };
+          }
+          setTimeout(() => mediaStreamManager.notifyStreamChange(newItemId), 0);
+        }
         break;
+      }
       case 'audio_output':
         newItem = {
           id: newItemId,
@@ -1016,6 +1046,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
             onMoveItemDown={handleMoveItemDown}
             onToggleItemVisibility={handleToggleItemVisibility}
             onToggleItemLock={handleToggleItemLock}
+            onUpdateItem={handleUpdateItem}
           />
         }
         statusBar={

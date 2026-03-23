@@ -400,6 +400,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(funct
       media: 'io.livemixer.mediasource',
       screen_capture: 'io.livemixer.screencapture',
       video_input: 'io.livemixer.webcam',
+      audio_input: 'io.livemixer.audioinput',
       text: 'io.livemixer.text',
     };
     const pluginId = pluginIdMap[item.type] || item.type;
