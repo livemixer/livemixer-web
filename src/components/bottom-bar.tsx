@@ -13,8 +13,9 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useI18n } from '../hooks/useI18n';
-import type { Scene } from '../types/protocol';
+import type { Scene, SceneItem } from '../types/protocol';
 import { AddSourceDialog, type SourceType } from './add-source-dialog';
+import { AudioMixerPanel } from './audio-mixer-panel';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +47,7 @@ interface BottomBarProps {
   onMoveItemDown: (itemId: string) => void;
   onToggleItemVisibility: (itemId: string) => void;
   onToggleItemLock: (itemId: string) => void;
+  onUpdateItem?: (itemId: string, updates: Partial<SceneItem>) => void;
 }
 
 export function BottomBar({
@@ -67,6 +69,7 @@ export function BottomBar({
   onMoveItemDown,
   onToggleItemVisibility,
   onToggleItemLock,
+  onUpdateItem,
 }: BottomBarProps) {
   const { t } = useI18n();
   const activeScene = scenes.find(s => s.id === activeSceneId);
@@ -79,8 +82,8 @@ export function BottomBar({
   return (
     <TooltipProvider>
       <div className="w-full h-full flex bg-linear-to-r from-neutral-900 via-neutral-850 to-neutral-900">
-        {/* Scene area - 30% */}
-        <div className="w-[30%] flex flex-col border-r border-neutral-700/30 overflow-hidden">
+        {/* Scene area - 25% */}
+        <div className="w-[25%] flex flex-col border-r border-neutral-700/30 overflow-hidden">
           <div className="px-4 py-2 border-b border-neutral-700/30 text-center bg-neutral-900/80 sticky top-0">
             <h3 className="text-sm font-semibold text-white">{t('scene.title')}</h3>
           </div>
@@ -347,8 +350,16 @@ export function BottomBar({
           </div>
         </div>
 
-        {/* Control area - 25% */}
-        <div className="w-[25%] flex flex-col overflow-hidden">
+        {/* Audio Mixer - 20% */}
+        <div className="w-[20%] flex flex-col border-r border-[#3e3e42] overflow-hidden">
+          <AudioMixerPanel
+            audioItems={activeScene?.items.filter(i => i.type === 'audio_input') ?? []}
+            onUpdateItem={onUpdateItem}
+          />
+        </div>
+
+        {/* Control area - 20% */}
+        <div className="w-[20%] flex flex-col overflow-hidden">
           <div className="px-4 py-2 border-b border-[#3e3e42] text-center">
             <h3 className="text-sm font-semibold text-gray-300">{t('control.title')}</h3>
           </div>

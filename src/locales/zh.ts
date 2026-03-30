@@ -128,12 +128,18 @@ export const zh: LanguageResource = {
         defaultTextContent: '文本内容',
         screenCaptureSource: '屏幕捕获源',
         videoInputSource: '视频输入源',
+        audioInputSource: '音频输入源',
         selectDevice: '选择设备',
         currentSource: '当前源',
+        capturing: '捕获中',
         noActiveCapture: '无活动捕获',
         stopCapture: '停止捕获',
         stopToChangeDevice: '停止捕获后才能切换设备',
         reselectSource: '重新选择源',
+        showOnCanvas: '在画布中显示',
+        loadingDevices: '加载设备中...',
+        startCapture: '开始捕获',
+        noDevices: '无可用音频设备',
     },
     videoInputDialog: {
         title: '视频采集设备',
@@ -253,6 +259,10 @@ export const zh: LanguageResource = {
     },
     control: {
         title: '控制',
+    },
+    mixer: {
+        title: '混音器',
+        empty: '无音频源',
     },
     addSource: {
         title: '添加源',

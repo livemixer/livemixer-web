@@ -62,6 +62,8 @@ export interface SceneItem {
   muted?: boolean
   volume?: number
   mirror?: boolean
+  // audio_input type
+  showOnCanvas?: boolean
 }
 
 export interface Scene {

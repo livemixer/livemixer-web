@@ -176,21 +176,50 @@ class MediaStreamManagerImpl {
 
     /**
      * Get available audio input devices with permission handling
+     * Only requests getUserMedia permission when necessary
      */
     async getAudioInputDevices(): Promise<MediaDeviceInfo[]> {
         try {
+            // First, try enumerate without requesting permission
             let devices = await navigator.mediaDevices.enumerateDevices();
             let audioDevices = devices.filter(device => device.kind === 'audioinput');
 
+            // Check if we already have permission (devices have labels)
             const hasLabels = audioDevices.some(d => d.label && d.label.length > 0);
 
-            if (!hasLabels && audioDevices.length > 0) {
+            // Only request permission if:
+            // 1. We have devices but no labels (permission not granted yet)
+            // 2. No devices found (might be hidden due to no permission)
+            const needsPermission = (audioDevices.length > 0 && !hasLabels) || audioDevices.length === 0;
+
+            if (needsPermission) {
                 try {
                     const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const audioTrack = tempStream.getAudioTracks()[0];
+
+                    // Save track info BEFORE stopping (for fallback)
+                    const trackInfo = audioTrack ? {
+                        deviceId: audioTrack.getSettings()?.deviceId || 'default',
+                        label: audioTrack.label || 'Microphone'
+                    } : null;
+
                     tempStream.getTracks().forEach(track => track.stop());
 
+                    // Re-enumerate after permission grant
                     devices = await navigator.mediaDevices.enumerateDevices();
                     audioDevices = devices.filter(device => device.kind === 'audioinput');
+
+                    // Fallback: if still no devices from enumerateDevices, use track info
+                    if (audioDevices.length === 0 && trackInfo) {
+                        const fallbackDevice = {
+                            deviceId: trackInfo.deviceId,
+                            kind: 'audioinput' as MediaDeviceKind,
+                            label: trackInfo.label,
+                            groupId: '',
+                            toJSON: () => ({})
+                        };
+                        audioDevices = [fallbackDevice as MediaDeviceInfo];
+                    }
                 } catch (permErr) {
                     console.warn('[MediaStreamManager] Could not get microphone permission:', permErr);
                 }

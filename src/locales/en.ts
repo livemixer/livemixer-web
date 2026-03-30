@@ -128,12 +128,18 @@ export const en: LanguageResource = {
         defaultTextContent: 'Text content',
         screenCaptureSource: 'Screen Capture Source',
         videoInputSource: 'Video Input Source',
+        audioInputSource: 'Audio Input Source',
         selectDevice: 'Select Device',
         currentSource: 'Current Source',
+        capturing: 'Capturing',
         noActiveCapture: 'No active capture',
         stopCapture: 'Stop Capture',
         stopToChangeDevice: 'Stop capture to change device',
         reselectSource: 'Reselect Source',
+        showOnCanvas: 'Show on Canvas',
+        loadingDevices: 'Loading devices...',
+        startCapture: 'Start Capture',
+        noDevices: 'No audio devices available',
     },
     videoInputDialog: {
         title: 'Video Capture Device',
@@ -253,6 +259,10 @@ export const en: LanguageResource = {
     },
     control: {
         title: 'Control',
+    },
+    mixer: {
+        title: 'Audio Mixer',
+        empty: 'No audio sources',
     },
     addSource: {
         title: 'Add Source',

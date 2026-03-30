@@ -1,5 +1,5 @@
-import { Link as LinkIcon, Lock, Monitor, Pause, Play, RotateCcw, Square, Upload, Video } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Link as LinkIcon, Lock, Mic, Monitor, Pause, Play, RotateCcw, Square, Upload, Video } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '../hooks/useI18n';
 import { mediaStreamManager } from '../services/media-stream-manager';
 import { pluginRegistry } from '../services/plugin-registry';
@@ -11,6 +11,282 @@ import { Slider } from './ui/slider';
 interface PropertyPanelProps {
   selectedItem: SceneItem | null;
   onUpdateItem?: (itemId: string, updates: Partial<SceneItem>) => void;
+}
+
+// Audio Input Panel Component
+function AudioInputPanel({
+  localItem,
+  isLocked,
+  updateProperty,
+  setLocalItem,
+}: {
+  localItem: SceneItem;
+  isLocked: boolean;
+  updateProperty: (updates: Partial<SceneItem>) => void;
+  setLocalItem: (item: SceneItem) => void;
+}) {
+  const { t } = useI18n();
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  const [isLoadingDevices, setIsLoadingDevices] = useState(false);
+  const [isActive, setIsActive] = useState(false);
+  const [deviceChangeFlag, setDeviceChangeFlag] = useState(0);
+  const hasManuallyStoppedRef = useRef(false);
+
+  // Check if stream is active
+  useEffect(() => {
+    const checkActive = () => {
+      const entry = mediaStreamManager.getStream(localItem.id);
+      const actuallyActive = !!(entry?.stream?.active);
+      setIsActive(actuallyActive);
+      // Reset manual stop flag when stream becomes active again
+      if (actuallyActive) {
+        hasManuallyStoppedRef.current = false;
+      }
+    };
+    checkActive();
+    const interval = setInterval(checkActive, 1000);
+    return () => clearInterval(interval);
+  }, [localItem.id]);
+
+  // Listen for device changes
+  useEffect(() => {
+    const handleDeviceChange = () => {
+      if (!isActive) setDeviceChangeFlag(prev => prev + 1);
+    };
+    navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange);
+    return () => navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
+  }, [isActive]);
+
+  const loadDevices = async (force = false) => {
+    // Check actual stream state from mediaStreamManager (not React state which may be stale)
+    const entry = mediaStreamManager.getStream(localItem.id);
+    const actuallyActive = !!(entry?.stream?.active);
+    if (actuallyActive) return;
+    if (!force && devices.length > 0) return;
+
+    // Only show loading spinner on initial load (no devices yet)
+    const showLoading = devices.length === 0;
+    if (showLoading) setIsLoadingDevices(true);
+
+    try {
+      let audioDevices = await mediaStreamManager.getAudioInputDevices();
+
+      // Fallback: if still no devices, try getUserMedia directly
+      if (audioDevices.length === 0) {
+        try {
+          const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const audioTrack = tempStream.getAudioTracks()[0];
+
+          // Save track info BEFORE stopping
+          if (audioTrack) {
+            const settings = audioTrack.getSettings();
+            const fallbackDevice = {
+              deviceId: settings?.deviceId || 'default',
+              kind: 'audioinput' as MediaDeviceKind,
+              label: audioTrack.label || 'Microphone',
+              groupId: '',
+              toJSON: () => ({})
+            };
+            audioDevices = [fallbackDevice as MediaDeviceInfo];
+          }
+          tempStream.getTracks().forEach(track => track.stop());
+        } catch {
+          // Ignore
+        }
+      }
+      // Sort: default and communications first, then physical devices
+      audioDevices.sort((a, b) => {
+        const priority = (d: MediaDeviceInfo) =>
+          d.deviceId === 'default' ? 0 : d.deviceId === 'communications' ? 1 : 2;
+        return priority(a) - priority(b);
+      });
+      setDevices(audioDevices);
+    } catch (err) {
+      console.error('Failed to load audio devices:', err);
+    } finally {
+      if (showLoading) setIsLoadingDevices(false);
+    }
+  };
+
+  // Auto load when not active
+  useEffect(() => {
+    // Check actual stream state, not React state which may be stale after page refresh
+    const entry = mediaStreamManager.getStream(localItem.id);
+    const actuallyActive = !!(entry?.stream?.active);
+    if (!actuallyActive) loadDevices(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActive, deviceChangeFlag, localItem.id]);
+
+  // Auto-select single device when no device is selected (only on initial load, not after manual stop)
+  useEffect(() => {
+    if (!localItem.deviceId && devices.length === 1 && !isActive && !hasManuallyStoppedRef.current) {
+      handleDeviceChange(devices[0].deviceId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [devices, localItem.deviceId, isActive]);
+
+  const handleDeviceChange = async (newDeviceId: string) => {
+    if (isLocked || isActive) return;
+
+    setIsLoadingDevices(true);
+    try {
+      // Stop existing stream
+      const existingEntry = mediaStreamManager.getStream(localItem.id);
+      if (existingEntry) {
+        existingEntry.stream.getTracks().forEach(track => track.stop());
+        mediaStreamManager.removeStream(localItem.id);
+      }
+
+      // Request new audio stream
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: newDeviceId ? { deviceId: { ideal: newDeviceId } } : true,
+        video: false,
+      });
+
+      const audioTrack = stream.getAudioTracks()[0];
+      if (!audioTrack) throw new Error('No audio track');
+
+      const label = devices.find(d => d.deviceId === newDeviceId)?.label || audioTrack.label || 'Microphone';
+      const actualDeviceId = audioTrack.getSettings()?.deviceId || newDeviceId;
+
+      // Create audio element for monitoring
+      const audio = document.createElement('audio');
+      audio.srcObject = stream;
+      audio.muted = localItem.muted ?? false;
+      audio.volume = localItem.volume ?? 1;
+      audio.style.display = 'none';
+      document.body.appendChild(audio);
+      audio.play().catch(() => { });
+
+      mediaStreamManager.setStream(localItem.id, {
+        stream,
+        metadata: {
+          deviceId: actualDeviceId,
+          deviceLabel: label,
+          sourceType: 'audio_input'
+        }
+      });
+
+      audioTrack.onended = () => {
+        mediaStreamManager.removeStream(localItem.id);
+        setIsActive(false);
+      };
+
+      updateProperty({ deviceId: actualDeviceId });
+      mediaStreamManager.notifyStreamChange(localItem.id);
+      setLocalItem({ ...localItem, deviceId: actualDeviceId });
+      setIsActive(true);
+    } catch (err) {
+      console.error('Failed to switch audio device:', err);
+    } finally {
+      setIsLoadingDevices(false);
+    }
+  };
+
+  const handleStopCapture = () => {
+    const existingEntry = mediaStreamManager.getStream(localItem.id);
+    if (existingEntry) {
+      existingEntry.stream.getTracks().forEach(track => track.stop());
+      mediaStreamManager.removeStream(localItem.id);
+    }
+    setIsActive(false);
+    hasManuallyStoppedRef.current = true;
+    mediaStreamManager.notifyStreamChange(localItem.id);
+    // Force reload devices after stopping
+    setDevices([]);
+    setDeviceChangeFlag(prev => prev + 1);
+  };
+
+  return (
+    <div className="border-t border-[#3e3e42] pt-4">
+      <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+        <span className="w-1 h-4 bg-blue-500 rounded"></span>
+        {t('property.audioInputSource')}
+      </h4>
+
+      {/* Current device info - use actual stream state, not React state */}
+      {(() => {
+        const entry = mediaStreamManager.getStream(localItem.id);
+        const actuallyActive = !!(entry?.stream?.active);
+        return (
+          <div className="mb-4 p-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg">
+            <div className="text-xs text-gray-400 mb-1">{t('property.currentSource')}</div>
+            <div className="text-sm text-gray-200 flex items-center gap-2">
+              <Mic className={`w-4 h-4 ${actuallyActive ? 'text-blue-400' : 'text-gray-500'}`} />
+              <span className="truncate">
+                {actuallyActive && entry?.metadata?.deviceLabel
+                  ? entry.metadata.deviceLabel
+                  : t('property.noActiveCapture')}
+              </span>
+              {actuallyActive && (
+                <span className="ml-auto shrink-0 text-xs text-blue-400 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                  {t('property.capturing')}
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Device selector (only when not active) */}
+      {!isActive && (
+        <div className="mb-4">
+          <label className="block text-xs text-gray-400 mb-2">{t('property.selectDevice')}</label>
+          {devices.length === 0 ? (
+            <p className="text-xs text-gray-500">{t('property.noDevices')}</p>
+          ) : (
+            <>
+              <select
+                value={localItem.deviceId || ''}
+                onChange={e => handleDeviceChange(e.target.value)}
+                disabled={isLocked || isLoadingDevices}
+                className="w-full py-2 px-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 disabled:opacity-50"
+              >
+                {isLoadingDevices && (
+                  <option value="">{t('property.loadingDevices')}</option>
+                )}
+                {!localItem.deviceId && !isLoadingDevices && (
+                  <option value="">{t('property.selectDevice')}</option>
+                )}
+                {devices.map(d => (
+                  <option key={d.deviceId} value={d.deviceId}>
+                    {d.label || `Microphone ${d.deviceId.slice(0, 8)}`}
+                  </option>
+                ))}
+              </select>
+
+              {/* Start capture button when device is selected but not active */}
+              {localItem.deviceId && !isActive && (
+                <button
+                  type="button"
+                  onClick={() => handleDeviceChange(localItem.deviceId!)}
+                  disabled={isLocked}
+                  className="w-full mt-2 py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <Mic className="w-4 h-4" />
+                  <span>{t('property.startCapture')}</span>
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Stop button when active */}
+      {isActive && (
+        <button
+          type="button"
+          onClick={handleStopCapture}
+          disabled={isLocked}
+          className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center justify-center gap-2 mb-3"
+        >
+          <Square className="w-4 h-4" />
+          <span>{t('property.stopCapture')}</span>
+        </button>
+      )}
+    </div>
+  );
 }
 
 // Video Input Panel Component
@@ -521,6 +797,7 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
             media: 'io.livemixer.mediasource',
             screen_capture: 'io.livemixer.screencapture',
             video_input: 'io.livemixer.webcam',
+            audio_input: 'io.livemixer.audioinput',
             text: 'io.livemixer.text',
           };
           const pluginId = pluginIdMap[localItem.type] || localItem.type;
@@ -686,6 +963,16 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
         {/* Video Input control panel */}
         {localItem.type === 'video_input' && (
           <VideoInputPanel
+            localItem={localItem}
+            isLocked={isLocked}
+            updateProperty={updateProperty}
+            setLocalItem={setLocalItem}
+          />
+        )}
+
+        {/* Audio Input control panel */}
+        {localItem.type === 'audio_input' && (
+          <AudioInputPanel
             localItem={localItem}
             isLocked={isLocked}
             updateProperty={updateProperty}
