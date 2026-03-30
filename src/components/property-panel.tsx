@@ -1,5 +1,5 @@
 import { Link as LinkIcon, Lock, Mic, Monitor, Pause, Play, RotateCcw, Square, Upload, Video } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '../hooks/useI18n';
 import { mediaStreamManager } from '../services/media-stream-manager';
 import { pluginRegistry } from '../services/plugin-registry';
@@ -30,12 +30,18 @@ function AudioInputPanel({
   const [isLoadingDevices, setIsLoadingDevices] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [deviceChangeFlag, setDeviceChangeFlag] = useState(0);
+  const hasManuallyStoppedRef = useRef(false);
 
   // Check if stream is active
   useEffect(() => {
     const checkActive = () => {
       const entry = mediaStreamManager.getStream(localItem.id);
-      setIsActive(!!entry && entry.stream.active);
+      const actuallyActive = !!(entry?.stream?.active);
+      setIsActive(actuallyActive);
+      // Reset manual stop flag when stream becomes active again
+      if (actuallyActive) {
+        hasManuallyStoppedRef.current = false;
+      }
     };
     checkActive();
     const interval = setInterval(checkActive, 1000);
@@ -52,7 +58,10 @@ function AudioInputPanel({
   }, [isActive]);
 
   const loadDevices = async (force = false) => {
-    if (isActive) return;
+    // Check actual stream state from mediaStreamManager (not React state which may be stale)
+    const entry = mediaStreamManager.getStream(localItem.id);
+    const actuallyActive = !!(entry?.stream?.active);
+    if (actuallyActive) return;
     if (!force && devices.length > 0) return;
 
     // Only show loading spinner on initial load (no devices yet)
@@ -101,9 +110,20 @@ function AudioInputPanel({
 
   // Auto load when not active
   useEffect(() => {
-    if (!isActive) loadDevices(true);
+    // Check actual stream state, not React state which may be stale after page refresh
+    const entry = mediaStreamManager.getStream(localItem.id);
+    const actuallyActive = !!(entry?.stream?.active);
+    if (!actuallyActive) loadDevices(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActive, deviceChangeFlag]);
+  }, [isActive, deviceChangeFlag, localItem.id]);
+
+  // Auto-select single device when no device is selected (only on initial load, not after manual stop)
+  useEffect(() => {
+    if (!localItem.deviceId && devices.length === 1 && !isActive && !hasManuallyStoppedRef.current) {
+      handleDeviceChange(devices[0].deviceId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [devices, localItem.deviceId, isActive]);
 
   const handleDeviceChange = async (newDeviceId: string) => {
     if (isLocked || isActive) return;
@@ -170,6 +190,7 @@ function AudioInputPanel({
       mediaStreamManager.removeStream(localItem.id);
     }
     setIsActive(false);
+    hasManuallyStoppedRef.current = true;
     mediaStreamManager.notifyStreamChange(localItem.id);
     // Force reload devices after stopping
     setDevices([]);
@@ -183,49 +204,71 @@ function AudioInputPanel({
         {t('property.audioInputSource')}
       </h4>
 
-      {/* Current device info */}
-      <div className="mb-4 p-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg">
-        <div className="text-xs text-gray-400 mb-1">{t('property.currentSource')}</div>
-        <div className="text-sm text-gray-200 flex items-center gap-2">
-          <Mic className={`w-4 h-4 ${isActive ? 'text-blue-400' : 'text-gray-500'}`} />
-          <span className="truncate">
-            {isActive && mediaStreamManager.getStream(localItem.id)?.metadata?.deviceLabel
-              ? mediaStreamManager.getStream(localItem.id)!.metadata!.deviceLabel!
-              : t('property.noActiveCapture')}
-          </span>
-          {isActive && (
-            <span className="ml-auto shrink-0 text-xs text-blue-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-              {t('property.capturing')}
-            </span>
-          )}
-        </div>
-      </div>
+      {/* Current device info - use actual stream state, not React state */}
+      {(() => {
+        const entry = mediaStreamManager.getStream(localItem.id);
+        const actuallyActive = !!(entry?.stream?.active);
+        return (
+          <div className="mb-4 p-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg">
+            <div className="text-xs text-gray-400 mb-1">{t('property.currentSource')}</div>
+            <div className="text-sm text-gray-200 flex items-center gap-2">
+              <Mic className={`w-4 h-4 ${actuallyActive ? 'text-blue-400' : 'text-gray-500'}`} />
+              <span className="truncate">
+                {actuallyActive && entry?.metadata?.deviceLabel
+                  ? entry.metadata.deviceLabel
+                  : t('property.noActiveCapture')}
+              </span>
+              {actuallyActive && (
+                <span className="ml-auto shrink-0 text-xs text-blue-400 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                  {t('property.capturing')}
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Device selector (only when not active) */}
       {!isActive && (
         <div className="mb-4">
           <label className="block text-xs text-gray-400 mb-2">{t('property.selectDevice')}</label>
-          {isActive ? (
-            <p className="text-xs text-amber-400">{t('property.stopToChangeDevice')}</p>
+          {devices.length === 0 ? (
+            <p className="text-xs text-gray-500">{t('property.noDevices')}</p>
           ) : (
-            <select
-              value={localItem.deviceId || ''}
-              onChange={e => handleDeviceChange(e.target.value)}
-              disabled={isLocked || isLoadingDevices}
-              className="w-full py-2 px-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 disabled:opacity-50"
-            >
-              {(isLoadingDevices || devices.length === 0) && (
-                <option value="">
-                  {isLoadingDevices ? t('property.loadingDevices') : t('property.selectDevice')}
-                </option>
+            <>
+              <select
+                value={localItem.deviceId || ''}
+                onChange={e => handleDeviceChange(e.target.value)}
+                disabled={isLocked || isLoadingDevices}
+                className="w-full py-2 px-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 disabled:opacity-50"
+              >
+                {isLoadingDevices && (
+                  <option value="">{t('property.loadingDevices')}</option>
+                )}
+                {!localItem.deviceId && !isLoadingDevices && (
+                  <option value="">{t('property.selectDevice')}</option>
+                )}
+                {devices.map(d => (
+                  <option key={d.deviceId} value={d.deviceId}>
+                    {d.label || `Microphone ${d.deviceId.slice(0, 8)}`}
+                  </option>
+                ))}
+              </select>
+
+              {/* Start capture button when device is selected but not active */}
+              {localItem.deviceId && !isActive && (
+                <button
+                  type="button"
+                  onClick={() => handleDeviceChange(localItem.deviceId!)}
+                  disabled={isLocked}
+                  className="w-full mt-2 py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <Mic className="w-4 h-4" />
+                  <span>{t('property.startCapture')}</span>
+                </button>
               )}
-              {devices.map(d => (
-                <option key={d.deviceId} value={d.deviceId}>
-                  {d.label || `Microphone ${d.deviceId.slice(0, 8)}`}
-                </option>
-              ))}
-            </select>
+            </>
           )}
         </div>
       )}

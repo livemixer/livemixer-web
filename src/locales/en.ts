@@ -138,6 +138,8 @@ export const en: LanguageResource = {
         reselectSource: 'Reselect Source',
         showOnCanvas: 'Show on Canvas',
         loadingDevices: 'Loading devices...',
+        startCapture: 'Start Capture',
+        noDevices: 'No audio devices available',
     },
     videoInputDialog: {
         title: 'Video Capture Device',

@@ -138,6 +138,8 @@ export const zh: LanguageResource = {
         reselectSource: '重新选择源',
         showOnCanvas: '在画布中显示',
         loadingDevices: '加载设备中...',
+        startCapture: '开始捕获',
+        noDevices: '无可用音频设备',
     },
     videoInputDialog: {
         title: '视频采集设备',

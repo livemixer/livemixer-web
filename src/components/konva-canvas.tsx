@@ -142,10 +142,17 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(funct
 
   // Update transformer target
   useEffect(() => {
-    if (!transformerRef.current || !selectedItemId) {
+    if (!transformerRef.current || !selectedItemId || !scene) {
       if (transformerRef.current) {
         transformerRef.current.nodes([]);
       }
+      return;
+    }
+
+    // Check if selected item is an audio input with showOnCanvas=false
+    const selectedItem = scene.items.find(i => i.id === selectedItemId);
+    if (selectedItem?.type === 'audio_input' && selectedItem.showOnCanvas === false) {
+      transformerRef.current.nodes([]);
       return;
     }
 
@@ -154,7 +161,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(funct
       transformerRef.current.nodes([selectedNode]);
       transformerRef.current.getLayer()?.batchDraw();
     }
-  }, [selectedItemId]);
+  }, [selectedItemId, scene]);
 
   // Timer/clock update loop (high precision via requestAnimationFrame)
   useEffect(() => {
@@ -539,8 +546,10 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(funct
     );
   }
 
-  // Sort by zIndex
-  const sortedItems = [...scene.items].sort((a, b) => a.zIndex - b.zIndex);
+  // Sort by zIndex, filter out audio inputs with showOnCanvas=false
+  const sortedItems = [...scene.items]
+    .filter(item => !(item.type === 'audio_input' && item.showOnCanvas === false))
+    .sort((a, b) => a.zIndex - b.zIndex);
 
   return (
     <div ref={containerRef} className="w-full h-full flex items-center justify-center bg-[#1e1e1e]">
