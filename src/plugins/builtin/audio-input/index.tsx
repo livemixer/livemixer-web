@@ -103,6 +103,42 @@ export const AudioInputPlugin: ISourcePlugin = {
         host: '^1.0.0',
         api: '1.0',
     },
+    // Source type mapping for add-source-dialog
+    sourceType: {
+        typeId: 'audio_input',
+        nameKey: 'addSource.audioInput.name',
+        descriptionKey: 'addSource.audioInput.description',
+        icon: 'mic',
+    },
+    // Add dialog configuration - immediate dialog for device selection
+    addDialog: {
+        immediate: true,
+        component: AudioInputDialog,
+    },
+    // Default layout for audio input items
+    defaultLayout: {
+        x: 100,
+        y: 100,
+        width: 300,
+        height: 80,
+    },
+    // Audio mixer configuration - this plugin supports audio mixing
+    audioMixer: {
+        enabled: true,
+        volumeKey: 'volume',
+        mutedKey: 'muted',
+        defaultVolume: 1,
+    },
+    // Canvas render configuration - filter when showOnCanvas is false
+    canvasRender: {
+        shouldFilter: (item) => item.showOnCanvas === false,
+        isSelectable: (item) => item.showOnCanvas !== false,
+    },
+    // Stream initialization configuration
+    streamInit: {
+        needsStream: true,
+        streamType: 'audio_input',
+    },
     propsSchema: {
         deviceId: {
             label: 'Device',

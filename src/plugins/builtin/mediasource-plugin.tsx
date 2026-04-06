@@ -16,6 +16,24 @@ export const MediaSourcePlugin: ISourcePlugin = {
     name: 'Media Source',
     category: 'media',
     engines: { host: '^1.0.0', api: '1.0' },
+    // Source type mapping for add-source-dialog
+    sourceType: {
+        typeId: 'media',
+        nameKey: 'addSource.media.name',
+        descriptionKey: 'addSource.media.description',
+        icon: 'video',
+    },
+    // Add dialog configuration - no immediate dialog, configure in property panel
+    addDialog: {
+        immediate: false,
+    },
+    // Default layout for media items
+    defaultLayout: {
+        x: 100,
+        y: 100,
+        width: 400,
+        height: 300,
+    },
     propsSchema: {
         url: {
             label: 'Media URL',

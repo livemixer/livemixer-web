@@ -10,6 +10,24 @@ export const TextPlugin: ISourcePlugin = {
     host: '^1.0.0',
     api: '1.0',
   },
+  // Source type mapping for add-source-dialog
+  sourceType: {
+    typeId: 'text',
+    nameKey: 'addSource.text.name',
+    descriptionKey: 'addSource.text.description',
+    icon: 'type',
+  },
+  // Add dialog configuration - no immediate dialog, configure in property panel
+  addDialog: {
+    immediate: false,
+  },
+  // Default layout for text items
+  defaultLayout: {
+    x: 100,
+    y: 100,
+    width: 400,
+    height: 100,
+  },
   propsSchema: {
     content: {
       label: 'Content',

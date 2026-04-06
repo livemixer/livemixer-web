@@ -12,6 +12,7 @@ import {
 import { useI18n } from '../hooks/useI18n';
 import { pluginRegistry } from '../services/plugin-registry';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
+import type { ISourcePlugin } from '../types/plugin';
 
 export type SourceType =
   | 'image'
@@ -39,76 +40,75 @@ interface AddSourceDialogProps {
   onSelectSourceType: (type: SourceType) => void;
 }
 
+// Icon mapping for plugin icons
+const iconMap: Record<string, React.ReactNode> = {
+  image: <Image className="w-6 h-6" />,
+  video: <Video className="w-6 h-6" />,
+  type: <Type className="w-6 h-6" />,
+  monitor: <Monitor className="w-6 h-6" />,
+  mic: <Mic className="w-6 h-6" />,
+  volume: <Volume2 className="w-6 h-6" />,
+  timer: <Timer className="w-6 h-6" />,
+  clock: <Clock className="w-6 h-6" />,
+};
+
+// Legacy source types not yet migrated to plugins
+const legacySourceTypes = (t: (key: string) => string): SourceTypeOption[] => [
+  {
+    type: 'audio_output',
+    name: t('addSource.audioOutput.name'),
+    description: t('addSource.audioOutput.description'),
+    icon: <Volume2 className="w-6 h-6" />,
+  },
+  {
+    type: 'timer',
+    name: t('addSource.timer.name'),
+    description: t('addSource.timer.description'),
+    icon: <Timer className="w-6 h-6" />,
+  },
+  {
+    type: 'clock',
+    name: t('addSource.clock.name'),
+    description: t('addSource.clock.description'),
+    icon: <Clock className="w-6 h-6" />,
+  },
+];
+
+// Convert plugin to source type option
+const pluginToSourceOption = (plugin: ISourcePlugin, t: (key: string) => string): SourceTypeOption | null => {
+  if (!plugin.sourceType) return null;
+
+  return {
+    type: plugin.sourceType.typeId,
+    name: plugin.sourceType.nameKey ? t(plugin.sourceType.nameKey) : plugin.name,
+    description: plugin.sourceType.descriptionKey ? t(plugin.sourceType.descriptionKey) : '',
+    icon: iconMap[plugin.sourceType.icon || ''] || <Puzzle className="w-6 h-6" />,
+  };
+};
+
 export function AddSourceDialog({ open, onOpenChange, onSelectSourceType }: AddSourceDialogProps) {
   const { t } = useI18n();
 
-  const sourceTypes: SourceTypeOption[] = [
-    {
-      type: 'image',
-      name: t('addSource.image.name'),
-      description: t('addSource.image.description'),
-      icon: <Image className="w-6 h-6" />,
-    },
-    {
-      type: 'media',
-      name: t('addSource.media.name'),
-      description: t('addSource.media.description'),
-      icon: <Video className="w-6 h-6" />,
-    },
-    {
-      type: 'text',
-      name: t('addSource.text.name'),
-      description: t('addSource.text.description'),
-      icon: <Type className="w-6 h-6" />,
-    },
-    {
-      type: 'screen_capture',
-      name: t('addSource.screenCapture.name'),
-      description: t('addSource.screenCapture.description'),
-      icon: <Monitor className="w-6 h-6" />,
-    },
-    {
-      type: 'video_input',
-      name: t('addSource.videoInput.name'),
-      description: t('addSource.videoInput.description'),
-      icon: <Video className="w-6 h-6" />,
-    },
-    {
-      type: 'audio_input',
-      name: t('addSource.audioInput.name'),
-      description: t('addSource.audioInput.description'),
-      icon: <Mic className="w-6 h-6" />,
-    },
-    {
-      type: 'audio_output',
-      name: t('addSource.audioOutput.name'),
-      description: t('addSource.audioOutput.description'),
-      icon: <Volume2 className="w-6 h-6" />,
-    },
-    {
-      type: 'timer',
-      name: t('addSource.timer.name'),
-      description: t('addSource.timer.description'),
-      icon: <Timer className="w-6 h-6" />,
-    },
-    {
-      type: 'clock',
-      name: t('addSource.clock.name'),
-      description: t('addSource.clock.description'),
-      icon: <Clock className="w-6 h-6" />,
-    },
-  ];
+  // Get source plugins from registry
+  const sourcePlugins = pluginRegistry.getSourcePlugins();
+
+  // Convert plugins to source type options
+  const pluginSourceTypes = sourcePlugins
+    .map(p => pluginToSourceOption(p, t))
+    .filter((p): p is SourceTypeOption => p !== null);
+
+  // Combine with legacy source types
+  const sourceTypes: SourceTypeOption[] = [...pluginSourceTypes, ...legacySourceTypes(t)];
 
   const handleSelectType = (type: SourceType) => {
     onSelectSourceType(type);
     onOpenChange(false);
   };
 
+  // External plugins are those without sourceType mapping (pure extensions)
   const externalPlugins = pluginRegistry
     .getAllPlugins()
-    .filter(
-      p => !['io.livemixer.image', 'io.livemixer.mediasource', 'io.livemixer.screencapture', 'io.livemixer.webcam', 'io.livemixer.audioinput', 'io.livemixer.text'].includes(p.id),
-    );
+    .filter(p => !p.sourceType);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

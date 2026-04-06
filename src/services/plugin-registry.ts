@@ -117,6 +117,40 @@ class PluginRegistry {
   getPluginsByCategory(category: ISourcePlugin['category']): ISourcePlugin[] {
     return this.getAllPlugins().filter((p) => p.category === category)
   }
+
+  /**
+   * Get all plugins that have source type mapping defined
+   * These plugins can be added as sources in the add-source-dialog
+   */
+  getSourcePlugins(): ISourcePlugin[] {
+    return this.getAllPlugins().filter((p) => p.sourceType !== undefined)
+  }
+
+  /**
+   * Get plugin by source type ID
+   * Maps SceneItem.type to the corresponding plugin
+   */
+  getPluginBySourceType(sourceType: string): ISourcePlugin | undefined {
+    // First try direct plugin ID match
+    const plugin = this.plugins.get(sourceType)
+    if (plugin) return plugin
+
+    // Then try sourceType.typeId match
+    for (const p of this.plugins.values()) {
+      if (p.sourceType?.typeId === sourceType) {
+        return p
+      }
+    }
+
+    return undefined
+  }
+
+  /**
+   * Get all plugins that support audio mixing
+   */
+  getAudioMixerPlugins(): ISourcePlugin[] {
+    return this.getAllPlugins().filter((p) => p.audioMixer?.enabled === true)
+  }
 }
 
 export const pluginRegistry = new PluginRegistry()

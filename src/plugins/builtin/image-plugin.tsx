@@ -11,6 +11,24 @@ export const ImagePlugin: ISourcePlugin = {
     host: '^1.0.0',
     api: '1.0',
   },
+  // Source type mapping for add-source-dialog
+  sourceType: {
+    typeId: 'image',
+    nameKey: 'addSource.image.name',
+    descriptionKey: 'addSource.image.description',
+    icon: 'image',
+  },
+  // Add dialog configuration - no immediate dialog, configure in property panel
+  addDialog: {
+    immediate: false,
+  },
+  // Default layout for image items
+  defaultLayout: {
+    x: 100,
+    y: 100,
+    width: 400,
+    height: 300,
+  },
   propsSchema: {
     url: {
       label: 'Image URL',

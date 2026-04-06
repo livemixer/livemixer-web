@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useI18n } from '../hooks/useI18n';
+import { pluginRegistry } from '../services/plugin-registry';
 import type { Scene, SceneItem } from '../types/protocol';
 import { AddSourceDialog, type SourceType } from './add-source-dialog';
 import { AudioMixerPanel } from './audio-mixer-panel';
@@ -353,7 +354,11 @@ export function BottomBar({
         {/* Audio Mixer - 20% */}
         <div className="w-[20%] flex flex-col border-r border-[#3e3e42] overflow-hidden">
           <AudioMixerPanel
-            audioItems={activeScene?.items.filter(i => i.type === 'audio_input') ?? []}
+            audioItems={activeScene?.items.filter(item => {
+              // Check if item's plugin supports audio mixing
+              const plugin = pluginRegistry.getPluginBySourceType(item.type);
+              return plugin?.audioMixer?.enabled === true;
+            }) ?? []}
             onUpdateItem={onUpdateItem}
           />
         </div>

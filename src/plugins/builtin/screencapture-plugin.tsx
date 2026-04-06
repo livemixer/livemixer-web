@@ -55,6 +55,30 @@ export const ScreenCapturePlugin: ISourcePlugin = {
     name: 'Screen Capture',
     category: 'media',
     engines: { host: '^1.0.0', api: '1.0' },
+    // Source type mapping for add-source-dialog
+    sourceType: {
+        typeId: 'screen_capture',
+        nameKey: 'addSource.screenCapture.name',
+        descriptionKey: 'addSource.screenCapture.description',
+        icon: 'monitor',
+    },
+    // Add dialog configuration - immediate permission request for screen capture
+    addDialog: {
+        immediate: true,
+        needsBrowserPermission: 'screen',
+    },
+    // Default layout for screen capture items
+    defaultLayout: {
+        x: 100,
+        y: 100,
+        width: 800,
+        height: 450,
+    },
+    // Stream initialization configuration
+    streamInit: {
+        needsStream: true,
+        streamType: 'screen',
+    },
     propsSchema: {
         captureAudio: {
             label: 'Capture Audio',
