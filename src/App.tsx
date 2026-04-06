@@ -253,45 +253,54 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
   // 添加新源到当前场景 - 第一步：选择源类型
   const handleAddItem = async (sourceType: SourceType) => {
-    // 对于图像和媒体源，需要进一步配置
-    if (sourceType === 'image' || sourceType === 'media') {
-      setPendingSourceType(sourceType);
-      setConfigureSourceOpen(true);
+    // Get plugin for this source type
+    const plugin = pluginRegistry.getPluginBySourceType(sourceType);
+
+    if (plugin) {
+      // Check if plugin needs browser permission immediately
+      if (plugin.addDialog?.needsBrowserPermission) {
+        try {
+          let stream: MediaStream | undefined;
+          const permissionType = plugin.addDialog.needsBrowserPermission;
+
+          if (permissionType === 'screen') {
+            stream = await navigator.mediaDevices.getDisplayMedia({
+              video: { displaySurface: 'monitor' } as MediaTrackConstraints,
+              audio: false,
+            });
+          }
+          // camera and microphone permissions are handled via dialogs
+
+          if (stream) {
+            createItem(sourceType, undefined, undefined, stream);
+          }
+        } catch (err) {
+          // User cancelled or error occurred
+          console.log(`${sourceType} permission cancelled by user`);
+        }
+        return;
+      }
+
+      // Check if plugin has immediate add dialog
+      if (plugin.addDialog?.immediate) {
+        // Plugin handles its own add flow via dialog
+        // The dialog should be registered to slot system
+        const dialogId = `${plugin.id}-dialog`;
+        setActivePluginDialog(dialogId);
+        return;
+      }
+
+      // For plugins with non-immediate addDialog, add directly
+      // Property panel will handle configuration
+      createItem(sourceType);
       return;
     }
 
-    // 定时器和时钟需要配置
+    // Legacy fallback for non-plugin types (timer, clock, etc.)
+    // These will be migrated to plugins in future
     if (sourceType === 'timer' || sourceType === 'clock') {
       setPendingSourceType(sourceType);
       setConfigureTimerOpen(true);
-      return;
-    }
-
-    // Screen Capture 需要立即请求权限
-    if (sourceType === 'screen_capture') {
-      try {
-        const stream = await navigator.mediaDevices.getDisplayMedia({
-          video: { displaySurface: 'monitor' } as MediaTrackConstraints,
-          audio: false,
-        });
-        // 用户选择了屏幕，创建项目并缓存流
-        createItem(sourceType, undefined, undefined, stream);
-      } catch (err) {
-        // 用户取消或出错，不创建项目
-        console.log('Screen capture cancelled by user');
-      }
-      return;
-    }
-
-    // Video Input - show device selection dialog
-    if (sourceType === 'video_input') {
-      setActivePluginDialog('video-input-dialog');
-      return;
-    }
-
-    // Audio Input - show device selection dialog
-    if (sourceType === 'audio_input') {
-      setActivePluginDialog('audio-input-dialog');
       return;
     }
 
@@ -308,11 +317,20 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
   // 插件对话框确认处理器 (slot-based)
   const handlePluginDialogConfirm = () => {
-    // Consume the pending stream (video_input or audio_input)
+    // Consume the pending stream from any plugin
     const pendingStream = mediaStreamManager.consumePendingStream();
     if (pendingStream) {
-      const sourceType = pendingStream.sourceType === 'audio_input' ? 'audio_input' : 'video_input';
-      createItem(sourceType, undefined, undefined, undefined, pendingStream.stream, pendingStream.metadata?.deviceId, pendingStream.metadata?.deviceLabel);
+      // Use the sourceType directly from pending stream metadata
+      // This supports any plugin that registers a dialog and provides a stream
+      createItem(
+        pendingStream.sourceType,
+        undefined,
+        undefined,
+        undefined,
+        pendingStream.stream,
+        pendingStream.metadata?.deviceId,
+        pendingStream.metadata?.deviceLabel
+      );
     }
     setActivePluginDialog(null);
   };
@@ -344,17 +362,8 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     let newItem: SceneItem;
 
-    // --- 插件化 PoC: 尝试通过插件获取默认属性 ---
-    const pluginIdMap: Record<string, string> = {
-      image: 'io.livemixer.image',
-      media: 'io.livemixer.mediasource',
-      screen_capture: 'io.livemixer.screencapture',
-      video_input: 'io.livemixer.webcam',
-      audio_input: 'io.livemixer.audioinput',
-      text: 'io.livemixer.text',
-    };
-    const pluginId = pluginIdMap[sourceType] || sourceType;
-    const plugin = pluginRegistry.getPlugin(pluginId);
+    // --- 插件化: 通过 sourceType 获取插件并提取默认属性 ---
+    const plugin = pluginRegistry.getPluginBySourceType(sourceType);
 
     const pluginDefaultProps: Record<string, unknown> = {};
     if (plugin?.propsSchema) {
@@ -362,187 +371,140 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         pluginDefaultProps[key] = (schema as unknown as { defaultValue: unknown }).defaultValue;
       });
     }
+
+    // Get default layout from plugin or use fallback
+    const defaultLayout = {
+      x: plugin?.defaultLayout?.x ?? 100,
+      y: plugin?.defaultLayout?.y ?? 100,
+      width: plugin?.defaultLayout?.width ?? 400,
+      height: plugin?.defaultLayout?.height ?? 300,
+    };
     // ----------------------------------------
 
-    // 根据源类型创建不同的项
-    switch (sourceType) {
-      case 'image':
-        newItem = {
-          id: newItemId,
-          type: 'image',
-          zIndex: activeScene?.items.length || 0,
-          layout: {
-            x: 100,
-            y: 100,
-            width: 400,
-            height: 300,
-          },
-          ...pluginDefaultProps,
-          url: config?.url || '',
-        };
-        break;
-      case 'media':
-        newItem = {
-          id: newItemId,
-          type: 'media',
-          zIndex: activeScene?.items.length || 0,
-          layout: {
-            x: 100,
-            y: 100,
-            width: 400,
-            height: 300,
-          },
-          ...pluginDefaultProps,
-          url: config?.url || '',
-        };
-        break;
-      case 'screen_capture':
-        newItem = {
-          id: newItemId,
-          type: 'screen_capture',
-          zIndex: activeScene?.items.length || 0,
-          layout: {
-            x: 100,
-            y: 100,
-            width: 800,
-            height: 450,
-          },
-          ...pluginDefaultProps,
-        };
-        // Cache the stream for the plugin to use
-        if (stream) {
+    // Legacy types not yet migrated to plugins
+    // These will be removed once migrated
+    const legacyCreators: Record<string, () => SceneItem> = {
+      text: () => ({
+        id: newItemId,
+        type: 'text',
+        zIndex: activeScene?.items.length || 0,
+        layout: { x: 100, y: 100, width: 400, height: 100 },
+        content: t('property.defaultTextContent'),
+        properties: { fontSize: 32, color: '#ffffff' },
+      }),
+      screen: () => ({
+        id: newItemId,
+        type: 'screen',
+        zIndex: activeScene?.items.length || 0,
+        layout: { x: 100, y: 100, width: 400, height: 300 },
+        source: 'screen_capture',
+      }),
+      window: () => ({
+        id: newItemId,
+        type: 'window',
+        zIndex: activeScene?.items.length || 0,
+        layout: { x: 100, y: 100, width: 400, height: 300 },
+        source: 'window_capture',
+      }),
+      audio_output: () => ({
+        id: newItemId,
+        type: 'audio_output',
+        zIndex: activeScene?.items.length || 0,
+        layout: { x: 100, y: 100, width: 200, height: 100 },
+        source: 'audio_output_device',
+      }),
+      timer: () => ({
+        id: newItemId,
+        type: 'timer',
+        zIndex: activeScene?.items.length || 0,
+        layout: { x: 100, y: 100, width: 400, height: 100 },
+        properties: {
+          fontSize: timerConfig?.fontSize || 48,
+          color: timerConfig?.color || '#FFFFFF',
+        },
+        timerConfig: {
+          mode: timerConfig?.mode || 'countdown',
+          duration: timerConfig?.duration || 300,
+          startValue: timerConfig?.startValue || 0,
+          format: timerConfig?.format || 'MM:SS',
+          running: false,
+          currentTime: 0,
+        },
+      }),
+      clock: () => ({
+        id: newItemId,
+        type: 'clock',
+        zIndex: activeScene?.items.length || 0,
+        layout: { x: 100, y: 100, width: 400, height: 100 },
+        properties: {
+          fontSize: timerConfig?.fontSize || 48,
+          color: timerConfig?.color || '#FFFFFF',
+        },
+        timerConfig: {
+          mode: 'clock',
+          format: timerConfig?.format || 'HH:MM:SS',
+          running: true,
+        },
+      }),
+    };
+
+    // Check if it's a legacy type
+    if (legacyCreators[sourceType]) {
+      newItem = legacyCreators[sourceType]();
+    } else if (plugin) {
+      // Create item from plugin configuration
+      newItem = {
+        id: newItemId,
+        type: sourceType,
+        zIndex: activeScene?.items.length || 0,
+        layout: { ...defaultLayout },
+        ...pluginDefaultProps,
+        // Apply config for url-based plugins
+        ...(config?.url && { url: config.url }),
+        // Apply deviceId for stream-based plugins
+        ...(webcamDeviceId && { deviceId: webcamDeviceId }),
+      };
+
+      // Handle stream initialization for plugins that need it
+      const itemStream = stream || webcamStream;
+      if (itemStream && plugin.streamInit?.needsStream) {
+        const isVideoStream = itemStream.getVideoTracks().length > 0;
+
+        if (isVideoStream) {
           const video = document.createElement('video');
-          video.srcObject = stream;
+          video.srcObject = itemStream;
           video.playsInline = true;
           video.muted = true;
           video.style.display = 'none';
           document.body.appendChild(video);
           video.play().catch(() => { });
-          const title = stream.getVideoTracks()[0]?.label || 'Screen/Window Capture';
+
+          const title = itemStream.getVideoTracks()[0]?.label ||
+            (plugin.streamInit.streamType === 'screen' ? 'Screen/Window Capture' : 'Webcam');
+
           mediaStreamManager.setStream(newItemId, {
-            stream,
-            video,
-            metadata: { sourceType: 'screen', deviceLabel: title }
-          });
-          // Handle stream end
-          stream.getVideoTracks()[0].onended = () => {
-            mediaStreamManager.removeStream(newItemId);
-          };
-          // Notify plugin after item is created
-          setTimeout(() => mediaStreamManager.notifyStreamChange(newItemId), 0);
-        }
-        break;
-      case 'text':
-        newItem = {
-          id: newItemId,
-          type: 'text',
-          zIndex: activeScene?.items.length || 0,
-          layout: {
-            x: 100,
-            y: 100,
-            width: 400,
-            height: 100,
-          },
-          content: t('property.defaultTextContent'),
-          properties: {
-            fontSize: 32,
-            color: '#ffffff',
-          },
-        };
-        break;
-      case 'screen':
-        newItem = {
-          id: newItemId,
-          type: 'screen',
-          zIndex: activeScene?.items.length || 0,
-          layout: {
-            x: 100,
-            y: 100,
-            width: 400,
-            height: 300,
-          },
-          source: 'screen_capture', // 待用户选择显示器
-        };
-        break;
-      case 'window':
-        newItem = {
-          id: newItemId,
-          type: 'window',
-          zIndex: activeScene?.items.length || 0,
-          layout: {
-            x: 100,
-            y: 100,
-            width: 400,
-            height: 300,
-          },
-          source: 'window_capture', // 待用户选择窗口
-        };
-        break;
-      case 'video_input':
-        newItem = {
-          id: newItemId,
-          type: 'video_input',
-          zIndex: activeScene?.items.length || 0,
-          layout: {
-            x: 100,
-            y: 100,
-            width: 400,
-            height: 300,
-          },
-          ...pluginDefaultProps,
-          deviceId: webcamDeviceId || '',
-        };
-        // Cache the webcam stream for the plugin to use
-        if (webcamStream) {
-          const video = document.createElement('video');
-          video.srcObject = webcamStream;
-          video.playsInline = true;
-          video.muted = true;
-          video.style.display = 'none';
-          document.body.appendChild(video);
-          video.play().catch(() => { });
-          mediaStreamManager.setStream(newItemId, {
-            stream: webcamStream,
+            stream: itemStream,
             video,
             metadata: {
               deviceId: webcamDeviceId,
-              deviceLabel: webcamDeviceLabel || 'Webcam',
-              sourceType: 'webcam'
+              deviceLabel: webcamDeviceLabel || title,
+              sourceType: plugin.streamInit.streamType || sourceType,
             }
           });
+
           // Handle stream end
-          webcamStream.getVideoTracks()[0].onended = () => {
+          itemStream.getVideoTracks()[0].onended = () => {
             mediaStreamManager.removeStream(newItemId);
           };
-          // Notify plugin after item is created
-          setTimeout(() => mediaStreamManager.notifyStreamChange(newItemId), 0);
-        }
-        break;
-      case 'audio_input': {
-        const audioStream = webcamStream; // reuse webcamStream param for audio stream
-        newItem = {
-          id: newItemId,
-          type: 'audio_input',
-          zIndex: activeScene?.items.length || 0,
-          layout: {
-            x: 100,
-            y: 100,
-            width: 300,
-            height: 80,
-          },
-          deviceId: webcamDeviceId,
-          muted: false,
-          volume: 1,
-          ...pluginDefaultProps,
-        };
-        if (audioStream) {
-          const audioTrack = audioStream.getAudioTracks()[0];
+        } else {
+          // Audio-only stream
+          const audioTrack = itemStream.getAudioTracks()[0];
           mediaStreamManager.setStream(newItemId, {
-            stream: audioStream,
+            stream: itemStream,
             metadata: {
               deviceId: webcamDeviceId,
               deviceLabel: webcamDeviceLabel || 'Microphone',
-              sourceType: 'audio_input'
+              sourceType: plugin.streamInit.streamType || sourceType,
             }
           });
           if (audioTrack) {
@@ -550,101 +512,20 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
               mediaStreamManager.removeStream(newItemId);
             };
           }
-          setTimeout(() => mediaStreamManager.notifyStreamChange(newItemId), 0);
         }
-        break;
+
+        // Notify plugin after item is created
+        setTimeout(() => mediaStreamManager.notifyStreamChange(newItemId), 0);
       }
-      case 'audio_output':
-        newItem = {
-          id: newItemId,
-          type: 'audio_output',
-          zIndex: activeScene?.items.length || 0,
-          layout: {
-            x: 100,
-            y: 100,
-            width: 200,
-            height: 100,
-          },
-          source: 'audio_output_device', // 待用户选择设备
-        };
-        break;
-      case 'timer':
-        newItem = {
-          id: newItemId,
-          type: 'timer',
-          zIndex: activeScene?.items.length || 0,
-          layout: {
-            x: 100,
-            y: 100,
-            width: 400,
-            height: 100,
-          },
-          properties: {
-            fontSize: timerConfig?.fontSize || 48,
-            color: timerConfig?.color || '#FFFFFF',
-          },
-          timerConfig: {
-            mode: timerConfig?.mode || 'countdown',
-            duration: timerConfig?.duration || 300,
-            startValue: timerConfig?.startValue || 0,
-            format: timerConfig?.format || 'MM:SS',
-            running: false,
-            currentTime: 0,
-          },
-        };
-        break;
-      case 'clock':
-        newItem = {
-          id: newItemId,
-          type: 'clock',
-          zIndex: activeScene?.items.length || 0,
-          layout: {
-            x: 100,
-            y: 100,
-            width: 400,
-            height: 100,
-          },
-          properties: {
-            fontSize: timerConfig?.fontSize || 48,
-            color: timerConfig?.color || '#FFFFFF',
-          },
-          timerConfig: {
-            mode: 'clock',
-            format: timerConfig?.format || 'HH:MM:SS',
-            running: true, // 时钟默认运行
-          },
-        };
-        break;
-      default:
-        // 如果是插件类型，创建一个通用的 SceneItem
-        if (plugin) {
-          newItem = {
-            id: newItemId,
-            type: sourceType,
-            zIndex: activeScene?.items.length || 0,
-            layout: {
-              x: 100,
-              y: 100,
-              width: 400,
-              height: 300,
-            },
-            ...pluginDefaultProps,
-          };
-        } else {
-          // 默认为 color 类型（保留向后兼容）
-          newItem = {
-            id: newItemId,
-            type: 'color',
-            zIndex: activeScene?.items.length || 0,
-            layout: {
-              x: 100,
-              y: 100,
-              width: 400,
-              height: 300,
-            },
-            color: '#3b82f6',
-          };
-        }
+    } else {
+      // Fallback for unknown types
+      newItem = {
+        id: newItemId,
+        type: 'color',
+        zIndex: activeScene?.items.length || 0,
+        layout: { x: 100, y: 100, width: 400, height: 300 },
+        color: '#3b82f6',
+      };
     }
 
     updateData({

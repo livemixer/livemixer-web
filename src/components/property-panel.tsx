@@ -790,23 +790,18 @@ export function PropertyPanel({ selectedItem, onUpdateItem }: PropertyPanelProps
           </div>
         </div>
 
-        {/* --- Plugin PoC: dynamically render plugin props --- */}
+        {/* --- Plugin: dynamically render plugin props --- */}
         {(() => {
-          const pluginIdMap: Record<string, string> = {
-            image: 'io.livemixer.image',
-            media: 'io.livemixer.mediasource',
-            screen_capture: 'io.livemixer.screencapture',
-            video_input: 'io.livemixer.webcam',
-            audio_input: 'io.livemixer.audioinput',
-            text: 'io.livemixer.text',
-          };
-          const pluginId = pluginIdMap[localItem.type] || localItem.type;
-          const plugin = pluginRegistry.getPlugin(pluginId);
+          const plugin = pluginRegistry.getPluginBySourceType(localItem.type);
 
           if (plugin && plugin.propsSchema) {
-            // Filter out 'url' as it's handled by the dedicated Media Source section
-            const schemaEntries = Object.entries(plugin.propsSchema).filter(([key]) =>
-              key !== 'url' && key !== 'deviceId' // deviceId is handled by VideoInputPanel
+            // Get excluded keys from plugin config or use defaults
+            const defaultExcludes = ['url', 'deviceId'];
+            const pluginExcludes = plugin.propertyPanel?.excludeSchemaKeys ?? [];
+            const excludedKeys = [...defaultExcludes, ...pluginExcludes];
+
+            const schemaEntries = Object.entries(plugin.propsSchema).filter(
+              ([key]) => !excludedKeys.includes(key)
             );
             if (schemaEntries.length === 0) return null;
 

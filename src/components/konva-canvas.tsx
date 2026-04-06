@@ -149,11 +149,14 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(funct
       return;
     }
 
-    // Check if selected item is an audio input with showOnCanvas=false
+    // Check if selected item can be selected on canvas (via plugin config)
     const selectedItem = scene.items.find(i => i.id === selectedItemId);
-    if (selectedItem?.type === 'audio_input' && selectedItem.showOnCanvas === false) {
-      transformerRef.current.nodes([]);
-      return;
+    if (selectedItem) {
+      const plugin = pluginRegistry.getPluginBySourceType(selectedItem.type);
+      if (plugin?.canvasRender?.isSelectable?.(selectedItem) === false) {
+        transformerRef.current.nodes([]);
+        return;
+      }
     }
 
     const selectedNode = shapeRefs.current.get(selectedItemId);
@@ -401,17 +404,8 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(funct
       }),
     };
 
-    // --- Plugin PoC: check for registered plugin ---
-    const pluginIdMap: Record<string, string> = {
-      image: 'io.livemixer.image',
-      media: 'io.livemixer.mediasource',
-      screen_capture: 'io.livemixer.screencapture',
-      video_input: 'io.livemixer.webcam',
-      audio_input: 'io.livemixer.audioinput',
-      text: 'io.livemixer.text',
-    };
-    const pluginId = pluginIdMap[item.type] || item.type;
-    const plugin = pluginRegistry.getPlugin(pluginId);
+    // --- Plugin rendering: check for registered plugin ---
+    const plugin = pluginRegistry.getPluginBySourceType(item.type);
     if (plugin) {
       const { key, ...restProps } = commonProps;
       return <PluginRenderer key={key} plugin={plugin} commonProps={restProps} item={item} />;
@@ -546,9 +540,16 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(funct
     );
   }
 
-  // Sort by zIndex, filter out audio inputs with showOnCanvas=false
+  // Sort by zIndex, filter out items that plugins mark as shouldFilter
   const sortedItems = [...scene.items]
-    .filter(item => !(item.type === 'audio_input' && item.showOnCanvas === false))
+    .filter(item => {
+      const plugin = pluginRegistry.getPluginBySourceType(item.type);
+      // If plugin has shouldFilter and it returns true, exclude from rendering
+      if (plugin?.canvasRender?.shouldFilter?.(item)) {
+        return false;
+      }
+      return true;
+    })
     .sort((a, b) => a.zIndex - b.zIndex);
 
   return (

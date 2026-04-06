@@ -100,6 +100,30 @@ export const WebCamPlugin: ISourcePlugin = {
         host: '^1.0.0',
         api: '1.0',
     },
+    // Source type mapping for add-source-dialog
+    sourceType: {
+        typeId: 'video_input',
+        nameKey: 'addSource.videoInput.name',
+        descriptionKey: 'addSource.videoInput.description',
+        icon: 'video',
+    },
+    // Add dialog configuration - immediate dialog for device selection
+    addDialog: {
+        immediate: true,
+        component: VideoInputDialog,
+    },
+    // Default layout for video input items
+    defaultLayout: {
+        x: 100,
+        y: 100,
+        width: 400,
+        height: 300,
+    },
+    // Stream initialization configuration
+    streamInit: {
+        needsStream: true,
+        streamType: 'webcam',
+    },
     propsSchema: {
         deviceId: {
             label: 'Device',
