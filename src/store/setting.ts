@@ -1,55 +1,55 @@
-import { create } from 'zustand'
-import { createJSONStorage, persist } from 'zustand/middleware'
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 // Non-sensitive settings interface (safe to persist to localStorage)
 interface PersistentSettings {
   // General settings
-  language: string
-  theme: string
+  language: string;
+  theme: string;
 
   // Streaming settings (non-sensitive)
-  streamService: string
-  livekitUrl: string
+  streamService: string;
+  livekitUrl: string;
 
   // Pull settings (non-sensitive)
-  livekitPullUrl: string
+  livekitPullUrl: string;
 
   // Output settings
-  videoBitrate: string
-  audioBitrate: string
-  videoEncoder: string
-  audioEncoder: string
+  videoBitrate: string;
+  audioBitrate: string;
+  videoEncoder: string;
+  audioEncoder: string;
 
   // Audio settings
-  audioDevice: string
-  sampleRate: string
-  channels: string
+  audioDevice: string;
+  sampleRate: string;
+  channels: string;
 
   // Video settings
-  baseResolution: string
-  outputResolution: string
-  fps: string
-  scaleFilter: string
-  customWidth?: string
-  customHeight?: string
+  baseResolution: string;
+  outputResolution: string;
+  fps: string;
+  scaleFilter: string;
+  customWidth?: string;
+  customHeight?: string;
 }
 
 // Sensitive settings interface (in-memory only, not persisted)
 interface SensitiveSettings {
-  livekitToken: string
-  livekitPullToken: string
+  livekitToken: string;
+  livekitPullToken: string;
 }
 
 // Full settings state interface
 interface SettingsState extends PersistentSettings, SensitiveSettings {
   // Update persisted settings
-  updatePersistentSettings: (settings: Partial<PersistentSettings>) => void
+  updatePersistentSettings: (settings: Partial<PersistentSettings>) => void;
 
   // Update sensitive settings
-  updateSensitiveSettings: (settings: Partial<SensitiveSettings>) => void
+  updateSensitiveSettings: (settings: Partial<SensitiveSettings>) => void;
 
   // Reset all settings
-  resetSettings: () => void
+  resetSettings: () => void;
 }
 
 // Default configuration
@@ -81,12 +81,12 @@ const defaultPersistentSettings: PersistentSettings = {
   outputResolution: '1920x1080',
   fps: '30',
   scaleFilter: 'bilinear',
-}
+};
 
 const defaultSensitiveSettings: SensitiveSettings = {
   livekitToken: '',
   livekitPullToken: '',
-}
+};
 
 // Create Zustand store
 export const useSettingsStore = create<SettingsState>()(
@@ -130,9 +130,9 @@ export const useSettingsStore = create<SettingsState>()(
           updateSensitiveSettings: _updateSensitiveSettings,
           resetSettings: _resetSettings,
           ...persistentState
-        } = state
-        return persistentState
+        } = state;
+        return persistentState;
       },
     },
   ),
-)
+);

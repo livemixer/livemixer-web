@@ -1,6 +1,6 @@
-import { create } from 'zustand'
-import { createJSONStorage, persist } from 'zustand/middleware'
-import type { ProtocolData } from '../types/protocol'
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import type { ProtocolData } from '../types/protocol';
 
 // Create a default empty scene configuration
 const createDefaultProtocolData = (sceneName = 'Scene 1'): ProtocolData => ({
@@ -25,13 +25,13 @@ const createDefaultProtocolData = (sceneName = 'Scene 1'): ProtocolData => ({
       items: [],
     },
   ],
-})
+});
 
 // Protocol store interface
 interface ProtocolState {
-  data: ProtocolData
-  updateData: (data: ProtocolData) => void
-  resetData: (sceneName?: string) => void
+  data: ProtocolData;
+  updateData: (data: ProtocolData) => void;
+  resetData: (sceneName?: string) => void;
 }
 
 // Create Zustand store
@@ -49,8 +49,8 @@ export const useProtocolStore = create<ProtocolState>()(
             ...data.metadata,
             updatedAt: new Date().toISOString(),
           },
-        }
-        set({ data: updatedData })
+        };
+        set({ data: updatedData });
       },
 
       // Reset protocol data
@@ -64,4 +64,4 @@ export const useProtocolStore = create<ProtocolState>()(
       storage: createJSONStorage(() => localStorage),
     },
   ),
-)
+);

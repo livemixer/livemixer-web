@@ -120,8 +120,12 @@ export function ConfigureSourceDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="bg-[#252526] border-[#3e3e42] text-white max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-white">{getTitle()}</DialogTitle>
-          <DialogDescription className="text-gray-400">{getDescription()}</DialogDescription>
+          <DialogTitle className="text-xl font-semibold text-white">
+            {getTitle()}
+          </DialogTitle>
+          <DialogDescription className="text-gray-400">
+            {getDescription()}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 mt-4">
@@ -130,10 +134,11 @@ export function ConfigureSourceDialog({
             <button
               type="button"
               onClick={() => setInputMethod('file')}
-              className={`flex-1 px-4 py-2 rounded-lg border transition-colors flex items-center justify-center gap-2 ${inputMethod === 'file'
-                ? 'bg-blue-500 border-blue-500 text-white'
-                : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
-                }`}
+              className={`flex-1 px-4 py-2 rounded-lg border transition-colors flex items-center justify-center gap-2 ${
+                inputMethod === 'file'
+                  ? 'bg-blue-500 border-blue-500 text-white'
+                  : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+              }`}
             >
               <Upload className="w-4 h-4" />
               <span>{t('property.localFile')}</span>
@@ -141,10 +146,11 @@ export function ConfigureSourceDialog({
             <button
               type="button"
               onClick={() => setInputMethod('url')}
-              className={`flex-1 px-4 py-2 rounded-lg border transition-colors flex items-center justify-center gap-2 ${inputMethod === 'url'
-                ? 'bg-blue-500 border-blue-500 text-white'
-                : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
-                }`}
+              className={`flex-1 px-4 py-2 rounded-lg border transition-colors flex items-center justify-center gap-2 ${
+                inputMethod === 'url'
+                  ? 'bg-blue-500 border-blue-500 text-white'
+                  : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+              }`}
             >
               <LinkIcon className="w-4 h-4" />
               <span>{t('configureSource.urlAddress')}</span>
@@ -170,10 +176,16 @@ export function ConfigureSourceDialog({
                   className="flex items-center justify-center gap-2 px-4 py-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg cursor-pointer hover:bg-[#2d2d30] transition-colors"
                 >
                   <Upload className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-300">{fileName || t('configureSource.clickToSelectFile')}</span>
+                  <span className="text-gray-300">
+                    {fileName || t('configureSource.clickToSelectFile')}
+                  </span>
                 </label>
               </div>
-              {fileName && <p className="text-xs text-gray-500">{t('configureSource.selected')}: {fileName}</p>}
+              {fileName && (
+                <p className="text-xs text-gray-500">
+                  {t('configureSource.selected')}: {fileName}
+                </p>
+              )}
             </div>
           )}
 
@@ -188,7 +200,7 @@ export function ConfigureSourceDialog({
                 type="url"
                 placeholder="https://example.com/image.jpg"
                 value={url}
-                onChange={e => setUrl(e.target.value)}
+                onChange={(e) => setUrl(e.target.value)}
                 className="bg-[#1e1e1e] border-[#3e3e42] text-white placeholder:text-gray-500"
               />
             </div>

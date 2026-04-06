@@ -1,7 +1,18 @@
-import { Mic, MicOff, Monitor, MonitorOff, User, Video, VideoOff } from 'lucide-react';
+import {
+  Mic,
+  MicOff,
+  Monitor,
+  MonitorOff,
+  User,
+  Video,
+  VideoOff,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useI18n } from '../hooks/useI18n';
-import { liveKitPullService, type ParticipantInfo } from '../services/livekit-pull';
+import {
+  liveKitPullService,
+  type ParticipantInfo,
+} from '../services/livekit-pull';
 
 interface ParticipantItemProps {
   participant: ParticipantInfo;
@@ -31,17 +42,23 @@ function ParticipantItem({ participant, onAddToScene }: ParticipantItemProps) {
       <div className="flex items-center gap-2">
         {/* Camera status */}
         <button
+          type="button"
           onClick={() => {
             if (participant.isCameraEnabled) {
               onAddToScene(participant.identity, 'camera');
             }
           }}
           disabled={!participant.isCameraEnabled}
-          className={`p-1.5 rounded ${participant.isCameraEnabled
+          className={`p-1.5 rounded ${
+            participant.isCameraEnabled
               ? 'bg-blue-600 hover:bg-blue-700 cursor-pointer'
               : 'bg-gray-700 cursor-not-allowed'
-            } transition-colors`}
-          title={participant.isCameraEnabled ? t('participants.clickAddCamera') : t('participants.cameraOff')}
+          } transition-colors`}
+          title={
+            participant.isCameraEnabled
+              ? t('participants.clickAddCamera')
+              : t('participants.cameraOff')
+          }
         >
           {participant.isCameraEnabled ? (
             <Video className="h-3.5 w-3.5 text-white" />
@@ -52,9 +69,14 @@ function ParticipantItem({ participant, onAddToScene }: ParticipantItemProps) {
 
         {/* Microphone status */}
         <div
-          className={`p-1.5 rounded ${participant.isMicrophoneEnabled ? 'bg-green-600' : 'bg-gray-700'
-            }`}
-          title={participant.isMicrophoneEnabled ? t('participants.micOn') : t('participants.micOff')}
+          className={`p-1.5 rounded ${
+            participant.isMicrophoneEnabled ? 'bg-green-600' : 'bg-gray-700'
+          }`}
+          title={
+            participant.isMicrophoneEnabled
+              ? t('participants.micOn')
+              : t('participants.micOff')
+          }
         >
           {participant.isMicrophoneEnabled ? (
             <Mic className="h-3.5 w-3.5 text-white" />
@@ -65,17 +87,23 @@ function ParticipantItem({ participant, onAddToScene }: ParticipantItemProps) {
 
         {/* Screen share status */}
         <button
+          type="button"
           onClick={() => {
             if (participant.isScreenShareEnabled) {
               onAddToScene(participant.identity, 'screen_share');
             }
           }}
           disabled={!participant.isScreenShareEnabled}
-          className={`p-1.5 rounded ${participant.isScreenShareEnabled
+          className={`p-1.5 rounded ${
+            participant.isScreenShareEnabled
               ? 'bg-purple-600 hover:bg-purple-700 cursor-pointer'
               : 'bg-gray-700 cursor-not-allowed'
-            } transition-colors`}
-          title={participant.isScreenShareEnabled ? t('participants.clickAddScreen') : t('participants.screenOff')}
+          } transition-colors`}
+          title={
+            participant.isScreenShareEnabled
+              ? t('participants.clickAddScreen')
+              : t('participants.screenOff')
+          }
         >
           {participant.isScreenShareEnabled ? (
             <Monitor className="h-3.5 w-3.5 text-white" />
@@ -97,7 +125,10 @@ interface ParticipantsPanelProps {
  * Participants panel component
  * Shows all participants and their camera/mic/screen-share state
  */
-export function ParticipantsPanel({ isConnected, onAddToScene }: ParticipantsPanelProps) {
+export function ParticipantsPanel({
+  isConnected,
+  onAddToScene,
+}: ParticipantsPanelProps) {
   const { t } = useI18n();
   const [participants, setParticipants] = useState<ParticipantInfo[]>([]);
 
@@ -125,9 +156,13 @@ export function ParticipantsPanel({ isConnected, onAddToScene }: ParticipantsPan
   if (!isConnected) {
     return (
       <div className="flex flex-col h-full p-4">
-        <h3 className="text-sm font-semibold text-white mb-4">{t('participants.title')}</h3>
+        <h3 className="text-sm font-semibold text-white mb-4">
+          {t('participants.title')}
+        </h3>
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-sm text-gray-400">{t('participants.notConnected')}</p>
+          <p className="text-sm text-gray-400">
+            {t('participants.notConnected')}
+          </p>
         </div>
       </div>
     );
@@ -135,14 +170,18 @@ export function ParticipantsPanel({ isConnected, onAddToScene }: ParticipantsPan
 
   return (
     <div className="flex flex-col h-full p-4">
-      <h3 className="text-sm font-semibold text-white mb-4">{t('participants.title')} ({participants.length})</h3>
+      <h3 className="text-sm font-semibold text-white mb-4">
+        {t('participants.title')} ({participants.length})
+      </h3>
       <div className="flex-1 overflow-y-auto space-y-2">
         {participants.length === 0 ? (
           <div className="flex items-center justify-center h-full">
-            <p className="text-sm text-gray-400">{t('participants.noParticipants')}</p>
+            <p className="text-sm text-gray-400">
+              {t('participants.noParticipants')}
+            </p>
           </div>
         ) : (
-          participants.map(participant => (
+          participants.map((participant) => (
             <ParticipantItem
               key={participant.identity}
               participant={participant}

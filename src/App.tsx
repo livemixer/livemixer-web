@@ -1,19 +1,26 @@
 ﻿import { useCallback, useEffect, useRef, useState } from 'react';
 import lmsLogo from './assets/lms.svg';
-import { I18nProvider } from './contexts/I18nContext';
-import { useI18n } from './hooks/useI18n';
 import type { SourceType } from './components/add-source-dialog';
 import { BottomBar } from './components/bottom-bar';
-import { ConfigureSourceDialog, type SourceConfig } from './components/configure-source-dialog';
-import { ConfigureTimerDialog, type TimerConfig } from './components/configure-timer-dialog';
-import { DialogSlot } from './components/plugin-slot';
+import {
+  ConfigureSourceDialog,
+  type SourceConfig,
+} from './components/configure-source-dialog';
+import {
+  ConfigureTimerDialog,
+  type TimerConfig,
+} from './components/configure-timer-dialog';
 import { KonvaCanvas, type KonvaCanvasHandle } from './components/konva-canvas';
 import { MainLayout } from './components/main-layout';
 import { ParticipantsPanel } from './components/participants-panel';
+import { DialogSlot } from './components/plugin-slot';
 import { PropertyPanel } from './components/property-panel';
 import { SettingsDialog } from './components/settings-dialog';
 import { StatusBar } from './components/status-bar';
 import { Toolbar } from './components/toolbar';
+import { I18nProvider } from './contexts/I18nContext';
+import { useI18n } from './hooks/useI18n';
+import { coreResources, supportedLanguages } from './locales';
 import { canvasCaptureService } from './services/canvas-capture';
 import { createI18nEngine } from './services/i18n-engine';
 import { liveKitPullService } from './services/livekit-pull';
@@ -21,11 +28,10 @@ import { mediaStreamManager } from './services/media-stream-manager';
 import { pluginContextManager } from './services/plugin-context';
 import { pluginRegistry } from './services/plugin-registry';
 import { streamingService } from './services/streaming';
-import { coreResources, supportedLanguages } from './locales';
 import { useProtocolStore } from './store/protocol';
 import { useSettingsStore } from './store/setting';
-import type { I18nEngine } from './types/i18n-engine';
 import type { LiveMixerExtensions } from './types/extensions';
+import type { I18nEngine } from './types/i18n-engine';
 import type { SceneItem } from './types/protocol';
 import './App.css';
 
@@ -66,7 +72,9 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
 
       // Apply host overrides if provided
       if (extensions?.i18nOverrides) {
-        for (const [lang, namespaces] of Object.entries(extensions.i18nOverrides)) {
+        for (const [lang, namespaces] of Object.entries(
+          extensions.i18nOverrides,
+        )) {
           for (const [namespace, resource] of Object.entries(namespaces)) {
             engine.addResource(lang, namespace, resource, { layer: 'host' });
           }
@@ -75,7 +83,9 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
 
       // Apply user overrides if provided
       if (extensions?.i18nUserOverrides) {
-        for (const [lang, namespaces] of Object.entries(extensions.i18nUserOverrides)) {
+        for (const [lang, namespaces] of Object.entries(
+          extensions.i18nUserOverrides,
+        )) {
           for (const [namespace, resource] of Object.entries(namespaces)) {
             engine.addResource(lang, namespace, resource, { layer: 'user' });
           }
@@ -90,7 +100,11 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
     };
 
     initI18n();
-  }, [extensions?.i18nEngine, extensions?.i18nOverrides, extensions?.i18nUserOverrides]);
+  }, [
+    extensions?.i18nEngine,
+    extensions?.i18nOverrides,
+    extensions?.i18nUserOverrides,
+  ]);
 
   // Show loading state while i18n is initializing
   if (!i18nReady || !i18nEngine) {
@@ -120,10 +134,14 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [pendingSourceType, setPendingSourceType] = useState<SourceType | null>(null);
+  const [pendingSourceType, setPendingSourceType] = useState<SourceType | null>(
+    null,
+  );
   const [configureSourceOpen, setConfigureSourceOpen] = useState(false);
   const [configureTimerOpen, setConfigureTimerOpen] = useState(false);
-  const [activePluginDialog, setActivePluginDialog] = useState<string | null>(null);
+  const [activePluginDialog, setActivePluginDialog] = useState<string | null>(
+    null,
+  );
   const canvasRef = useRef<KonvaCanvasHandle>(null);
 
   // 从 store 获取 LiveKit 配置和输出设置
@@ -139,7 +157,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
   // 初始化激活场景（仅执行一次）
   useEffect(() => {
-    const activeScene = data.scenes.find(s => s.active) || data.scenes[0];
+    const activeScene = data.scenes.find((s) => s.active) || data.scenes[0];
     if (activeScene && !activeSceneId) {
       setActiveSceneId(activeScene.id);
     }
@@ -168,8 +186,9 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     });
   }, []);
 
-  const activeScene = data.scenes.find(s => s.id === activeSceneId) || null;
-  const selectedItem = activeScene?.items.find(item => item.id === selectedItemId) || null;
+  const activeScene = data.scenes.find((s) => s.id === activeSceneId) || null;
+  const selectedItem =
+    activeScene?.items.find((item) => item.id === selectedItemId) || null;
 
   // Sync state to Plugin Context
   useEffect(() => {
@@ -211,7 +230,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       return;
     }
 
-    const newScenes = data.scenes.filter(s => s.id !== sceneId);
+    const newScenes = data.scenes.filter((s) => s.id !== sceneId);
     updateData({
       ...data,
       scenes: newScenes,
@@ -225,11 +244,14 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
   // 上移场景
   const handleMoveSceneUp = (sceneId: string) => {
-    const index = data.scenes.findIndex(s => s.id === sceneId);
+    const index = data.scenes.findIndex((s) => s.id === sceneId);
     if (index <= 0) return; // 已经是第一个，无法上移
 
     const newScenes = [...data.scenes];
-    [newScenes[index - 1], newScenes[index]] = [newScenes[index], newScenes[index - 1]];
+    [newScenes[index - 1], newScenes[index]] = [
+      newScenes[index],
+      newScenes[index - 1],
+    ];
 
     updateData({
       ...data,
@@ -239,11 +261,14 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
   // 下移场景
   const handleMoveSceneDown = (sceneId: string) => {
-    const index = data.scenes.findIndex(s => s.id === sceneId);
+    const index = data.scenes.findIndex((s) => s.id === sceneId);
     if (index < 0 || index >= data.scenes.length - 1) return; // 已经是最后一个，无法下移
 
     const newScenes = [...data.scenes];
-    [newScenes[index], newScenes[index + 1]] = [newScenes[index + 1], newScenes[index]];
+    [newScenes[index], newScenes[index + 1]] = [
+      newScenes[index + 1],
+      newScenes[index],
+    ];
 
     updateData({
       ...data,
@@ -274,7 +299,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
           if (stream) {
             createItem(sourceType, undefined, undefined, stream);
           }
-        } catch (err) {
+        } catch {
           // User cancelled or error occurred
           console.log(`${sourceType} permission cancelled by user`);
         }
@@ -329,7 +354,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         undefined,
         pendingStream.stream,
         pendingStream.metadata?.deviceId,
-        pendingStream.metadata?.deviceLabel
+        pendingStream.metadata?.deviceLabel,
       );
     }
     setActivePluginDialog(null);
@@ -350,13 +375,15 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     stream?: MediaStream,
     webcamStream?: MediaStream,
     webcamDeviceId?: string,
-    webcamDeviceLabel?: string
+    webcamDeviceLabel?: string,
   ) => {
     if (!activeSceneId) return;
 
     // 生成新的 ID，格式为 type-序号（类似 OBS）
     const existingItems = activeScene?.items || [];
-    const sameTypeItems = existingItems.filter(item => item.type === sourceType);
+    const sameTypeItems = existingItems.filter(
+      (item) => item.type === sourceType,
+    );
     const nextNumber = sameTypeItems.length + 1;
     const newItemId = `${sourceType}-${nextNumber}`;
 
@@ -368,7 +395,9 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     const pluginDefaultProps: Record<string, unknown> = {};
     if (plugin?.propsSchema) {
       Object.entries(plugin.propsSchema).forEach(([key, schema]) => {
-        pluginDefaultProps[key] = (schema as unknown as { defaultValue: unknown }).defaultValue;
+        pluginDefaultProps[key] = (
+          schema as unknown as { defaultValue: unknown }
+        ).defaultValue;
       });
     }
 
@@ -477,10 +506,13 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
           video.muted = true;
           video.style.display = 'none';
           document.body.appendChild(video);
-          video.play().catch(() => { });
+          video.play().catch(() => {});
 
-          const title = itemStream.getVideoTracks()[0]?.label ||
-            (plugin.streamInit.streamType === 'screen' ? 'Screen/Window Capture' : 'Webcam');
+          const title =
+            itemStream.getVideoTracks()[0]?.label ||
+            (plugin.streamInit.streamType === 'screen'
+              ? 'Screen/Window Capture'
+              : 'Webcam');
 
           mediaStreamManager.setStream(newItemId, {
             stream: itemStream,
@@ -489,7 +521,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
               deviceId: webcamDeviceId,
               deviceLabel: webcamDeviceLabel || title,
               sourceType: plugin.streamInit.streamType || sourceType,
-            }
+            },
           });
 
           // Handle stream end
@@ -505,7 +537,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
               deviceId: webcamDeviceId,
               deviceLabel: webcamDeviceLabel || 'Microphone',
               sourceType: plugin.streamInit.streamType || sourceType,
-            }
+            },
           });
           if (audioTrack) {
             audioTrack.onended = () => {
@@ -530,7 +562,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     updateData({
       ...data,
-      scenes: data.scenes.map(scene => {
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene;
         return {
           ...scene,
@@ -549,11 +581,11 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     updateData({
       ...data,
-      scenes: data.scenes.map(scene => {
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene;
         return {
           ...scene,
-          items: scene.items.filter(item => item.id !== itemId),
+          items: scene.items.filter((item) => item.id !== itemId),
         };
       }),
     });
@@ -570,14 +602,17 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     updateData({
       ...data,
-      scenes: data.scenes.map(scene => {
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene;
 
-        const index = scene.items.findIndex(item => item.id === itemId);
+        const index = scene.items.findIndex((item) => item.id === itemId);
         if (index <= 0) return scene; // 已经是第一个，无法上移
 
         const newItems = [...scene.items];
-        [newItems[index - 1], newItems[index]] = [newItems[index], newItems[index - 1]];
+        [newItems[index - 1], newItems[index]] = [
+          newItems[index],
+          newItems[index - 1],
+        ];
 
         return {
           ...scene,
@@ -593,14 +628,17 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     updateData({
       ...data,
-      scenes: data.scenes.map(scene => {
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene;
 
-        const index = scene.items.findIndex(item => item.id === itemId);
+        const index = scene.items.findIndex((item) => item.id === itemId);
         if (index < 0 || index >= scene.items.length - 1) return scene; // 已经是最后一个，无法下移
 
         const newItems = [...scene.items];
-        [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
+        [newItems[index], newItems[index + 1]] = [
+          newItems[index + 1],
+          newItems[index],
+        ];
 
         return {
           ...scene,
@@ -616,16 +654,16 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     updateData({
       ...data,
-      scenes: data.scenes.map(scene => {
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene;
 
         return {
           ...scene,
-          items: scene.items.map(item => {
+          items: scene.items.map((item) => {
             if (item.id !== itemId) return item;
             return {
               ...item,
-              visible: item.visible === false ? true : false,
+              visible: item.visible === false,
             };
           }),
         };
@@ -639,12 +677,12 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     updateData({
       ...data,
-      scenes: data.scenes.map(scene => {
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene;
 
         return {
           ...scene,
-          items: scene.items.map(item => {
+          items: scene.items.map((item) => {
             if (item.id !== itemId) return item;
             return {
               ...item,
@@ -662,18 +700,20 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     updateData({
       ...data,
-      scenes: data.scenes.map(scene => {
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene;
 
         return {
           ...scene,
-          items: scene.items.map(item => {
+          items: scene.items.map((item) => {
             if (item.id !== itemId) return item;
 
             return {
               ...item,
               ...updates,
-              layout: updates.layout ? { ...item.layout, ...updates.layout } : item.layout,
+              layout: updates.layout
+                ? { ...item.layout, ...updates.layout }
+                : item.layout,
               transform: updates.transform
                 ? { ...item.transform, ...updates.transform }
                 : item.transform,
@@ -706,7 +746,10 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
         // 从 Canvas 捕获媒体流
         const fpsValue = Number.parseInt(fps, 10) || 30;
-        const mediaStream = canvasCaptureService.captureStream(canvas, fpsValue);
+        const mediaStream = canvasCaptureService.captureStream(
+          canvas,
+          fpsValue,
+        );
 
         // 获取视频码率设置（kbps）
         const bitrateValue = Number.parseInt(videoBitrate, 10) || 5000;
@@ -725,7 +768,9 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         console.log('开始推流');
       } catch (error) {
         console.error('推流失败:', error);
-        alert(`推流失败: ${error instanceof Error ? error.message : '未知错误'}`);
+        alert(
+          `推流失败: ${error instanceof Error ? error.message : '未知错误'}`,
+        );
         // 清理资源
         canvasRef.current?.stopContinuousRendering();
         canvasCaptureService.stopCapture();
@@ -755,7 +800,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         }
 
         await liveKitPullService.connect(livekitPullUrl, livekitPullToken, {
-          onParticipantsChanged: participants => {
+          onParticipantsChanged: (participants) => {
             console.log('参会者列表变化:', participants);
           },
         });
@@ -764,7 +809,9 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         console.log('开始拉流');
       } catch (error) {
         console.error('拉流失败:', error);
-        alert(`拉流失败: ${error instanceof Error ? error.message : '未知错误'}`);
+        alert(
+          `拉流失败: ${error instanceof Error ? error.message : '未知错误'}`,
+        );
       }
     } else {
       // 停止拉流
@@ -785,7 +832,9 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
       // 生成新的 ID
       const existingItems = activeScene?.items || [];
-      const sameTypeItems = existingItems.filter(item => item.type === 'livekit_stream');
+      const sameTypeItems = existingItems.filter(
+        (item) => item.type === 'livekit_stream',
+      );
       const nextNumber = sameTypeItems.length + 1;
       const newItemId = `livekit_stream-${nextNumber}`;
 
@@ -828,7 +877,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
       updateData({
         ...data,
-        scenes: data.scenes.map(scene => {
+        scenes: data.scenes.map((scene) => {
           if (scene.id !== activeSceneId) return scene;
           return {
             ...scene,
@@ -868,7 +917,11 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       <MainLayout
         logo={
           extensions?.logo || (
-            <img src={lmsLogo} style={{ width: '40px', height: '40px' }} alt="LMS logo" />
+            <img
+              src={lmsLogo}
+              style={{ width: '40px', height: '40px' }}
+              alt="LMS logo"
+            />
           )
         }
         toolbar={<Toolbar data={data} updateData={updateData} />}
@@ -885,12 +938,15 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
               <button
                 type="button"
                 onClick={handleTogglePulling}
-                className={`w-full py-2 px-4 rounded text-sm font-medium transition-colors ${isPulling
-                  ? 'bg-red-600 hover:bg-red-700 text-white'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}
+                className={`w-full py-2 px-4 rounded text-sm font-medium transition-colors ${
+                  isPulling
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
               >
-                {isPulling ? t('status.disconnectPull') : t('status.connectPull')}
+                {isPulling
+                  ? t('status.disconnectPull')
+                  : t('status.connectPull')}
               </button>
             </div>
           </div>
@@ -906,7 +962,12 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
             selectedItemId={selectedItemId}
           />
         }
-        rightSidebar={<PropertyPanel selectedItem={selectedItem} onUpdateItem={handleUpdateItem} />}
+        rightSidebar={
+          <PropertyPanel
+            selectedItem={selectedItem}
+            onUpdateItem={handleUpdateItem}
+          />
+        }
         bottomBar={
           <BottomBar
             scenes={data.scenes}

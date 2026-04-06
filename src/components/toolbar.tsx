@@ -15,18 +15,22 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
-    input.onchange = e => {
+    input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = event => {
+      reader.onload = (event) => {
         try {
           const content = event.target?.result as string;
           const importedData = JSON.parse(content) as ProtocolData;
 
           // Validate imported data structure
-          if (!importedData.version || !importedData.scenes || !importedData.canvas) {
+          if (
+            !importedData.version ||
+            !importedData.scenes ||
+            !importedData.canvas
+          ) {
             alert(t('toolbar.importInvalidFormat'));
             return;
           }
@@ -64,13 +68,11 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
     console.log('Check for updates');
 
     // TODO: Implement update check
-
   };
 
   const handleAbout = () => {
     console.log('About');
     // TODO: Show About dialog
-
   };
 
   return (
@@ -90,10 +92,19 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
       <ToolbarMenu
         label={t('toolbar.view')}
         items={[
-          { label: t('toolbar.fullscreen'), onClick: () => console.log('fullscreen') },
+          {
+            label: t('toolbar.fullscreen'),
+            onClick: () => console.log('fullscreen'),
+          },
           { divider: true },
-          { label: t('toolbar.showGrid'), onClick: () => console.log('show grid') },
-          { label: t('toolbar.showGuides'), onClick: () => console.log('show guides') },
+          {
+            label: t('toolbar.showGrid'),
+            onClick: () => console.log('show grid'),
+          },
+          {
+            label: t('toolbar.showGuides'),
+            onClick: () => console.log('show guides'),
+          },
         ]}
       />
 
@@ -108,10 +119,19 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
       <ToolbarMenu
         label={t('toolbar.tools')}
         items={[
-          { label: t('toolbar.audioMixer'), onClick: () => console.log('audio mixer') },
-          { label: t('toolbar.sceneTransition'), onClick: () => console.log('scene transition') },
+          {
+            label: t('toolbar.audioMixer'),
+            onClick: () => console.log('audio mixer'),
+          },
+          {
+            label: t('toolbar.sceneTransition'),
+            onClick: () => console.log('scene transition'),
+          },
           { divider: true },
-          { label: t('toolbar.pluginManager'), onClick: () => console.log('plugin manager') },
+          {
+            label: t('toolbar.pluginManager'),
+            onClick: () => console.log('plugin manager'),
+          },
         ]}
       />
 
@@ -120,7 +140,10 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
         items={[
           { label: t('toolbar.checkUpdate'), onClick: handleCheckUpdate },
           { divider: true },
-          { label: t('toolbar.documentation'), onClick: () => console.log('documentation') },
+          {
+            label: t('toolbar.documentation'),
+            onClick: () => console.log('documentation'),
+          },
           { label: t('toolbar.about'), onClick: handleAbout },
         ]}
       />

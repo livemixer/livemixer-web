@@ -1,29 +1,29 @@
-import { Mic, Music, Video } from 'lucide-react'
-import type { Source } from '../types/protocol'
+import { Mic, Music, Video } from 'lucide-react';
+import type { Source } from '../types/protocol';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from './ui/tooltip'
+} from './ui/tooltip';
 
 interface SourcePanelProps {
-  sources: Source[]
+  sources: Source[];
 }
 
 export function SourcePanel({ sources }: SourcePanelProps) {
   const getSourceIcon = (type: string) => {
     switch (type) {
       case 'video_input':
-        return <Video className="w-4 h-4" />
+        return <Video className="w-4 h-4" />;
       case 'audio_input':
-        return <Mic className="w-4 h-4" />
+        return <Mic className="w-4 h-4" />;
       case 'audio_file':
-        return <Music className="w-4 h-4" />
+        return <Music className="w-4 h-4" />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <TooltipProvider>
@@ -71,5 +71,5 @@ export function SourcePanel({ sources }: SourcePanelProps) {
         </div>
       </div>
     </TooltipProvider>
-  )
+  );
 }

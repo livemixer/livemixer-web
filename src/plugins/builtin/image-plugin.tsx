@@ -1,6 +1,8 @@
+import type { Image as KonvaImageType } from 'konva/lib/shapes/Image';
+import type React from 'react';
 import { Image as KonvaImage } from 'react-konva';
 import useImage from 'use-image';
-import type { ISourcePlugin, IPluginContext } from '../../types/plugin';
+import type { IPluginContext, ISourcePlugin } from '../../types/plugin';
 
 export const ImagePlugin: ISourcePlugin = {
   id: 'io.livemixer.image',
@@ -70,13 +72,22 @@ export const ImagePlugin: ISourcePlugin = {
   onInit: (ctx: IPluginContext) => {
     ctx.logger.info('Image plugin initialized');
   },
-  onUpdate: (newProps: any) => {
+  onUpdate: (newProps: unknown) => {
     console.log('Image plugin updated', newProps);
   },
-  render: (commonProps: any) => {
+  render: (commonProps: unknown) => {
+    const props = commonProps as {
+      ref: React.Ref<KonvaImageType>;
+      item: {
+        url?: string;
+        transform?: { borderRadius?: number };
+        borderRadius?: number;
+      };
+      [key: string]: unknown;
+    };
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [image] = useImage(commonProps.item.url || '', 'anonymous');
-    const { ref: nodeRef, item, ...restProps } = commonProps;
+    const [image] = useImage(props.item.url || '', 'anonymous');
+    const { ref: nodeRef, item, ...restProps } = props;
 
     return (
       <KonvaImage

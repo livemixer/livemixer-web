@@ -36,7 +36,10 @@ export function LiveKitStreamItem({
         setError(null);
 
         // Get the video track for this participant/source
-        track = liveKitPullService.getParticipantVideoTrack(participantIdentity, streamSource);
+        track = liveKitPullService.getParticipantVideoTrack(
+          participantIdentity,
+          streamSource,
+        );
 
         if (!track) {
           if (mounted) {
@@ -73,7 +76,7 @@ export function LiveKitStreamItem({
     const checkInterval = setInterval(() => {
       const currentTrack = liveKitPullService.getParticipantVideoTrack(
         participantIdentity,
-        streamSource
+        streamSource,
       );
 
       // Re-attach if the track changes

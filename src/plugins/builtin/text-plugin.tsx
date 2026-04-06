@@ -1,5 +1,5 @@
 import { Text as KonvaText } from 'react-konva';
-import type { ISourcePlugin, IPluginContext } from '../../types/plugin';
+import type { IPluginContext, ISourcePlugin } from '../../types/plugin';
 
 export const TextPlugin: ISourcePlugin = {
   id: 'io.livemixer.text',
@@ -80,7 +80,15 @@ export const TextPlugin: ISourcePlugin = {
   onUpdate: (newProps: unknown) => {
     console.log('Text plugin updated', newProps);
   },
-  render: (commonProps: { ref: React.RefObject<unknown>; item: { content?: string; properties?: { fontSize?: number; color?: string }; fontSize?: number; color?: string } }) => {
+  render: (commonProps: {
+    ref: React.RefObject<unknown>;
+    item: {
+      content?: string;
+      properties?: { fontSize?: number; color?: string };
+      fontSize?: number;
+      color?: string;
+    };
+  }) => {
     const { ref: nodeRef, item, ...restProps } = commonProps;
 
     return (

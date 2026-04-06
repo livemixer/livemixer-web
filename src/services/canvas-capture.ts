@@ -3,7 +3,7 @@
  * Creates a MediaStream from a Canvas element
  */
 export class CanvasCaptureService {
-  private stream: MediaStream | null = null
+  private stream: MediaStream | null = null;
 
   /**
    * Capture a media stream from a Canvas element
@@ -13,14 +13,14 @@ export class CanvasCaptureService {
    */
   captureStream(canvas: HTMLCanvasElement, fps = 30): MediaStream {
     // Use Canvas API to capture the stream
-    const stream = canvas.captureStream(fps)
+    const stream = canvas.captureStream(fps);
 
     if (!stream) {
-      throw new Error('Failed to capture media stream from Canvas')
+      throw new Error('Failed to capture media stream from Canvas');
     }
 
-    this.stream = stream
-    return stream
+    this.stream = stream;
+    return stream;
   }
 
   /**
@@ -29,9 +29,9 @@ export class CanvasCaptureService {
   stopCapture(): void {
     if (this.stream) {
       for (const track of this.stream.getTracks()) {
-        track.stop()
+        track.stop();
       }
-      this.stream = null
+      this.stream = null;
     }
   }
 
@@ -39,9 +39,9 @@ export class CanvasCaptureService {
    * Get current stream
    */
   getStream(): MediaStream | null {
-    return this.stream
+    return this.stream;
   }
 }
 
 // Export singleton instance
-export const canvasCaptureService = new CanvasCaptureService()
+export const canvasCaptureService = new CanvasCaptureService();

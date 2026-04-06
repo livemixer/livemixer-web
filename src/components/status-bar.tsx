@@ -24,7 +24,11 @@ export function StatusBar({
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5">
           <Wifi className="w-3.5 h-3.5" />
-          <span className={isStreaming ? 'text-success-500 font-medium' : 'text-neutral-500'}>
+          <span
+            className={
+              isStreaming ? 'text-success-500 font-medium' : 'text-neutral-500'
+            }
+          >
             {isStreaming ? t('status.streaming') : t('status.notStreaming')}
           </span>
         </div>
@@ -47,7 +51,9 @@ export function StatusBar({
         </div>
         <div className="flex items-center gap-1.5">
           <Cpu className="w-3.5 h-3.5" />
-          <span className="font-mono text-neutral-300">{cpuUsage.toFixed(1)}%</span>
+          <span className="font-mono text-neutral-300">
+            {cpuUsage.toFixed(1)}%
+          </span>
         </div>
         <div className="flex items-center gap-1.5">
           <HardDrive className="w-3.5 h-3.5" />
