@@ -10,7 +10,7 @@ import {
   Upload,
   Video,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useI18n } from '../hooks/useI18n';
 import { mediaStreamManager } from '../services/media-stream-manager';
 import { pluginRegistry } from '../services/plugin-registry';
@@ -42,6 +42,12 @@ function AudioInputPanel({
   const [isActive, setIsActive] = useState(false);
   const [_deviceChangeFlag, setDeviceChangeFlag] = useState(0);
   const hasManuallyStoppedRef = useRef(false);
+  const devicesRef = useRef<MediaDeviceInfo[]>([]);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    devicesRef.current = devices;
+  }, [devices]);
 
   // Check if stream is active
   useEffect(() => {
@@ -72,62 +78,71 @@ function AudioInputPanel({
       );
   }, [isActive]);
 
-  const loadDevices = async (force = false) => {
-    // Check actual stream state from mediaStreamManager (not React state which may be stale)
-    const entry = mediaStreamManager.getStream(localItem.id);
-    const actuallyActive = !!entry?.stream?.active;
-    if (actuallyActive) return;
-    if (!force && devices.length > 0) return;
-
-    // Only show loading spinner on initial load (no devices yet)
-    const showLoading = devices.length === 0;
-    if (showLoading) setIsLoadingDevices(true);
-
-    try {
-      let audioDevices = await mediaStreamManager.getAudioInputDevices();
-
-      // Fallback: if still no devices, try getUserMedia directly
-      if (audioDevices.length === 0) {
-        try {
-          const tempStream = await navigator.mediaDevices.getUserMedia({
-            audio: true,
-          });
-          const audioTrack = tempStream.getAudioTracks()[0];
-
-          // Save track info BEFORE stopping
-          if (audioTrack) {
-            const settings = audioTrack.getSettings();
-            const fallbackDevice = {
-              deviceId: settings?.deviceId || 'default',
-              kind: 'audioinput' as MediaDeviceKind,
-              label: audioTrack.label || 'Microphone',
-              groupId: '',
-              toJSON: () => ({}),
-            };
-            audioDevices = [fallbackDevice as MediaDeviceInfo];
-          }
-          tempStream.getTracks().forEach((track) => track.stop());
-        } catch {
-          // Ignore
-        }
+  const loadDevices = useCallback(
+    async (force = false) => {
+      // Check actual stream state from mediaStreamManager (not React state which may be stale)
+      const entry = mediaStreamManager.getStream(localItem.id);
+      const actuallyActive = !!entry?.stream?.active;
+      if (actuallyActive) {
+        setIsLoadingDevices(false);
+        return;
       }
-      // Sort: default and communications first, then physical devices
-      audioDevices.sort((a, b) => {
-        const priority = (d: MediaDeviceInfo) =>
-          d.deviceId === 'default'
-            ? 0
-            : d.deviceId === 'communications'
-              ? 1
-              : 2;
-        return priority(a) - priority(b);
-      });
-      setDevices(audioDevices);
-    } catch (err) {
-      console.error('Failed to load audio devices:', err);
-    } finally {
-      if (showLoading) setIsLoadingDevices(false);
-    }
-  };
+      if (!force && devicesRef.current.length > 0) {
+        setIsLoadingDevices(false);
+        return;
+      }
+
+      // Only show loading spinner on initial load (no devices yet)
+      const showLoading = devicesRef.current.length === 0;
+      if (showLoading) setIsLoadingDevices(true);
+
+      try {
+        let audioDevices = await mediaStreamManager.getAudioInputDevices();
+
+        // Fallback: if still no devices, try getUserMedia directly
+        if (audioDevices.length === 0) {
+          try {
+            const tempStream = await navigator.mediaDevices.getUserMedia({
+              audio: true,
+            });
+            const audioTrack = tempStream.getAudioTracks()[0];
+
+            // Save track info BEFORE stopping
+            if (audioTrack) {
+              const settings = audioTrack.getSettings();
+              const fallbackDevice = {
+                deviceId: settings?.deviceId || 'default',
+                kind: 'audioinput' as MediaDeviceKind,
+                label: audioTrack.label || 'Microphone',
+                groupId: '',
+                toJSON: () => ({}),
+              };
+              audioDevices = [fallbackDevice as MediaDeviceInfo];
+            }
+            tempStream.getTracks().forEach((track) => track.stop());
+          } catch {
+            // Ignore
+          }
+        }
+        // Sort: default and communications first, then physical devices
+        audioDevices.sort((a, b) => {
+          const priority = (d: MediaDeviceInfo) =>
+            d.deviceId === 'default'
+              ? 0
+              : d.deviceId === 'communications'
+                ? 1
+                : 2;
+          return priority(a) - priority(b);
+        });
+        setDevices(audioDevices);
+      } catch (err) {
+        console.error('Failed to load audio devices:', err);
+      } finally {
+        if (showLoading) setIsLoadingDevices(false);
+      }
+    },
+    [localItem.id],
+  );
 
   // Auto load when not active
   useEffect(() => {
@@ -138,7 +153,81 @@ function AudioInputPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localItem.id, loadDevices]);
 
-  // Auto-select single device when no device is selected (only on initial load, not after manual stop)
+  // Reload devices when device change flag is triggered (e.g., after stopping capture)
+  useEffect(() => {
+    if (_deviceChangeFlag > 0 && !isActive) {
+      loadDevices(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [_deviceChangeFlag, isActive, loadDevices]);
+
+  // Handle device change - defined before useEffect that uses it
+  const handleDeviceChange = useCallback(
+    async (newDeviceId: string) => {
+      if (isLocked || isActive) return;
+
+      setIsLoadingDevices(true);
+      try {
+        // Stop existing stream
+        const existingEntry = mediaStreamManager.getStream(localItem.id);
+        if (existingEntry) {
+          existingEntry.stream.getTracks().forEach((track) => track.stop());
+          mediaStreamManager.removeStream(localItem.id);
+        }
+
+        // Request new audio stream
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: newDeviceId ? { deviceId: { ideal: newDeviceId } } : true,
+          video: false,
+        });
+
+        const audioTrack = stream.getAudioTracks()[0];
+        if (!audioTrack) throw new Error('No audio track');
+
+        const label =
+          devices.find((d) => d.deviceId === newDeviceId)?.label ||
+          audioTrack.label ||
+          'Microphone';
+        const actualDeviceId =
+          audioTrack.getSettings()?.deviceId || newDeviceId;
+
+        // Create audio element for monitoring
+        const audio = document.createElement('audio');
+        audio.srcObject = stream;
+        audio.muted = localItem.muted ?? false;
+        audio.volume = localItem.volume ?? 1;
+        audio.style.display = 'none';
+        document.body.appendChild(audio);
+        audio.play().catch(() => {});
+
+        mediaStreamManager.setStream(localItem.id, {
+          stream,
+          metadata: {
+            deviceId: actualDeviceId,
+            deviceLabel: label,
+            sourceType: 'audio_input',
+          },
+        });
+
+        audioTrack.onended = () => {
+          mediaStreamManager.removeStream(localItem.id);
+          setIsActive(false);
+        };
+
+        updateProperty({ deviceId: actualDeviceId });
+        mediaStreamManager.notifyStreamChange(localItem.id);
+        setLocalItem({ ...localItem, deviceId: actualDeviceId });
+        setIsActive(true);
+      } catch (err) {
+        console.error('Failed to switch audio device:', err);
+      } finally {
+        setIsLoadingDevices(false);
+      }
+    },
+    [isLocked, isActive, localItem, devices, updateProperty, setLocalItem],
+  );
+
+  // Auto-select single device in dropdown (but don't auto-start capture)
   useEffect(() => {
     if (
       !localItem.deviceId &&
@@ -146,73 +235,12 @@ function AudioInputPanel({
       !isActive &&
       !hasManuallyStoppedRef.current
     ) {
-      handleDeviceChange(devices[0].deviceId);
+      // Only auto-select the device in dropdown, don't start capture
+      const deviceId = devices[0].deviceId;
+      updateProperty({ deviceId });
+      setLocalItem({ ...localItem, deviceId });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    // biome-ignore lint/correctness/useExhaustiveDependencies: handleDeviceChange is defined below but used here
-    // biome-ignore lint/correctness/noInvalidUseBeforeDeclaration: function is hoisted
-  }, [devices, localItem.deviceId, isActive, handleDeviceChange]);
-
-  const handleDeviceChange = async (newDeviceId: string) => {
-    if (isLocked || isActive) return;
-
-    setIsLoadingDevices(true);
-    try {
-      // Stop existing stream
-      const existingEntry = mediaStreamManager.getStream(localItem.id);
-      if (existingEntry) {
-        existingEntry.stream.getTracks().forEach((track) => track.stop());
-        mediaStreamManager.removeStream(localItem.id);
-      }
-
-      // Request new audio stream
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: newDeviceId ? { deviceId: { ideal: newDeviceId } } : true,
-        video: false,
-      });
-
-      const audioTrack = stream.getAudioTracks()[0];
-      if (!audioTrack) throw new Error('No audio track');
-
-      const label =
-        devices.find((d) => d.deviceId === newDeviceId)?.label ||
-        audioTrack.label ||
-        'Microphone';
-      const actualDeviceId = audioTrack.getSettings()?.deviceId || newDeviceId;
-
-      // Create audio element for monitoring
-      const audio = document.createElement('audio');
-      audio.srcObject = stream;
-      audio.muted = localItem.muted ?? false;
-      audio.volume = localItem.volume ?? 1;
-      audio.style.display = 'none';
-      document.body.appendChild(audio);
-      audio.play().catch(() => {});
-
-      mediaStreamManager.setStream(localItem.id, {
-        stream,
-        metadata: {
-          deviceId: actualDeviceId,
-          deviceLabel: label,
-          sourceType: 'audio_input',
-        },
-      });
-
-      audioTrack.onended = () => {
-        mediaStreamManager.removeStream(localItem.id);
-        setIsActive(false);
-      };
-
-      updateProperty({ deviceId: actualDeviceId });
-      mediaStreamManager.notifyStreamChange(localItem.id);
-      setLocalItem({ ...localItem, deviceId: actualDeviceId });
-      setIsActive(true);
-    } catch (err) {
-      console.error('Failed to switch audio device:', err);
-    } finally {
-      setIsLoadingDevices(false);
-    }
-  };
+  }, [devices, localItem, isActive, updateProperty, setLocalItem]);
 
   const handleStopCapture = () => {
     const existingEntry = mediaStreamManager.getStream(localItem.id);
@@ -276,7 +304,11 @@ function AudioInputPanel({
             <>
               <select
                 value={localItem.deviceId || ''}
-                onChange={(e) => handleDeviceChange(e.target.value)}
+                onChange={(e) => {
+                  const deviceId = e.target.value;
+                  updateProperty({ deviceId });
+                  setLocalItem({ ...localItem, deviceId });
+                }}
                 disabled={isLocked || isLoadingDevices}
                 className="w-full py-2 px-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 disabled:opacity-50"
               >
@@ -343,6 +375,12 @@ function VideoInputPanel({
   const [isLoadingDevices, setIsLoadingDevices] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [deviceChangeFlag, setDeviceChangeFlag] = useState(0);
+  const devicesRef = useRef<MediaDeviceInfo[]>([]);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    devicesRef.current = devices;
+  }, [devices]);
 
   // Check if stream is active
   useEffect(() => {
@@ -373,67 +411,70 @@ function VideoInputPanel({
     };
   }, [isActive]);
 
-  const loadDevices = async (force = false, clearOnFail = false) => {
-    if (isActive) return; // Don't load if stream is active
-    // Skip if we already have devices and not forcing reload
-    if (!force && devices.length > 0) {
-      console.log(
-        'Skipping loadDevices, already have devices:',
-        devices.length,
-      );
-      return;
-    }
-    setIsLoadingDevices(true);
-    try {
-      let videoDevices = await mediaStreamManager.getVideoInputDevices();
-
-      // If no devices found, try to get one via getUserMedia and extract info
-      if (videoDevices.length === 0) {
-        try {
-          console.log(
-            'No devices from enumerateDevices, trying getUserMedia fallback...',
-          );
-          const tempStream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-          });
-          const videoTrack = tempStream.getVideoTracks()[0];
-
-          if (videoTrack) {
-            const settings = videoTrack.getSettings();
-            const fallbackDevice = {
-              deviceId: settings.deviceId || 'default',
-              kind: 'videoinput' as MediaDeviceKind,
-              label: videoTrack.label || 'Camera',
-              groupId: '',
-              toJSON: () => ({}),
-            };
-            console.log('Using fallback device from stream:', fallbackDevice);
-            videoDevices = [fallbackDevice as MediaDeviceInfo];
-          }
-
-          // Stop the temp stream
-          tempStream.getTracks().forEach((track) => track.stop());
-        } catch (fallbackErr) {
-          console.warn('Fallback getUserMedia also failed:', fallbackErr);
-          // Keep existing devices only if not clearing on fail (e.g., device was unplugged)
-          if (!clearOnFail && devices.length > 0) {
-            console.log('Keeping existing devices');
-            setIsLoadingDevices(false);
-            return;
-          }
-          // Device was unplugged, clear the list
-          console.log('Clearing devices (device likely unplugged)');
-        }
+  const loadDevices = useCallback(
+    async (force = false, clearOnFail = false) => {
+      if (isActive) return; // Don't load if stream is active
+      // Skip if we already have devices and not forcing reload
+      if (!force && devicesRef.current.length > 0) {
+        console.log(
+          'Skipping loadDevices, already have devices:',
+          devicesRef.current.length,
+        );
+        return;
       }
+      setIsLoadingDevices(true);
+      try {
+        let videoDevices = await mediaStreamManager.getVideoInputDevices();
 
-      console.log('Setting devices:', videoDevices.length, videoDevices);
-      setDevices(videoDevices);
-    } catch (err) {
-      console.error('Failed to load devices:', err);
-    } finally {
-      setIsLoadingDevices(false);
-    }
-  };
+        // If no devices found, try to get one via getUserMedia and extract info
+        if (videoDevices.length === 0) {
+          try {
+            console.log(
+              'No devices from enumerateDevices, trying getUserMedia fallback...',
+            );
+            const tempStream = await navigator.mediaDevices.getUserMedia({
+              video: true,
+            });
+            const videoTrack = tempStream.getVideoTracks()[0];
+
+            if (videoTrack) {
+              const settings = videoTrack.getSettings();
+              const fallbackDevice = {
+                deviceId: settings.deviceId || 'default',
+                kind: 'videoinput' as MediaDeviceKind,
+                label: videoTrack.label || 'Camera',
+                groupId: '',
+                toJSON: () => ({}),
+              };
+              console.log('Using fallback device from stream:', fallbackDevice);
+              videoDevices = [fallbackDevice as MediaDeviceInfo];
+            }
+
+            // Stop the temp stream
+            tempStream.getTracks().forEach((track) => track.stop());
+          } catch (fallbackErr) {
+            console.warn('Fallback getUserMedia also failed:', fallbackErr);
+            // Keep existing devices only if not clearing on fail (e.g., device was unplugged)
+            if (!clearOnFail && devicesRef.current.length > 0) {
+              console.log('Keeping existing devices');
+              setIsLoadingDevices(false);
+              return;
+            }
+            // Device was unplugged, clear the list
+            console.log('Clearing devices (device likely unplugged)');
+          }
+        }
+
+        console.log('Setting devices:', videoDevices.length, videoDevices);
+        setDevices(videoDevices);
+      } catch (err) {
+        console.error('Failed to load devices:', err);
+      } finally {
+        setIsLoadingDevices(false);
+      }
+    },
+    [isActive],
+  );
 
   // Debug: log devices state changes
   useEffect(() => {

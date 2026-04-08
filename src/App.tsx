@@ -310,7 +310,8 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       if (plugin.addDialog?.immediate) {
         // Plugin handles its own add flow via dialog
         // The dialog should be registered to slot system
-        const dialogId = `${plugin.id}-dialog`;
+        // Use configured dialogId or default to plugin.id-dialog
+        const dialogId = plugin.addDialog.dialogId || `${plugin.id}-dialog`;
         setActivePluginDialog(dialogId);
         return;
       }
@@ -351,8 +352,8 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         pendingStream.sourceType,
         undefined,
         undefined,
-        undefined,
         pendingStream.stream,
+        undefined,
         pendingStream.metadata?.deviceId,
         pendingStream.metadata?.deviceLabel,
       );

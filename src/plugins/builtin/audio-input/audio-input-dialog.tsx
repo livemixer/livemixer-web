@@ -130,8 +130,14 @@ export function AudioInputDialog(props: AudioInputDialogProps) {
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
   const [previewStream, setPreviewStream] = useState<MediaStream | null>(null);
+  const previewStreamRef = useRef<MediaStream | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    previewStreamRef.current = previewStream;
+  }, [previewStream]);
 
   // Load available audio input devices when dialog opens
   useEffect(() => {
@@ -144,10 +150,15 @@ export function AudioInputDialog(props: AudioInputDialogProps) {
         setSelectedDeviceId('');
 
         // Request permission first - get device info BEFORE stopping
-        const tempStream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-          video: false,
-        });
+        const tempStream = await navigator.mediaDevices
+          .getUserMedia({
+            audio: true,
+            video: false,
+          })
+          .catch((err) => {
+            console.error('getUserMedia failed:', err);
+            throw err;
+          });
         const audioTrack = tempStream.getAudioTracks()[0];
         const trackSettings = audioTrack?.getSettings();
         const trackLabel = audioTrack?.label;
@@ -211,10 +222,9 @@ export function AudioInputDialog(props: AudioInputDialogProps) {
         setIsLoading(true);
         setError(null);
 
-        // Stop previous stream
-        if (previewStream) {
-          previewStream.getTracks().forEach((track) => track.stop());
-          setPreviewStream(null);
+        // Stop previous stream using ref to avoid dependency cycle
+        if (previewStreamRef.current) {
+          previewStreamRef.current.getTracks().forEach((track) => track.stop());
         }
 
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -236,7 +246,7 @@ export function AudioInputDialog(props: AudioInputDialogProps) {
 
     startPreview();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDeviceId, open, previewStream]);
+  }, [selectedDeviceId, open]);
 
   // Cleanup on dialog close
   useEffect(() => {
