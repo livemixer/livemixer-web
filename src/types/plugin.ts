@@ -1,13 +1,21 @@
 import type { IPluginI18n } from './i18n-engine';
 import type {
   IPluginContext as IPluginContextNew,
-  PluginUIConfig,
   PluginPermission,
   PluginTrustLevel,
+  PluginUIConfig,
 } from './plugin-context';
 import type { SceneItem } from './protocol';
 
-export type PluginControlType = 'number' | 'string' | 'color' | 'boolean' | 'select' | 'image' | 'video' | 'group';
+export type PluginControlType =
+  | 'number'
+  | 'string'
+  | 'color'
+  | 'boolean'
+  | 'select'
+  | 'image'
+  | 'video'
+  | 'group';
 
 export interface PropsSchemaItem {
   label: string;
@@ -78,12 +86,12 @@ export interface AudioMixerConfig {
  * Canvas render configuration
  */
 export interface CanvasRenderConfig {
-  /** 
+  /**
    * Whether this item should be filtered from canvas
    * Return true to exclude from rendering (e.g., audio-only items)
    */
   shouldFilter?: (item: SceneItem) => boolean;
-  /** 
+  /**
    * Whether this item can be selected/transformed on canvas
    * Return false to disable selection (e.g., invisible items)
    */
@@ -98,7 +106,7 @@ export interface PropertyPanelConfig {
   component?: React.ComponentType<any>;
   /** If true, replaces the default property panel completely */
   replaceDefault?: boolean;
-  /** 
+  /**
    * Additional property keys to exclude from default schema rendering
    * (beyond url, deviceId which are always excluded)
    */
@@ -109,12 +117,12 @@ export interface PropertyPanelConfig {
  * Add source dialog configuration
  */
 export interface AddDialogConfig {
-  /** 
+  /**
    * Dialog component to show when adding this source
    * If not provided, source is added immediately
    */
   component?: React.ComponentType<any>;
-  /** 
+  /**
    * Whether to show dialog immediately or let user configure after adding
    * true = show dialog first (like video_input, audio_input)
    * false = add immediately, configure in property panel (like image, text)
@@ -179,13 +187,13 @@ export interface ISourcePlugin {
   /** UI configuration - dialogs, panels, slots */
   ui?: PluginUIConfig;
 
-  /** 
+  /**
    * Called when plugin context is ready
    * Use this to register slots, subscribe to events, etc.
    */
   onContextReady?: (ctx: IPluginContextNew) => void;
 
-  /** 
+  /**
    * Public API exposed to other plugins
    * Other plugins can access via ctx.getPluginAPI(pluginId)
    */
@@ -193,31 +201,31 @@ export interface ISourcePlugin {
 
   // ============ NEW: Source Type & UI Integration ============
 
-  /** 
+  /**
    * Source type mapping - defines how this plugin appears in add source dialog
    * If not provided, plugin won't appear as a selectable source type
    */
   sourceType?: SourceTypeMapping;
 
-  /** 
+  /**
    * Audio mixer configuration
    * If provided, items of this type will appear in the audio mixer panel
    */
   audioMixer?: AudioMixerConfig;
 
-  /** 
+  /**
    * Canvas render configuration
    * Controls how items of this type are rendered on canvas
    */
   canvasRender?: CanvasRenderConfig;
 
-  /** 
+  /**
    * Property panel configuration
    * Defines custom property panel behavior
    */
   propertyPanel?: PropertyPanelConfig;
 
-  /** 
+  /**
    * Add source dialog configuration
    * Defines how the add source flow works for this plugin
    */
@@ -240,8 +248,8 @@ export interface ISourcePlugin {
   onUpdate: (newProps: any) => void;
 
   /**
-  * Return a Konva node to render
-  * or run custom rendering logic
+   * Return a Konva node to render
+   * or run custom rendering logic
    */
   render: (commonProps: any) => React.ReactElement;
 

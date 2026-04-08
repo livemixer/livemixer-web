@@ -35,7 +35,10 @@ export function ToolbarMenu({ label, items }: ToolbarMenuProps) {
       >
         {items.map((item, index) =>
           item.divider ? (
-            <DropdownMenuSeparator key={`divider-${index}`} className="bg-neutral-700/30" />
+            <DropdownMenuSeparator
+              key={`divider-${item.label || index}`}
+              className="bg-neutral-700/30"
+            />
           ) : (
             <DropdownMenuItem
               key={item.label || `item-${index}`}

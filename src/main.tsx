@@ -24,5 +24,5 @@ createRoot(document.getElementById('root')!).render(
     <PluginContextProvider>
       <App />
     </PluginContextProvider>
-  </StrictMode>
+  </StrictMode>,
 );

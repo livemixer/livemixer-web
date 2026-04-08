@@ -1,23 +1,23 @@
-import type { I18nEngine, LanguageResource } from './i18n-engine'
-import type { ProtocolData } from './protocol'
+import type { I18nEngine, LanguageResource } from './i18n-engine';
+import type { ProtocolData } from './protocol';
 
 /**
  * I18n override bundle for host/user to provide custom translations
  */
 export interface I18nOverrideBundle {
   [lang: string]: {
-    [namespace: string]: LanguageResource
-  }
+    [namespace: string]: LanguageResource;
+  };
 }
 
 /**
  * user info interface
  */
 export interface UserInfo {
-  avatar?: string
-  name?: string
-  role?: 'anonymous' | 'free' | 'pro' | 'admin'
-  email?: string
+  avatar?: string;
+  name?: string;
+  role?: 'anonymous' | 'free' | 'pro' | 'admin';
+  email?: string;
 }
 
 /**
@@ -32,7 +32,7 @@ export interface LiveMixerExtensions {
    * logo: <img src="/logo.svg" alt="Logo" className="w-10 h-10" />
    * ```
    */
-  logo?: React.ReactNode
+  logo?: React.ReactNode;
 
   /**
    * Optional user info component
@@ -42,83 +42,83 @@ export interface LiveMixerExtensions {
    * userComponent: <UserAvatar user={user} onLogin={...} onLogout={...} />
    * ```
    */
-  userComponent?: React.ReactNode
+  userComponent?: React.ReactNode;
 
   /**
    * Optional user info retrieval function
    * Used to obtain the current logged-in user info when needed
    */
-  getUserInfo?: () => Promise<UserInfo | null>
+  getUserInfo?: () => Promise<UserInfo | null>;
 
   /**
    * Optional layout save callback
    * Called when the user triggers save, used to save the layout to the cloud
-   * 
-  * @param data - Current layout configuration data
-  * @returns Promise resolved on successful save
+   *
+   * @param data - Current layout configuration data
+   * @returns Promise resolved on successful save
    */
-  onSaveLayout?: (data: ProtocolData) => Promise<void>
+  onSaveLayout?: (data: ProtocolData) => Promise<void>;
 
   /**
    * Optional layout load callback
    * Called when the user triggers load, used to load the layout from the cloud
-   * 
-  * @returns Promise<ProtocolData | null> returning loaded layout data, or null when none
+   *
+   * @returns Promise<ProtocolData | null> returning loaded layout data, or null when none
    */
-  onLoadLayout?: () => Promise<ProtocolData | null>
+  onLoadLayout?: () => Promise<ProtocolData | null>;
 
   /**
    * Optional layout share callback
    * Called when the user triggers share, used to generate share links
-   * 
-  * @param data - Layout configuration data to share
-  * @param options - Share options (e.g., password, expiry)
-  * @returns Promise<string> containing the share link
+   *
+   * @param data - Layout configuration data to share
+   * @param options - Share options (e.g., password, expiry)
+   * @returns Promise<string> containing the share link
    */
   onShareLayout?: (
     data: ProtocolData,
-    options?: { password?: string; expiresIn?: number }
-  ) => Promise<string>
+    options?: { password?: string; expiresIn?: number },
+  ) => Promise<string>;
 
   /**
    * Optional permission check function
    * Used to check user permissions before executing certain features
-   * 
-  * @param feature - Feature identifier
-  * @returns Promise<boolean> where true means permitted
+   *
+   * @param feature - Feature identifier
+   * @returns Promise<boolean> where true means permitted
    */
-  checkPermission?: (feature: string) => Promise<boolean>
+  checkPermission?: (feature: string) => Promise<boolean>;
 
   /**
    * Optional custom toolbar menu items
    * Can add custom menus to the toolbar
    */
   customMenuItems?: Array<{
-    label: string
+    label: string;
     items: Array<{
-      label: string
-      onClick: () => void
-      divider?: boolean
-    }>
-  }>
+      label: string;
+      onClick: () => void;
+      divider?: boolean;
+    }>;
+  }>;
 
   /**
    * Optional custom i18n engine implementation
    * If provided, livemixer-web will use this instead of the built-in engine
    * Useful for integrating with host application's i18n system
    */
-  i18nEngine?: I18nEngine
+  i18nEngine?: I18nEngine;
 
   /**
    * Optional i18n override resources
    * Allows host to provide custom translations that override plugin defaults
    * Applied at 'host' layer priority
    */
-  i18nOverrides?: I18nOverrideBundle
+  i18nOverrides?: I18nOverrideBundle;
 
   /**
    * Optional user-level i18n overrides
    * Applied at 'user' layer priority (highest)
    */
-  i18nUserOverrides?: I18nOverrideBundle
+  i18nUserOverrides?: I18nOverrideBundle;
 }

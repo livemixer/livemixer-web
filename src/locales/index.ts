@@ -3,8 +3,8 @@ import { en } from './en';
 import { zh } from './zh';
 
 export const coreResources: Record<string, LanguageResource> = {
-    en,
-    zh,
+  en,
+  zh,
 };
 
 export const supportedLanguages = ['en', 'zh'] as const;
