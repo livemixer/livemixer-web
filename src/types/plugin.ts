@@ -129,6 +129,11 @@ export interface AddDialogConfig {
    */
   immediate?: boolean;
   /**
+   * Dialog slot ID - must match the ID used in ctx.registerSlot()
+   * If not provided, defaults to `${plugin.id}-dialog`
+   */
+  dialogId?: string;
+  /**
    * Whether this plugin needs to request browser permission immediately on add
    * This triggers getUserMedia or getDisplayMedia before creating the item
    * The obtained stream will be passed to createItem

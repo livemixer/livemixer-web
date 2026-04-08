@@ -40,9 +40,15 @@ export function VideoInputDialog(props: VideoInputDialogProps) {
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
   const [previewStream, setPreviewStream] = useState<MediaStream | null>(null);
+  const previewStreamRef = useRef<MediaStream | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    previewStreamRef.current = previewStream;
+  }, [previewStream]);
 
   // Load available devices when dialog opens
   useEffect(() => {
@@ -64,13 +70,18 @@ export function VideoInputDialog(props: VideoInputDialogProps) {
 
         // Request permission - use constraints that work with most devices
         console.log('Requesting camera permission...');
-        const tempStream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
-          audio: false,
-        });
+        const tempStream = await navigator.mediaDevices
+          .getUserMedia({
+            video: {
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            },
+            audio: false,
+          })
+          .catch((err) => {
+            console.error('getUserMedia failed:', err);
+            throw err;
+          });
         console.log('Got stream:', tempStream);
         console.log('Video tracks:', tempStream.getVideoTracks());
 
@@ -133,9 +144,9 @@ export function VideoInputDialog(props: VideoInputDialogProps) {
         setIsLoading(true);
         setError(null);
 
-        // Stop previous stream
-        if (previewStream) {
-          previewStream.getTracks().forEach((track) => track.stop());
+        // Stop previous stream using ref to avoid dependency cycle
+        if (previewStreamRef.current) {
+          previewStreamRef.current.getTracks().forEach((track) => track.stop());
         }
 
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -162,7 +173,8 @@ export function VideoInputDialog(props: VideoInputDialogProps) {
     return () => {
       // Don't stop stream here - it will be reused or stopped on dialog close
     };
-  }, [selectedDeviceId, open, previewStream]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDeviceId, open]);
 
   // Cleanup on dialog close
   useEffect(() => {

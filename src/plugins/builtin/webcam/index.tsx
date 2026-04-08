@@ -72,7 +72,7 @@ export function setPendingWebcamStream(
   if (data) {
     mediaStreamManager.setPendingStream({
       stream: data.stream,
-      sourceType: 'webcam',
+      sourceType: 'video_input',
       metadata: { deviceId: data.deviceId, deviceLabel: data.label },
     });
   }
@@ -126,6 +126,7 @@ export const WebCamPlugin: ISourcePlugin = {
   // Add dialog configuration - immediate dialog for device selection
   addDialog: {
     immediate: true,
+    dialogId: 'video-input-dialog',
     component: VideoInputDialog,
   },
   // Default layout for video input items

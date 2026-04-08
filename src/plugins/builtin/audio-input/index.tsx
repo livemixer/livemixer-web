@@ -121,6 +121,7 @@ export const AudioInputPlugin: ISourcePlugin = {
   // Add dialog configuration - immediate dialog for device selection
   addDialog: {
     immediate: true,
+    dialogId: 'audio-input-dialog',
     component: AudioInputDialog,
   },
   // Default layout for audio input items
