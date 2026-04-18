@@ -61,12 +61,6 @@ const iconMap: Record<string, React.ReactNode> = {
 // Legacy source types not yet migrated to plugins
 const legacySourceTypes = (t: (key: string) => string): SourceTypeOption[] => [
   {
-    type: 'audio_output',
-    name: t('addSource.audioOutput.name'),
-    description: t('addSource.audioOutput.description'),
-    icon: <Volume2 className="w-6 h-6" />,
-  },
-  {
     type: 'timer',
     name: t('addSource.timer.name'),
     description: t('addSource.timer.description'),

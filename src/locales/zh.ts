@@ -133,6 +133,8 @@ export const zh: LanguageResource = {
     currentSource: '当前源',
     capturing: '捕获中',
     noActiveCapture: '无活动捕获',
+    audioCaptured: '已捕获音频',
+    noAudioCaptured: '无音频（请在选择器中勾选"分享音频"）',
     stopCapture: '停止捕获',
     stopToChangeDevice: '停止捕获后才能切换设备',
     reselectSource: '重新选择源',
