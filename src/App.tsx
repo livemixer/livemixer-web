@@ -500,7 +500,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
           video.muted = true;
           video.style.display = 'none';
           document.body.appendChild(video);
-          video.play().catch(() => { });
+          video.play().catch(() => {});
 
           const title =
             itemStream.getVideoTracks()[0]?.label ||
@@ -936,10 +936,11 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
               <button
                 type="button"
                 onClick={handleTogglePulling}
-                className={`w-full py-2 px-4 rounded text-sm font-medium transition-colors ${isPulling
-                  ? 'bg-red-600 hover:bg-red-700 text-white'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}
+                className={`w-full py-2 px-4 rounded text-sm font-medium transition-colors ${
+                  isPulling
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
               >
                 {isPulling
                   ? t('status.disconnectPull')

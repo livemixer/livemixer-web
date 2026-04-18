@@ -198,7 +198,7 @@ function AudioInputPanel({
         audio.volume = localItem.volume ?? 1;
         audio.style.display = 'none';
         document.body.appendChild(audio);
-        audio.play().catch(() => { });
+        audio.play().catch(() => {});
 
         mediaStreamManager.setStream(localItem.id, {
           stream,
@@ -531,7 +531,7 @@ function VideoInputPanel({
       video.volume = localItem.volume ?? 1;
       video.style.display = 'none';
       document.body.appendChild(video);
-      video.play().catch(() => { });
+      video.play().catch(() => {});
       mediaStreamManager.setStream(localItem.id, {
         stream,
         video,
@@ -892,26 +892,26 @@ export function PropertyPanel({
             {(localItem.type === 'window' ||
               localItem.type === 'scene_ref' ||
               localItem.type === 'color') && (
-                <div>
-                  <Label htmlFor="borderRadius" className="block mb-2">
-                    {t('property.borderRadius')}
-                  </Label>
-                  <Input
-                    id="borderRadius"
-                    type="number"
-                    value={localItem.transform?.borderRadius ?? 0}
-                    onChange={(e) =>
-                      updateProperty({
-                        transform: {
-                          borderRadius: Number.parseFloat(e.target.value) || 0,
-                        },
-                      })
-                    }
-                    placeholder="0"
-                    disabled={isLocked}
-                  />
-                </div>
-              )}
+              <div>
+                <Label htmlFor="borderRadius" className="block mb-2">
+                  {t('property.borderRadius')}
+                </Label>
+                <Input
+                  id="borderRadius"
+                  type="number"
+                  value={localItem.transform?.borderRadius ?? 0}
+                  onChange={(e) =>
+                    updateProperty({
+                      transform: {
+                        borderRadius: Number.parseFloat(e.target.value) || 0,
+                      },
+                    })
+                  }
+                  placeholder="0"
+                  disabled={isLocked}
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -960,7 +960,7 @@ export function PropertyPanel({
                             value={[
                               Number(
                                 localItem[key as keyof SceneItem] ??
-                                schema.defaultValue,
+                                  schema.defaultValue,
                               ),
                             ]}
                             onValueChange={(value) =>
@@ -1017,12 +1017,14 @@ export function PropertyPanel({
                               !isLocked && updateProperty({ [key]: !boolVal })
                             }
                             disabled={isLocked}
-                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${boolVal ? 'bg-primary-500' : 'bg-[#3e3e42]'
-                              } ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                              boolVal ? 'bg-primary-500' : 'bg-[#3e3e42]'
+                            } ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                           >
                             <span
-                              className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${boolVal ? 'translate-x-5' : 'translate-x-1'
-                                }`}
+                              className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                                boolVal ? 'translate-x-5' : 'translate-x-1'
+                              }`}
                             />
                           </button>
                         </div>
@@ -1066,7 +1068,8 @@ export function PropertyPanel({
               {/* Audio capture status */}
               {(() => {
                 const entry = mediaStreamManager.getStream(localItem.id);
-                const hasAudio = entry?.stream?.getAudioTracks().length ?? 0 > 0;
+                const hasAudio =
+                  entry?.stream?.getAudioTracks().length ?? 0 > 0;
                 return hasAudio ? (
                   <div className="mt-2 text-xs text-green-400 flex items-center gap-1.5">
                     <Mic className="w-3 h-3" />
@@ -1110,7 +1113,7 @@ export function PropertyPanel({
                   video.muted = true;
                   video.style.display = 'none';
                   document.body.appendChild(video);
-                  video.play().catch(() => { });
+                  video.play().catch(() => {});
                   mediaStreamManager.setStream(localItem.id, {
                     stream,
                     video,
@@ -1173,10 +1176,11 @@ export function PropertyPanel({
                 type="button"
                 onClick={() => setUrlInputMethod('url')}
                 disabled={isLocked}
-                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${urlInputMethod === 'url'
-                  ? 'bg-blue-500 border-blue-500 text-white'
-                  : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${
+                  urlInputMethod === 'url'
+                    ? 'bg-blue-500 border-blue-500 text-white'
+                    : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <LinkIcon className="w-3.5 h-3.5" />
                 <span>URL</span>
@@ -1185,10 +1189,11 @@ export function PropertyPanel({
                 type="button"
                 onClick={() => setUrlInputMethod('file')}
                 disabled={isLocked}
-                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${urlInputMethod === 'file'
-                  ? 'bg-blue-500 border-blue-500 text-white'
-                  : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${
+                  urlInputMethod === 'file'
+                    ? 'bg-blue-500 border-blue-500 text-white'
+                    : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <Upload className="w-3.5 h-3.5" />
                 <span>{t('property.localFile')}</span>
@@ -1248,10 +1253,11 @@ export function PropertyPanel({
                   />
                   <label
                     htmlFor="file-upload"
-                    className={`flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg transition-colors text-sm text-gray-300 ${isLocked
-                      ? 'cursor-not-allowed opacity-50'
-                      : 'cursor-pointer hover:bg-[#2d2d30]'
-                      }`}
+                    className={`flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg transition-colors text-sm text-gray-300 ${
+                      isLocked
+                        ? 'cursor-not-allowed opacity-50'
+                        : 'cursor-pointer hover:bg-[#2d2d30]'
+                    }`}
                   >
                     <Upload className="w-4 h-4" />
                     <span>

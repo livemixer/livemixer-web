@@ -210,9 +210,9 @@ export const ScreenCapturePlugin: ISourcePlugin = {
           } as MediaTrackConstraints,
           audio: captureAudio
             ? {
-              echoCancellation: true,
-              noiseSuppression: true,
-            }
+                echoCancellation: true,
+                noiseSuppression: true,
+              }
             : false,
         };
 
