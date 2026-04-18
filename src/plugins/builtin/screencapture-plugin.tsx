@@ -77,6 +77,13 @@ export const ScreenCapturePlugin: ISourcePlugin = {
     width: 800,
     height: 450,
   },
+  // Audio mixer configuration - supports audio when screen share includes audio
+  audioMixer: {
+    enabled: true,
+    volumeKey: 'volume',
+    mutedKey: 'muted',
+    defaultVolume: 1,
+  },
   // Stream initialization configuration
   streamInit: {
     needsStream: true,
@@ -87,7 +94,7 @@ export const ScreenCapturePlugin: ISourcePlugin = {
       label: 'Capture Audio',
       labelKey: 'plugins.io.livemixer.screencapture.label.captureAudio',
       type: 'boolean',
-      defaultValue: false,
+      defaultValue: true,
     },
     muted: {
       label: 'Muted',
@@ -157,7 +164,7 @@ export const ScreenCapturePlugin: ISourcePlugin = {
   render: (commonProps: any) => {
     const { ref: nodeRef, item, ...restProps } = commonProps;
 
-    const captureAudio: boolean = item.captureAudio ?? false;
+    const captureAudio: boolean = item.captureAudio ?? true;
     const muted: boolean = item.muted ?? true;
     const volume: number = item.volume ?? 1;
     const opacity: number = item.opacity ?? 1;

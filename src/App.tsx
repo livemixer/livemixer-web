@@ -291,7 +291,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
           if (permissionType === 'screen') {
             stream = await navigator.mediaDevices.getDisplayMedia({
               video: { displaySurface: 'monitor' } as MediaTrackConstraints,
-              audio: false,
+              audio: true, // Let browser offer "Share audio" option
             });
           }
           // camera and microphone permissions are handled via dialogs
@@ -436,13 +436,6 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         layout: { x: 100, y: 100, width: 400, height: 300 },
         source: 'window_capture',
       }),
-      audio_output: () => ({
-        id: newItemId,
-        type: 'audio_output',
-        zIndex: activeScene?.items.length || 0,
-        layout: { x: 100, y: 100, width: 200, height: 100 },
-        source: 'audio_output_device',
-      }),
       timer: () => ({
         id: newItemId,
         type: 'timer',
@@ -532,11 +525,15 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         } else {
           // Audio-only stream
           const audioTrack = itemStream.getAudioTracks()[0];
+          const audioLabel =
+            webcamDeviceLabel ||
+            audioTrack?.label ||
+            (sourceType === 'audio_output' ? 'System Audio' : 'Microphone');
           mediaStreamManager.setStream(newItemId, {
             stream: itemStream,
             metadata: {
               deviceId: webcamDeviceId,
-              deviceLabel: webcamDeviceLabel || 'Microphone',
+              deviceLabel: audioLabel,
               sourceType: plugin.streamInit.streamType || sourceType,
             },
           });

@@ -134,6 +134,8 @@ export const en: LanguageResource = {
     currentSource: 'Current Source',
     capturing: 'Capturing',
     noActiveCapture: 'No active capture',
+    audioCaptured: 'Audio captured',
+    noAudioCaptured: 'No audio (check "Share audio" in picker)',
     stopCapture: 'Stop Capture',
     stopToChangeDevice: 'Stop capture to change device',
     reselectSource: 'Reselect Source',

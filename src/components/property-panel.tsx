@@ -1065,6 +1065,23 @@ export function PropertyPanel({
                   })()}
                 </span>
               </div>
+              {/* Audio capture status */}
+              {(() => {
+                const entry = mediaStreamManager.getStream(localItem.id);
+                const hasAudio =
+                  entry?.stream?.getAudioTracks().length ?? 0 > 0;
+                return hasAudio ? (
+                  <div className="mt-2 text-xs text-green-400 flex items-center gap-1.5">
+                    <Mic className="w-3 h-3" />
+                    {t('property.audioCaptured')}
+                  </div>
+                ) : entry?.stream ? (
+                  <div className="mt-2 text-xs text-gray-500 flex items-center gap-1.5">
+                    <Mic className="w-3 h-3" />
+                    {t('property.noAudioCaptured')}
+                  </div>
+                ) : null;
+              })()}
             </div>
 
             {/* Re-select button */}
@@ -1085,7 +1102,7 @@ export function PropertyPanel({
                     video: {
                       displaySurface: 'monitor',
                     } as MediaTrackConstraints,
-                    audio: false,
+                    audio: true, // Let browser offer "Share audio" option
                   });
                   const videoTrack = stream.getVideoTracks()[0];
                   const title = videoTrack?.label || 'Screen/Window Capture';
