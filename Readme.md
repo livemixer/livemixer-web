@@ -1,4 +1,12 @@
+<div align="center">
+
+<img src="./docs/lms.svg" alt="LiveMixer" width="120" />
+
 # LiveMixer Web Studio
+
+<a href="https://livemixer.github.io/livemixer-web/">🌐 Online Demo</a>
+
+</div>
 
 An open-source live video mixer and streaming application built with React, Konva.js, and LiveKit WebRTC.
 
