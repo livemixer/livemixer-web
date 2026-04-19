@@ -341,4 +341,11 @@ export const zh: LanguageResource = {
     minutes: '分',
     seconds: '秒',
   },
+  about: {
+    title: '关于 LiveMixer Web Studio',
+    description: '基于 LiveKit WebRTC 的开源实时视频混流与直播应用',
+    version: '版本',
+    license: '许可证',
+    homepage: '主页',
+  },
 };
