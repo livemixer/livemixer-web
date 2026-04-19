@@ -40,10 +40,10 @@ jobs:
       - name: Package library artifacts
         run: |
           mkdir -p release/lib
-          cp -r dist release/lib/
+          cp -r dist-lib release/lib/
           cp package.json release/lib/
           cp LICENSE release/lib/
-          cp README.md release/lib/
+          cp Readme.md release/lib/
 
       - name: Package application artifacts
         run: |
