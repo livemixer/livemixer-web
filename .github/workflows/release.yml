@@ -1,0 +1,88 @@
+name: Pre-release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  pre-release:
+    name: Build & Create Pre-release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build application
+        run: pnpm run build
+
+      - name: Build library
+        run: pnpm run build:lib
+
+      - name: Package library artifacts
+        run: |
+          mkdir -p release/lib
+          cp -r dist release/lib/
+          cp package.json release/lib/
+          cp LICENSE release/lib/
+          cp README.md release/lib/
+
+      - name: Package application artifacts
+        run: |
+          mkdir -p release/app
+          cp -r dist release/app/
+
+      - name: Create release archives
+        run: |
+          cd release
+          tar -czf livemixer-web-lib.tar.gz -C lib .
+          tar -czf livemixer-web-app.tar.gz -C app .
+          cd ..
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Extract changelog for this version
+        id: changelog
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          # Extract the section between "## [VERSION]" and the next "## [" heading
+          CHANGELOG=$(awk "/^## \[${VERSION#v}\]/,/^(## \[|$)/" CHANGELOG.md | head -n -1 | tail -n +2)
+          # Fallback: if no matching section, use the first section
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG=$(sed -n '/^## /,/^## /{ /^## /d; p; }' CHANGELOG.md | head -n -1)
+          fi
+          echo "BODY<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.VERSION }}
+          name: LiveMixer Web Studio ${{ steps.version.outputs.VERSION }}
+          body: ${{ steps.changelog.outputs.BODY }}
+          prerelease: true
+          draft: false
+          files: |
+            release/livemixer-web-lib.tar.gz
+            release/livemixer-web-app.tar.gz
