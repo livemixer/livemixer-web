@@ -5,6 +5,15 @@ on:
     branches:
       - main
       - master
+    paths:
+      - '**.ts'
+      - '**.tsx'
+      - '**.js'
+      - '**.jsx'
+      - '**.json'
+      - '**.css'
+      - '**.scss'
+      - '**.less'
 
 jobs:
   format:
