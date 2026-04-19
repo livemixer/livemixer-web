@@ -1,1 +1,1 @@
-export const LWS_APP_VERSION = 'v0.0.0';
+export const LWS_APP_VERSION = 'v0.0.1';
