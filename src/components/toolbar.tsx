@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import githubIcon from '../assets/github_white.svg';
 import { useI18n } from '../hooks/useI18n';
 import type { ProtocolData } from '../types/protocol';
+import { AboutDialog } from './about-dialog';
 import { ToolbarMenu } from './toolbar-menu';
 
 interface ToolbarProps {
@@ -10,6 +12,7 @@ interface ToolbarProps {
 
 export function Toolbar({ data, updateData }: ToolbarProps) {
   const { t } = useI18n();
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   const handleImport = () => {
     const input = document.createElement('input');
@@ -71,8 +74,7 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
   };
 
   const handleAbout = () => {
-    console.log('About');
-    // TODO: Show About dialog
+    setAboutOpen(true);
   };
 
   return (
@@ -159,6 +161,8 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
       >
         <img src={githubIcon} alt="GitHub" className="w-5 h-5" />
       </a>
+
+      <AboutDialog open={aboutOpen} onOpenChange={setAboutOpen} />
     </div>
   );
 }

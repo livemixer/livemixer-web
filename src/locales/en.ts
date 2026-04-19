@@ -342,4 +342,11 @@ export const en: LanguageResource = {
     minutes: 'Minutes',
     seconds: 'Seconds',
   },
+  about: {
+    title: 'About LiveMixer Web Studio',
+    description: 'An open-source live video mixer and streaming application based on LiveKit WebRTC',
+    version: 'Version',
+    license: 'License',
+    homepage: 'Homepage',
+  },
 };
