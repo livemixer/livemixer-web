@@ -18,24 +18,24 @@
     "react",
     "konva"
   ],
-  "main": "./dist/livemixer-web.umd.js",
-  "module": "./dist/livemixer-web.es.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist-lib/livemixer-web.umd.js",
+  "module": "./dist-lib/livemixer-web.es.js",
+  "types": "./dist-lib/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/livemixer-web.es.js",
-      "require": "./dist/livemixer-web.umd.js"
+      "types": "./dist-lib/index.d.ts",
+      "import": "./dist-lib/livemixer-web.es.js",
+      "require": "./dist-lib/livemixer-web.umd.js"
     },
-    "./dist/livemixer-web.css": "./dist/livemixer-web.css",
+    "./dist-lib/livemixer-web.css": "./dist-lib/livemixer-web.css",
     "./types": {
-      "types": "./dist/types/index.d.ts",
-      "import": "./dist/types/index.d.ts"
+      "types": "./dist-lib/types/index.d.ts",
+      "import": "./dist-lib/types/index.d.ts"
     }
   },
   "files": [
-    "dist",
-    "README.md",
+    "dist-lib",
+    "Readme.md",
     "LICENSE"
   ],
   "scripts": {
