@@ -501,7 +501,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
           video.muted = true;
           video.style.display = 'none';
           document.body.appendChild(video);
-          video.play().catch(() => { });
+          video.play().catch(() => {});
 
           const title =
             itemStream.getVideoTracks()[0]?.label ||
@@ -667,7 +667,10 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       if (isCtrlOrMeta && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
         undo();
-      } else if (isCtrlOrMeta && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+      } else if (
+        isCtrlOrMeta &&
+        (e.key === 'y' || (e.key === 'z' && e.shiftKey))
+      ) {
         e.preventDefault();
         redo();
       } else if (isCtrlOrMeta && e.key === 'c') {
@@ -1014,7 +1017,24 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
             />
           )
         }
-        toolbar={<Toolbar data={data} updateData={updateData} editActions={{ onUndo: undo, onRedo: redo, onCopy: handleCopyItem, onPaste: handlePasteItem, onDelete: handleDeleteSelectedItem, canUndo, canRedo, canCopy: !!selectedItem, canPaste: clipboardService.hasContent(), canDelete: !!selectedItem, }} />}
+        toolbar={
+          <Toolbar
+            data={data}
+            updateData={updateData}
+            editActions={{
+              onUndo: undo,
+              onRedo: redo,
+              onCopy: handleCopyItem,
+              onPaste: handlePasteItem,
+              onDelete: handleDeleteSelectedItem,
+              canUndo,
+              canRedo,
+              canCopy: !!selectedItem,
+              canPaste: clipboardService.hasContent(),
+              canDelete: !!selectedItem,
+            }}
+          />
+        }
         userSection={extensions?.userComponent}
         leftSidebar={
           <div className="flex flex-col h-full">
@@ -1028,10 +1048,11 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
               <button
                 type="button"
                 onClick={handleTogglePulling}
-                className={`w-full py-2 px-4 rounded text-sm font-medium transition-colors ${isPulling
-                  ? 'bg-red-600 hover:bg-red-700 text-white'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}
+                className={`w-full py-2 px-4 rounded text-sm font-medium transition-colors ${
+                  isPulling
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
               >
                 {isPulling
                   ? t('status.disconnectPull')
