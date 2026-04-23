@@ -22,6 +22,7 @@ import { I18nProvider } from './contexts/I18nContext';
 import { useI18n } from './hooks/useI18n';
 import { coreResources, supportedLanguages } from './locales';
 import { canvasCaptureService } from './services/canvas-capture';
+import { clipboardService } from './services/clipboard';
 import { createI18nEngine } from './services/i18n-engine';
 import { liveKitPullService } from './services/livekit-pull';
 import { mediaStreamManager } from './services/media-stream-manager';
@@ -33,7 +34,6 @@ import { useSettingsStore } from './store/setting';
 import type { LiveMixerExtensions } from './types/extensions';
 import type { I18nEngine } from './types/i18n-engine';
 import type { SceneItem } from './types/protocol';
-import { clipboardService } from './services/clipboard';
 import './App.css';
 
 function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
@@ -575,25 +575,28 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
   };
 
   // \u5220\u9664\u6e90
-  const handleDeleteItem = (itemId: string) => {
-    if (!activeSceneId) return;
+  const handleDeleteItem = useCallback(
+    (itemId: string) => {
+      if (!activeSceneId) return;
 
-    updateData({
-      ...data,
-      scenes: data.scenes.map((scene) => {
-        if (scene.id !== activeSceneId) return scene;
-        return {
-          ...scene,
-          items: scene.items.filter((item) => item.id !== itemId),
-        };
-      }),
-    });
+      updateData({
+        ...data,
+        scenes: data.scenes.map((scene) => {
+          if (scene.id !== activeSceneId) return scene;
+          return {
+            ...scene,
+            items: scene.items.filter((item) => item.id !== itemId),
+          };
+        }),
+      });
 
-    // \u5982\u679c\u5220\u9664\u7684\u662f\u5f53\u524d\u9009\u4e2d\u7684\u6e90\uff0c\u6e05\u9664\u9009\u4e2d\u72b6\u6001
-    if (selectedItemId === itemId) {
-      setSelectedItemId(null);
-    }
-  };
+      // \u5982\u679c\u5220\u9664\u7684\u662f\u5f53\u524d\u9009\u4e2d\u7684\u6e90\uff0c\u6e05\u9664\u9009\u4e2d\u72b6\u6001
+      if (selectedItemId === itemId) {
+        setSelectedItemId(null);
+      }
+    },
+    [activeSceneId, data, updateData, selectedItemId],
+  );
 
   // \u590d\u5236\u9009\u4e2d\u7684\u573a\u666f\u9879
   const handleCopyItem = useCallback(() => {
@@ -643,11 +646,11 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     setSelectedItemId(newItemId);
   }, [activeSceneId, activeScene, data, updateData]);
 
-  // \u5220\u9664\u9009\u4e2d\u7684\u573a\u666f\u9879
+  // 删除选中的场景项
   const handleDeleteSelectedItem = useCallback(() => {
     if (!selectedItemId) return;
     handleDeleteItem(selectedItemId);
-  }, [selectedItemId, activeSceneId, data, updateData]);
+  }, [selectedItemId, handleDeleteItem]);
 
   // \u5168\u5c40\u952e\u76d8\u5feb\u6377\u952e
   useEffect(() => {
