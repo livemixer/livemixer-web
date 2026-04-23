@@ -96,12 +96,37 @@ export function Toolbar({ data, updateData, editActions }: ToolbarProps) {
       <ToolbarMenu
         label={t('toolbar.edit')}
         items={[
-          { label: t('toolbar.undo'), onClick: editActions?.onUndo, disabled: !editActions?.canUndo, shortcut: 'Ctrl+Z' },
-          { label: t('toolbar.redo'), onClick: editActions?.onRedo, disabled: !editActions?.canRedo, shortcut: 'Ctrl+Y' },
+          {
+            label: t('toolbar.undo'),
+            onClick: editActions?.onUndo,
+            disabled: !editActions?.canUndo,
+            shortcut: 'Ctrl+Z',
+          },
+          {
+            label: t('toolbar.redo'),
+            onClick: editActions?.onRedo,
+            disabled: !editActions?.canRedo,
+            shortcut: 'Ctrl+Y',
+          },
           { divider: true },
-          { label: t('toolbar.copy'), onClick: editActions?.onCopy, disabled: !editActions?.canCopy, shortcut: 'Ctrl+C' },
-          { label: t('toolbar.paste'), onClick: editActions?.onPaste, disabled: !editActions?.canPaste, shortcut: 'Ctrl+V' },
-          { label: t('toolbar.delete'), onClick: editActions?.onDelete, disabled: !editActions?.canDelete, shortcut: 'Del' },
+          {
+            label: t('toolbar.copy'),
+            onClick: editActions?.onCopy,
+            disabled: !editActions?.canCopy,
+            shortcut: 'Ctrl+C',
+          },
+          {
+            label: t('toolbar.paste'),
+            onClick: editActions?.onPaste,
+            disabled: !editActions?.canPaste,
+            shortcut: 'Ctrl+V',
+          },
+          {
+            label: t('toolbar.delete'),
+            onClick: editActions?.onDelete,
+            disabled: !editActions?.canDelete,
+            shortcut: 'Del',
+          },
         ]}
       />
 

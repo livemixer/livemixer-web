@@ -344,7 +344,8 @@ export const en: LanguageResource = {
   },
   about: {
     title: 'About LiveMixer Web Studio',
-    description: 'An open-source live video mixer and streaming application based on LiveKit WebRTC',
+    description:
+      'An open-source live video mixer and streaming application based on LiveKit WebRTC',
     version: 'Version',
     license: 'License',
     homepage: 'Homepage',

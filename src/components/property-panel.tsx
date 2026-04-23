@@ -1069,7 +1069,7 @@ export function PropertyPanel({
               {(() => {
                 const entry = mediaStreamManager.getStream(localItem.id);
                 const hasAudio =
-                  entry?.stream?.getAudioTracks().length ?? 0 > 0;
+                  (entry?.stream?.getAudioTracks().length ?? 0) > 0;
                 return hasAudio ? (
                   <div className="mt-2 text-xs text-green-400 flex items-center gap-1.5">
                     <Mic className="w-3 h-3" />
