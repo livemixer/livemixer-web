@@ -5,12 +5,26 @@ import type { ProtocolData } from '../types/protocol';
 import { AboutDialog } from './about-dialog';
 import { ToolbarMenu } from './toolbar-menu';
 
+interface EditActions {
+  onUndo: () => void;
+  onRedo: () => void;
+  onCopy: () => void;
+  onPaste: () => void;
+  onDelete: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  canCopy: boolean;
+  canPaste: boolean;
+  canDelete: boolean;
+}
+
 interface ToolbarProps {
   data: ProtocolData;
   updateData: (data: ProtocolData) => void;
+  editActions?: EditActions;
 }
 
-export function Toolbar({ data, updateData }: ToolbarProps) {
+export function Toolbar({ data, updateData, editActions }: ToolbarProps) {
   const { t } = useI18n();
   const [aboutOpen, setAboutOpen] = useState(false);
 
@@ -82,12 +96,12 @@ export function Toolbar({ data, updateData }: ToolbarProps) {
       <ToolbarMenu
         label={t('toolbar.edit')}
         items={[
-          { label: t('toolbar.undo'), onClick: () => console.log('undo') },
-          { label: t('toolbar.redo'), onClick: () => console.log('redo') },
+          { label: t('toolbar.undo'), onClick: editActions?.onUndo, disabled: !editActions?.canUndo, shortcut: 'Ctrl+Z' },
+          { label: t('toolbar.redo'), onClick: editActions?.onRedo, disabled: !editActions?.canRedo, shortcut: 'Ctrl+Y' },
           { divider: true },
-          { label: t('toolbar.copy'), onClick: () => console.log('copy') },
-          { label: t('toolbar.paste'), onClick: () => console.log('paste') },
-          { label: t('toolbar.delete'), onClick: () => console.log('delete') },
+          { label: t('toolbar.copy'), onClick: editActions?.onCopy, disabled: !editActions?.canCopy, shortcut: 'Ctrl+C' },
+          { label: t('toolbar.paste'), onClick: editActions?.onPaste, disabled: !editActions?.canPaste, shortcut: 'Ctrl+V' },
+          { label: t('toolbar.delete'), onClick: editActions?.onDelete, disabled: !editActions?.canDelete, shortcut: 'Del' },
         ]}
       />
 

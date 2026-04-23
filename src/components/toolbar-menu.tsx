@@ -3,6 +3,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 
@@ -10,6 +11,8 @@ interface MenuItem {
   label?: string;
   onClick?: () => void;
   divider?: boolean;
+  disabled?: boolean;
+  shortcut?: string;
 }
 
 interface ToolbarMenuProps {
@@ -43,9 +46,13 @@ export function ToolbarMenu({ label, items }: ToolbarMenuProps) {
             <DropdownMenuItem
               key={item.label || `item-${index}`}
               onClick={item.onClick}
-              className="text-sm text-neutral-300 hover:bg-neutral-700/50 hover:text-white focus:bg-neutral-700/50 focus:text-white cursor-pointer"
+              disabled={item.disabled}
+              className="text-sm text-neutral-300 hover:bg-neutral-700/50 hover:text-white focus:bg-neutral-700/50 focus:text-white cursor-pointer data-[disabled]:cursor-default data-[disabled]:text-neutral-500 data-[disabled]:hover:bg-transparent data-[disabled]:hover:text-neutral-500"
             >
               {item.label}
+              {item.shortcut && (
+                <DropdownMenuShortcut>{item.shortcut}</DropdownMenuShortcut>
+              )}
             </DropdownMenuItem>
           ),
         )}
