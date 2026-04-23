@@ -34,16 +34,21 @@ interface ToolbarProps {
   viewActions?: ViewActions;
 }
 
-export function Toolbar({ data, updateData, editActions, viewActions }: ToolbarProps) {
+export function Toolbar({
+  data,
+  updateData,
+  editActions,
+  viewActions,
+}: ToolbarProps) {
   const { t } = useI18n();
   const [aboutOpen, setAboutOpen] = useState(false);
   const { showGrid, showGuides, updatePersistentSettings } = useSettingsStore();
 
   const handleToggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => { });
+      document.documentElement.requestFullscreen().catch(() => {});
     } else {
-      document.exitFullscreen().catch(() => { });
+      document.exitFullscreen().catch(() => {});
     }
   }, []);
 

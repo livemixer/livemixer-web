@@ -437,21 +437,21 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
           isChildItem || isLocked
             ? undefined
             : (e: Konva.KonvaEventObject<DragEvent>) =>
-              handleDragEnd(item.id, e),
+                handleDragEnd(item.id, e),
         onTransformEnd:
           isChildItem || isLocked
             ? undefined
             : (e: Konva.KonvaEventObject<Event>) =>
-              handleTransformEnd(item.id, item.transform, e),
+                handleTransformEnd(item.id, item.transform, e),
         ref: isChildItem
           ? undefined
           : (node: Konva.Node | null) => {
-            if (node) {
-              shapeRefs.current.set(item.id, node);
-            } else {
-              shapeRefs.current.delete(item.id);
-            }
-          },
+              if (node) {
+                shapeRefs.current.set(item.id, node);
+              } else {
+                shapeRefs.current.delete(item.id);
+              }
+            },
         // 高亮选中的控件
         ...(isSelected && {
           shadowColor: isLocked ? '#ff6b6b' : '#00a8ff', // 锁定时用红色
