@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import githubIcon from '../assets/github_white.svg';
 import { useI18n } from '../hooks/useI18n';
+import { useSettingsStore } from '../store/setting';
 import type { ProtocolData } from '../types/protocol';
 import { AboutDialog } from './about-dialog';
 import { ToolbarMenu } from './toolbar-menu';
@@ -18,15 +19,46 @@ interface EditActions {
   canDelete: boolean;
 }
 
+interface ViewActions {
+  onToggleFullscreen: () => void;
+  onToggleGrid: () => void;
+  onToggleGuides: () => void;
+  showGrid: boolean;
+  showGuides: boolean;
+}
+
 interface ToolbarProps {
   data: ProtocolData;
   updateData: (data: ProtocolData) => void;
   editActions?: EditActions;
+  viewActions?: ViewActions;
 }
 
-export function Toolbar({ data, updateData, editActions }: ToolbarProps) {
+export function Toolbar({
+  data,
+  updateData,
+  editActions,
+  viewActions,
+}: ToolbarProps) {
   const { t } = useI18n();
   const [aboutOpen, setAboutOpen] = useState(false);
+  const { showGrid, showGuides, updatePersistentSettings } = useSettingsStore();
+
+  const handleToggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }, []);
+
+  const handleToggleGrid = useCallback(() => {
+    updatePersistentSettings({ showGrid: !showGrid });
+  }, [showGrid, updatePersistentSettings]);
+
+  const handleToggleGuides = useCallback(() => {
+    updatePersistentSettings({ showGuides: !showGuides });
+  }, [showGuides, updatePersistentSettings]);
 
   const handleImport = () => {
     const input = document.createElement('input');
@@ -135,16 +167,21 @@ export function Toolbar({ data, updateData, editActions }: ToolbarProps) {
         items={[
           {
             label: t('toolbar.fullscreen'),
-            onClick: () => console.log('fullscreen'),
+            onClick: viewActions?.onToggleFullscreen || handleToggleFullscreen,
+            shortcut: 'F11',
           },
           { divider: true },
           {
             label: t('toolbar.showGrid'),
-            onClick: () => console.log('show grid'),
+            onClick: viewActions?.onToggleGrid || handleToggleGrid,
+            checked: viewActions?.showGrid ?? showGrid,
+            shortcut: 'Ctrl+G',
           },
           {
             label: t('toolbar.showGuides'),
-            onClick: () => console.log('show guides'),
+            onClick: viewActions?.onToggleGuides || handleToggleGuides,
+            checked: viewActions?.showGuides ?? showGuides,
+            shortcut: 'Ctrl+Shift+G',
           },
         ]}
       />

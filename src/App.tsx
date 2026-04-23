@@ -154,6 +154,8 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     fps,
     videoBitrate,
     videoEncoder,
+    showGrid,
+    showGuides,
   } = useSettingsStore();
 
   // 初始化激活场景（仅执行一次）
@@ -1073,6 +1075,8 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
             onSelectItem={setSelectedItemId}
             onUpdateItem={handleUpdateItem}
             selectedItemId={selectedItemId}
+            showGrid={showGrid}
+            showGuides={showGuides}
           />
         }
         rightSidebar={
