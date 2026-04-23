@@ -11,6 +11,7 @@ import {
   Group,
   Image as KonvaImage,
   Layer,
+  Line,
   Rect,
   Stage,
   Text,
@@ -101,6 +102,8 @@ interface KonvaCanvasProps {
   onSelectItem?: (itemId: string) => void;
   onUpdateItem?: (itemId: string, updates: Partial<SceneItem>) => void;
   selectedItemId?: string | null;
+  showGrid?: boolean;
+  showGuides?: boolean;
 }
 
 export interface KonvaCanvasHandle {
@@ -119,6 +122,8 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
       onSelectItem,
       onUpdateItem,
       selectedItemId,
+      showGrid = false,
+      showGuides = true,
     },
     ref,
   ) {
@@ -432,21 +437,21 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
           isChildItem || isLocked
             ? undefined
             : (e: Konva.KonvaEventObject<DragEvent>) =>
-                handleDragEnd(item.id, e),
+              handleDragEnd(item.id, e),
         onTransformEnd:
           isChildItem || isLocked
             ? undefined
             : (e: Konva.KonvaEventObject<Event>) =>
-                handleTransformEnd(item.id, item.transform, e),
+              handleTransformEnd(item.id, item.transform, e),
         ref: isChildItem
           ? undefined
           : (node: Konva.Node | null) => {
-              if (node) {
-                shapeRefs.current.set(item.id, node);
-              } else {
-                shapeRefs.current.delete(item.id);
-              }
-            },
+            if (node) {
+              shapeRefs.current.set(item.id, node);
+            } else {
+              shapeRefs.current.delete(item.id);
+            }
+          },
         // 高亮选中的控件
         ...(isSelected && {
           shadowColor: isLocked ? '#ff6b6b' : '#00a8ff', // 锁定时用红色
@@ -600,6 +605,63 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
       }
     };
 
+    // Render grid lines
+    const renderGrid = () => {
+      if (!showGrid) return null;
+      const gridSize = 50;
+      const lines = [];
+      // Vertical lines
+      for (let x = gridSize; x < canvasWidth; x += gridSize) {
+        lines.push(
+          <Line
+            key={`grid-v-${x}`}
+            points={[x, 0, x, canvasHeight]}
+            stroke="rgba(255,255,255,0.25)"
+            strokeWidth={0.5}
+            listening={false}
+          />,
+        );
+      }
+      // Horizontal lines
+      for (let y = gridSize; y < canvasHeight; y += gridSize) {
+        lines.push(
+          <Line
+            key={`grid-h-${y}`}
+            points={[0, y, canvasWidth, y]}
+            stroke="rgba(255,255,255,0.25)"
+            strokeWidth={0.5}
+            listening={false}
+          />,
+        );
+      }
+      return lines;
+    };
+
+    // Render center guides (crosshair at canvas center)
+    const renderGuides = () => {
+      if (!showGuides) return null;
+      const centerX = canvasWidth / 2;
+      const centerY = canvasHeight / 2;
+      return (
+        <>
+          <Line
+            points={[centerX, 0, centerX, canvasHeight]}
+            stroke="rgba(0,168,255,0.7)"
+            strokeWidth={1}
+            dash={[6, 4]}
+            listening={false}
+          />
+          <Line
+            points={[0, centerY, canvasWidth, centerY]}
+            stroke="rgba(0,168,255,0.7)"
+            strokeWidth={1}
+            dash={[6, 4]}
+            listening={false}
+          />
+        </>
+      );
+    };
+
     if (!scene) {
       return (
         <div className="w-full h-full flex items-center justify-center text-gray-500">
@@ -660,6 +722,8 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
               }}
             >
               <Layer ref={layerRef}>
+                {renderGrid()}
+                {renderGuides()}
                 {sortedItems.map((item) => renderItem(item, false))}
                 <Transformer
                   ref={transformerRef}

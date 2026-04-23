@@ -1,5 +1,6 @@
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -13,6 +14,7 @@ interface MenuItem {
   divider?: boolean;
   disabled?: boolean;
   shortcut?: string;
+  checked?: boolean;
 }
 
 interface ToolbarMenuProps {
@@ -42,6 +44,19 @@ export function ToolbarMenu({ label, items }: ToolbarMenuProps) {
               key={`divider-${item.label || index}`}
               className="bg-neutral-700/30"
             />
+          ) : item.checked !== undefined ? (
+            <DropdownMenuCheckboxItem
+              key={item.label || `item-${index}`}
+              onCheckedChange={item.onClick}
+              checked={item.checked}
+              disabled={item.disabled}
+              className="text-sm text-neutral-300 hover:bg-neutral-700/50 hover:text-white focus:bg-neutral-700/50 focus:text-white cursor-pointer data-[disabled]:cursor-default data-[disabled]:text-neutral-500 data-[disabled]:hover:bg-transparent data-[disabled]:hover:text-neutral-500"
+            >
+              {item.label}
+              {item.shortcut && (
+                <DropdownMenuShortcut>{item.shortcut}</DropdownMenuShortcut>
+              )}
+            </DropdownMenuCheckboxItem>
           ) : (
             <DropdownMenuItem
               key={item.label || `item-${index}`}

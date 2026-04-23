@@ -32,6 +32,10 @@ interface PersistentSettings {
   scaleFilter: string;
   customWidth?: string;
   customHeight?: string;
+
+  // View settings
+  showGrid: boolean;
+  showGuides: boolean;
 }
 
 // Sensitive settings interface (in-memory only, not persisted)
@@ -81,6 +85,10 @@ const defaultPersistentSettings: PersistentSettings = {
   outputResolution: '1920x1080',
   fps: '30',
   scaleFilter: 'bilinear',
+
+  // View settings
+  showGrid: false,
+  showGuides: true,
 };
 
 const defaultSensitiveSettings: SensitiveSettings = {
