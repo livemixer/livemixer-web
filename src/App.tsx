@@ -33,6 +33,7 @@ import { useSettingsStore } from './store/setting';
 import type { LiveMixerExtensions } from './types/extensions';
 import type { I18nEngine } from './types/i18n-engine';
 import type { SceneItem } from './types/protocol';
+import { clipboardService } from './services/clipboard';
 import './App.css';
 
 function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
@@ -128,7 +129,7 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
 function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
   const { t } = useI18n();
   // 从 protocol store 获取配置
-  const { data, updateData } = useProtocolStore();
+  const { data, updateData, undo, redo, canUndo, canRedo } = useProtocolStore();
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -500,7 +501,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
           video.muted = true;
           video.style.display = 'none';
           document.body.appendChild(video);
-          video.play().catch(() => {});
+          video.play().catch(() => { });
 
           const title =
             itemStream.getVideoTracks()[0]?.label ||
@@ -573,7 +574,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     setSelectedItemId(newItemId);
   };
 
-  // 删除源
+  // \u5220\u9664\u6e90
   const handleDeleteItem = (itemId: string) => {
     if (!activeSceneId) return;
 
@@ -588,11 +589,102 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       }),
     });
 
-    // 如果删除的是当前选中的源，清除选中状态
+    // \u5982\u679c\u5220\u9664\u7684\u662f\u5f53\u524d\u9009\u4e2d\u7684\u6e90\uff0c\u6e05\u9664\u9009\u4e2d\u72b6\u6001
     if (selectedItemId === itemId) {
       setSelectedItemId(null);
     }
   };
+
+  // \u590d\u5236\u9009\u4e2d\u7684\u573a\u666f\u9879
+  const handleCopyItem = useCallback(() => {
+    if (!selectedItem) return;
+    clipboardService.copy(selectedItem);
+  }, [selectedItem]);
+
+  // \u7c98\u8d34\u526a\u8d34\u677f\u5185\u5bb9\u5230\u5f53\u524d\u573a\u666f
+  const handlePasteItem = useCallback(() => {
+    if (!activeSceneId) return;
+    const clipboardItem = clipboardService.get();
+    if (!clipboardItem) return;
+
+    // \u751f\u6210\u65b0\u7684 ID\uff0c\u57fa\u4e8e\u539f\u7c7b\u578b\u81ea\u589e\u5e8f\u53f7
+    const existingItems = activeScene?.items || [];
+    const sameTypeItems = existingItems.filter(
+      (item) => item.type === clipboardItem.type,
+    );
+    const nextNumber = sameTypeItems.length + 1;
+    const newItemId = `${clipboardItem.type}-${nextNumber}`;
+
+    // \u504f\u79fb\u4f4d\u7f6e\u4ee5\u907f\u514d\u5b8c\u5168\u91cd\u53e0
+    const offset = 20;
+    const pastedItem: SceneItem = {
+      ...clipboardItem,
+      id: newItemId,
+      zIndex: existingItems.length,
+      layout: {
+        ...clipboardItem.layout,
+        x: clipboardItem.layout.x + offset,
+        y: clipboardItem.layout.y + offset,
+      },
+    };
+
+    updateData({
+      ...data,
+      scenes: data.scenes.map((scene) => {
+        if (scene.id !== activeSceneId) return scene;
+        return {
+          ...scene,
+          items: [...scene.items, pastedItem],
+        };
+      }),
+    });
+
+    // \u81ea\u52a8\u9009\u62e9\u7c98\u8d34\u7684\u9879
+    setSelectedItemId(newItemId);
+  }, [activeSceneId, activeScene, data, updateData]);
+
+  // \u5220\u9664\u9009\u4e2d\u7684\u573a\u666f\u9879
+  const handleDeleteSelectedItem = useCallback(() => {
+    if (!selectedItemId) return;
+    handleDeleteItem(selectedItemId);
+  }, [selectedItemId, activeSceneId, data, updateData]);
+
+  // \u5168\u5c40\u952e\u76d8\u5feb\u6377\u952e
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // \u5ffd\u7565\u8f93\u5165\u6846\u4e2d\u7684\u5feb\u6377\u952e\uff08\u907f\u514d\u5e72\u6270\u7528\u6237\u8f93\u5165\uff09
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      const isCtrlOrMeta = e.ctrlKey || e.metaKey;
+
+      if (isCtrlOrMeta && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if (isCtrlOrMeta && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        redo();
+      } else if (isCtrlOrMeta && e.key === 'c') {
+        e.preventDefault();
+        handleCopyItem();
+      } else if (isCtrlOrMeta && e.key === 'v') {
+        e.preventDefault();
+        handlePasteItem();
+      } else if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        handleDeleteSelectedItem();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undo, redo, handleCopyItem, handlePasteItem, handleDeleteSelectedItem]);
 
   // 上移源
   const handleMoveItemUp = (itemId: string) => {
@@ -922,7 +1014,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
             />
           )
         }
-        toolbar={<Toolbar data={data} updateData={updateData} />}
+        toolbar={<Toolbar data={data} updateData={updateData} editActions={{ onUndo: undo, onRedo: redo, onCopy: handleCopyItem, onPaste: handlePasteItem, onDelete: handleDeleteSelectedItem, canUndo, canRedo, canCopy: !!selectedItem, canPaste: clipboardService.hasContent(), canDelete: !!selectedItem, }} />}
         userSection={extensions?.userComponent}
         leftSidebar={
           <div className="flex flex-col h-full">
@@ -936,11 +1028,10 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
               <button
                 type="button"
                 onClick={handleTogglePulling}
-                className={`w-full py-2 px-4 rounded text-sm font-medium transition-colors ${
-                  isPulling
-                    ? 'bg-red-600 hover:bg-red-700 text-white'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
+                className={`w-full py-2 px-4 rounded text-sm font-medium transition-colors ${isPulling
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  }`}
               >
                 {isPulling
                   ? t('status.disconnectPull')
