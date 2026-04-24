@@ -74,8 +74,10 @@ export class LiveKitPullService {
 
     try {
       // Create room instance
+      // adaptiveStream must be disabled: it pauses tracks when video elements
+      // are not visible (e.g. page minimized/hidden), which breaks mixing output
       this.room = new Room({
-        adaptiveStream: true,
+        adaptiveStream: false,
         dynacast: true,
       });
 

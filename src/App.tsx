@@ -1022,19 +1022,29 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     [activeSceneId, activeScene, data, updateData],
   );
 
-  // 组件卸载时清理资源
+  // Use refs to track streaming/pulling state for cleanup on unmount only
+  const isStreamingRef = useRef(isStreaming);
+  const isPullingRef = useRef(isPulling);
+  useEffect(() => {
+    isStreamingRef.current = isStreaming;
+  }, [isStreaming]);
+  useEffect(() => {
+    isPullingRef.current = isPulling;
+  }, [isPulling]);
+
+  // 组件卸载时清理资源（仅在 unmount 时执行）
   useEffect(() => {
     return () => {
-      if (isStreaming) {
+      if (isStreamingRef.current) {
         streamingService.disconnect();
         canvasCaptureService.stopCapture();
         canvasRef.current?.stopContinuousRendering();
       }
-      if (isPulling) {
+      if (isPullingRef.current) {
         liveKitPullService.disconnect();
       }
     };
-  }, [isStreaming, isPulling]);
+  }, []);
 
   return (
     <>
