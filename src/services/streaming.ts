@@ -16,6 +16,8 @@ export class StreamingService {
    * @param videoBitrate Video bitrate (kbps), default 5000
    * @param videoCodec Video codec, default 'vp8'
    * @param maxFramerate Max frame rate, default 30
+   * @param outputWidth Output video width, default 1920
+   * @param outputHeight Output video height, default 1080
    */
   async connect(
     url: string,
@@ -24,6 +26,8 @@ export class StreamingService {
     videoBitrate = 5000,
     videoCodec: 'h264' | 'h265' | 'vp8' | 'vp9' | 'av1' = 'vp8',
     maxFramerate = 30,
+    outputWidth = 1920,
+    outputHeight = 1080,
   ): Promise<void> {
     if (this.isConnected) {
       throw new Error('Already streaming');
@@ -38,11 +42,11 @@ export class StreamingService {
       this.room = new Room({
         adaptiveStream: true,
         dynacast: true,
-        // Set default video capture parameters
+        // Set default video capture parameters to output resolution
         videoCaptureDefaults: {
           resolution: {
-            width: 1920,
-            height: 1080,
+            width: outputWidth,
+            height: outputHeight,
             frameRate: maxFramerate,
           },
         },
@@ -80,8 +84,8 @@ export class StreamingService {
 
       // Apply track constraints to optimize encoding quality
       await videoTrack.applyConstraints({
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
+        width: { ideal: outputWidth },
+        height: { ideal: outputHeight },
         frameRate: { ideal: maxFramerate },
       });
 
