@@ -975,11 +975,9 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                       transform: `rotate(${rotation}deg)`,
                       transformOrigin: 'center',
                       opacity,
-                      pointerEvents:
-                        selectedItemId === item.id ? 'none' : 'auto',
+                      pointerEvents: 'none',
                       zIndex: item.zIndex + 1000,
                     }}
-                    onClick={() => onSelectItem?.(item.id)}
                   >
                     <LiveKitStreamItem
                       participantIdentity={
