@@ -34,10 +34,15 @@ function AudioLevelMeter({ itemId }: { itemId: string }) {
       sourceRef.current = source;
 
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
-      const tick = () => {
-        analyser.getByteFrequencyData(dataArray);
-        const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
-        setLevel(Math.min(100, (avg / 128) * 100));
+      let lastUpdate = 0;
+      const tick = (timestamp: number) => {
+        // Throttle to ~15fps to reduce React re-render overhead
+        if (timestamp - lastUpdate >= 66) {
+          analyser.getByteFrequencyData(dataArray);
+          const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+          setLevel(Math.min(100, (avg / 128) * 100));
+          lastUpdate = timestamp;
+        }
         animFrameRef.current = requestAnimationFrame(tick);
       };
       animFrameRef.current = requestAnimationFrame(tick);
@@ -96,9 +101,21 @@ function MixerChannel({
 }) {
   const isMuted = item.muted ?? false;
   const volume = item.volume ?? 1;
-  const entry = mediaStreamManager.getStream(item.id);
-  const isActive = !!entry?.stream?.active;
-  const deviceLabel = entry?.metadata?.deviceLabel || item.deviceId || 'Mic';
+  const [isActive, setIsActive] = useState(false);
+  const [deviceLabel, setDeviceLabel] = useState('');
+
+  // Listen to stream changes for this item
+  useEffect(() => {
+    const updateState = () => {
+      const entry = mediaStreamManager.getStream(item.id);
+      const active = !!entry?.stream?.active;
+      setIsActive(active);
+      setDeviceLabel(entry?.metadata?.deviceLabel || item.deviceId || 'Mic');
+    };
+    updateState();
+    const unsub = mediaStreamManager.onStreamChange(item.id, updateState);
+    return unsub;
+  }, [item.id, item.deviceId]);
 
   // Truncate label
   const shortLabel =
@@ -192,13 +209,6 @@ export function AudioMixerPanel({
   onUpdateItem,
 }: AudioMixerPanelProps) {
   const { t } = useI18n();
-  // Force re-render periodically to update active states
-  const [, setTick] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => setTick((v) => v + 1), 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">

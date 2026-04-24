@@ -397,7 +397,6 @@ function VideoInputPanel({
   // Listen for device changes (e.g., user plugs in a new device)
   useEffect(() => {
     const handleDeviceChange = () => {
-      console.log('Device change detected');
       if (!isActive) {
         setDeviceChangeFlag((prev) => prev + 1); // Trigger reload
       }
@@ -416,10 +415,6 @@ function VideoInputPanel({
       if (isActive) return; // Don't load if stream is active
       // Skip if we already have devices and not forcing reload
       if (!force && devicesRef.current.length > 0) {
-        console.log(
-          'Skipping loadDevices, already have devices:',
-          devicesRef.current.length,
-        );
         return;
       }
       setIsLoadingDevices(true);
@@ -429,9 +424,6 @@ function VideoInputPanel({
         // If no devices found, try to get one via getUserMedia and extract info
         if (videoDevices.length === 0) {
           try {
-            console.log(
-              'No devices from enumerateDevices, trying getUserMedia fallback...',
-            );
             const tempStream = await navigator.mediaDevices.getUserMedia({
               video: true,
             });
@@ -446,7 +438,6 @@ function VideoInputPanel({
                 groupId: '',
                 toJSON: () => ({}),
               };
-              console.log('Using fallback device from stream:', fallbackDevice);
               videoDevices = [fallbackDevice as MediaDeviceInfo];
             }
 
@@ -456,16 +447,12 @@ function VideoInputPanel({
             console.warn('Fallback getUserMedia also failed:', fallbackErr);
             // Keep existing devices only if not clearing on fail (e.g., device was unplugged)
             if (!clearOnFail && devicesRef.current.length > 0) {
-              console.log('Keeping existing devices');
               setIsLoadingDevices(false);
               return;
             }
-            // Device was unplugged, clear the list
-            console.log('Clearing devices (device likely unplugged)');
           }
         }
 
-        console.log('Setting devices:', videoDevices.length, videoDevices);
         setDevices(videoDevices);
       } catch (err) {
         console.error('Failed to load devices:', err);
@@ -476,26 +463,18 @@ function VideoInputPanel({
     [isActive],
   );
 
-  // Debug: log devices state changes
+  // Reload devices when not active
   useEffect(() => {
-    console.log(
-      'Devices state updated:',
-      devices.length,
-      'isActive:',
-      isActive,
-    );
-  }, [devices, isActive]);
-
-  useEffect(() => {
-    if (!isActive) {
-      loadDevices(true); // Force reload when stream stops
-    }
-  }, [isActive, loadDevices]);
+    // Check actual stream state, not React state which may be stale after page refresh
+    const entry = mediaStreamManager.getStream(localItem.id);
+    const actuallyActive = !!entry?.stream?.active;
+    if (!actuallyActive) loadDevices(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localItem.id, loadDevices]);
 
   // Reload devices when device change is detected
   useEffect(() => {
     if (deviceChangeFlag > 0 && !isActive) {
-      console.log('Reloading devices due to device change...');
       loadDevices(true, true); // Force reload and clear on fail (device may be unplugged)
     }
   }, [deviceChangeFlag, isActive, loadDevices]);
@@ -672,23 +651,26 @@ export function PropertyPanel({
 
   const isLocked = localItem.locked === true;
 
-  const updateProperty = (updates: Partial<SceneItem>) => {
-    // Disallow edits while locked
-    if (isLocked) return;
+  const updateProperty = useCallback(
+    (updates: Partial<SceneItem>) => {
+      // Disallow edits while locked
+      if (localItem.locked) return;
 
-    const newItem = {
-      ...localItem,
-      ...updates,
-      layout: updates.layout
-        ? { ...localItem.layout, ...updates.layout }
-        : localItem.layout,
-      transform: updates.transform
-        ? { ...localItem.transform, ...updates.transform }
-        : localItem.transform,
-    };
-    setLocalItem(newItem);
-    onUpdateItem?.(selectedItem.id, updates);
-  };
+      const newItem = {
+        ...localItem,
+        ...updates,
+        layout: updates.layout
+          ? { ...localItem.layout, ...updates.layout }
+          : localItem.layout,
+        transform: updates.transform
+          ? { ...localItem.transform, ...updates.transform }
+          : localItem.transform,
+      };
+      setLocalItem(newItem);
+      onUpdateItem?.(selectedItem.id, updates);
+    },
+    [localItem, selectedItem.id, onUpdateItem],
+  );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isLocked) return;
