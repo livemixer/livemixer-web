@@ -36,6 +36,10 @@ interface PersistentSettings {
   // View settings
   showGrid: boolean;
   showGuides: boolean;
+
+  // Scene transition settings
+  transitionType: 'cut' | 'fade' | 'dissolve' | 'swipe' | 'stinger';
+  transitionDuration: number; // milliseconds
 }
 
 // Sensitive settings interface (in-memory only, not persisted)
@@ -89,6 +93,10 @@ const defaultPersistentSettings: PersistentSettings = {
   // View settings
   showGrid: false,
   showGuides: true,
+
+  // Scene transition settings
+  transitionType: 'fade',
+  transitionDuration: 300,
 };
 
 const defaultSensitiveSettings: SensitiveSettings = {

@@ -1038,6 +1038,16 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
               canPaste: clipboardService.hasContent(),
               canDelete: !!selectedItem,
             }}
+            toolsActions={{
+              audioItems:
+                activeScene?.items.filter((item) => {
+                  const plugin = pluginRegistry.getPluginBySourceType(
+                    item.type,
+                  );
+                  return plugin?.audioMixer?.enabled === true;
+                }) || [],
+              onUpdateItem: handleUpdateItem,
+            }}
           />
         }
         userSection={extensions?.userComponent}
