@@ -641,18 +641,10 @@ export function PropertyPanel({
     }
   }, [localItem?.url]);
 
-  if (!selectedItem || !localItem) {
-    return (
-      <div className="h-full p-4 flex items-center justify-center text-gray-500 text-sm">
-        {t('property.noSelection')}
-      </div>
-    );
-  }
-
-  const isLocked = localItem.locked === true;
-
+  // Must be before early return to satisfy Rules of Hooks
   const updateProperty = useCallback(
     (updates: Partial<SceneItem>) => {
+      if (!localItem || !selectedItem) return;
       // Disallow edits while locked
       if (localItem.locked) return;
 
@@ -669,8 +661,18 @@ export function PropertyPanel({
       setLocalItem(newItem);
       onUpdateItem?.(selectedItem.id, updates);
     },
-    [localItem, selectedItem.id, onUpdateItem],
+    [localItem, selectedItem, onUpdateItem],
   );
+
+  if (!selectedItem || !localItem) {
+    return (
+      <div className="h-full p-4 flex items-center justify-center text-gray-500 text-sm">
+        {t('property.noSelection')}
+      </div>
+    );
+  }
+
+  const isLocked = localItem.locked === true;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isLocked) return;

@@ -651,6 +651,25 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
       );
     };
 
+    // Sort by zIndex, filter out items that plugins mark as shouldFilter
+    // Must be before early return to satisfy Rules of Hooks
+    const sortedItems = useMemo(
+      () =>
+        scene
+          ? [...scene.items]
+              .filter((item) => {
+                const plugin = pluginRegistry.getPluginBySourceType(item.type);
+                // If plugin has shouldFilter and it returns true, exclude from rendering
+                if (plugin?.canvasRender?.shouldFilter?.(item)) {
+                  return false;
+                }
+                return true;
+              })
+              .sort((a, b) => a.zIndex - b.zIndex)
+          : [],
+      [scene],
+    );
+
     if (!scene) {
       return (
         <div className="w-full h-full flex items-center justify-center text-gray-500">
@@ -658,22 +677,6 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
         </div>
       );
     }
-
-    // Sort by zIndex, filter out items that plugins mark as shouldFilter
-    const sortedItems = useMemo(
-      () =>
-        [...scene.items]
-          .filter((item) => {
-            const plugin = pluginRegistry.getPluginBySourceType(item.type);
-            // If plugin has shouldFilter and it returns true, exclude from rendering
-            if (plugin?.canvasRender?.shouldFilter?.(item)) {
-              return false;
-            }
-            return true;
-          })
-          .sort((a, b) => a.zIndex - b.zIndex),
-      [scene.items],
-    );
 
     return (
       <div
