@@ -19,6 +19,7 @@ import { SettingsDialog } from './components/settings-dialog';
 import { StatusBar } from './components/status-bar';
 import { Toolbar } from './components/toolbar';
 import { I18nProvider } from './contexts/I18nContext';
+import { usePerformanceMonitor } from './hooks/use-performance-monitor';
 import { useI18n } from './hooks/useI18n';
 import { coreResources, supportedLanguages } from './locales';
 import { canvasCaptureService } from './services/canvas-capture';
@@ -128,6 +129,8 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
 
 function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
   const { t } = useI18n();
+  // Performance monitoring (independent of canvas renders)
+  const { fps: measuredFps, cpuUsage } = usePerformanceMonitor();
   // 从 protocol store 获取配置
   const { data, updateData, undo, redo, canUndo, canRedo } = useProtocolStore();
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
@@ -1122,8 +1125,8 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
           <StatusBar
             isStreaming={isStreaming}
             outputResolution={`${data.canvas.width}x${data.canvas.height}`}
-            fps={60}
-            cpuUsage={Math.random() * 20}
+            fps={measuredFps}
+            cpuUsage={cpuUsage}
           />
         }
       />

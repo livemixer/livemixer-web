@@ -2,8 +2,10 @@ import type Konva from 'konva';
 import {
   forwardRef,
   memo,
+  useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -144,7 +146,6 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
     const [timerStates, setTimerStates] = useState<Map<string, string>>(
       new Map(),
     );
-    const timerRafRef = useRef<number | null>(null);
 
     // Expose methods to parent
     useImperativeHandle(ref, () => ({
@@ -206,7 +207,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
       }
     }, [selectedItemId, scene]);
 
-    // Timer/clock update loop (high precision via requestAnimationFrame)
+    // Timer/clock update loop (throttled to ~10fps to avoid excessive re-renders)
     useEffect(() => {
       if (!scene) return;
 
@@ -216,22 +217,18 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
       );
 
       if (!hasTimerOrClock) {
-        // No timers/clocks: cancel frame loop
-        if (timerRafRef.current !== null) {
-          cancelAnimationFrame(timerRafRef.current);
-          timerRafRef.current = null;
-        }
+        // No timers/clocks: clear any existing timer
         return;
       }
 
-      // Start frame loop for timer/clock updates
-      const updateTimers = () => {
+      // Use setInterval at 100ms instead of rAF at 60fps
+      // Timer text displays don't need sub-frame precision
+      const intervalId = setInterval(() => {
         const newStates = new Map<string, string>();
-        const now = performance.now() / 1000; // Convert to seconds (high precision)
+        const now = performance.now() / 1000;
 
         for (const item of scene.items) {
           if (item.type === 'clock' && item.timerConfig) {
-            // Clock mode: show current time
             const format = item.timerConfig.format || 'HH:MM:SS';
             newStates.set(item.id, formatClock(format));
           } else if (item.type === 'timer' && item.timerConfig) {
@@ -239,7 +236,6 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
             const format = config.format || 'MM:SS';
 
             if (config.mode === 'countdown') {
-              // Countdown mode
               if (
                 config.running &&
                 config.startTime !== undefined &&
@@ -249,7 +245,6 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                 const remaining = Math.max(0, config.duration - elapsed);
                 newStates.set(item.id, formatTime(remaining, format));
 
-                // Auto-pause when countdown ends
                 if (remaining <= 0 && config.running) {
                   onUpdateItem?.(item.id, {
                     timerConfig: {
@@ -260,26 +255,21 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                   });
                 }
               } else if (config.pausedAt !== undefined) {
-                // Paused: show paused time
                 newStates.set(item.id, formatTime(config.pausedAt, format));
               } else {
-                // Not started: show total duration
                 newStates.set(
                   item.id,
                   formatTime(config.duration || 0, format),
                 );
               }
             } else if (config.mode === 'countup') {
-              // Count-up mode
               if (config.running && config.startTime !== undefined) {
                 const elapsed =
                   now - config.startTime + (config.startValue || 0);
                 newStates.set(item.id, formatTime(elapsed, format));
               } else if (config.pausedAt !== undefined) {
-                // Paused state
                 newStates.set(item.id, formatTime(config.pausedAt, format));
               } else {
-                // Not started
                 newStates.set(
                   item.id,
                   formatTime(config.startValue || 0, format),
@@ -290,17 +280,10 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
         }
 
         setTimerStates(newStates);
-        timerRafRef.current = requestAnimationFrame(updateTimers);
-      };
-
-      // Kick off update loop
-      timerRafRef.current = requestAnimationFrame(updateTimers);
+      }, 100);
 
       return () => {
-        if (timerRafRef.current !== null) {
-          cancelAnimationFrame(timerRafRef.current);
-          timerRafRef.current = null;
-        }
+        clearInterval(intervalId);
       };
     }, [scene, onUpdateItem]);
 
@@ -361,57 +344,63 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
       };
     }, [canvasWidth, canvasHeight]);
 
-    const handleDragEnd = (
-      itemId: string,
-      e: Konva.KonvaEventObject<DragEvent>,
-    ) => {
-      const node = e.target;
-      onUpdateItem?.(itemId, {
-        layout: {
-          x: node.x(),
-          y: node.y(),
-          width: node.width() * node.scaleX(),
-          height: node.height() * node.scaleY(),
-        },
-      });
-      // 重置缩放
-      node.scaleX(1);
-      node.scaleY(1);
-    };
+    const handleDragEnd = useCallback(
+      (itemId: string, e: Konva.KonvaEventObject<DragEvent>) => {
+        const node = e.target;
+        onUpdateItem?.(itemId, {
+          layout: {
+            x: node.x(),
+            y: node.y(),
+            width: node.width() * node.scaleX(),
+            height: node.height() * node.scaleY(),
+          },
+        });
+        // 重置缩放
+        node.scaleX(1);
+        node.scaleY(1);
+      },
+      [onUpdateItem],
+    );
 
-    const handleDragMove = (_e: Konva.KonvaEventObject<DragEvent>) => {
-      // 拖拽时实时更新 Transformer
-      if (transformerRef.current) {
-        transformerRef.current.getLayer()?.batchDraw();
-      }
-    };
+    const handleDragMove = useCallback(
+      (_e: Konva.KonvaEventObject<DragEvent>) => {
+        // 拖拽时实时更新 Transformer
+        if (transformerRef.current) {
+          transformerRef.current.getLayer()?.batchDraw();
+        }
+      },
+      [],
+    );
 
-    const handleTransformEnd = (
-      itemId: string,
-      currentTransform: Transform | undefined,
-      e: Konva.KonvaEventObject<Event>,
-    ) => {
-      const node = e.target;
-      const scaleX = node.scaleX();
-      const scaleY = node.scaleY();
+    const handleTransformEnd = useCallback(
+      (
+        itemId: string,
+        currentTransform: Transform | undefined,
+        e: Konva.KonvaEventObject<Event>,
+      ) => {
+        const node = e.target;
+        const scaleX = node.scaleX();
+        const scaleY = node.scaleY();
 
-      onUpdateItem?.(itemId, {
-        layout: {
-          x: node.x(),
-          y: node.y(),
-          width: Math.max(5, node.width() * scaleX),
-          height: Math.max(5, node.height() * scaleY),
-        },
-        transform: {
-          ...currentTransform,
-          rotation: node.rotation(),
-        },
-      });
+        onUpdateItem?.(itemId, {
+          layout: {
+            x: node.x(),
+            y: node.y(),
+            width: Math.max(5, node.width() * scaleX),
+            height: Math.max(5, node.height() * scaleY),
+          },
+          transform: {
+            ...currentTransform,
+            rotation: node.rotation(),
+          },
+        });
 
-      // 重置缩放
-      node.scaleX(1);
-      node.scaleY(1);
-    };
+        // 重置缩放
+        node.scaleX(1);
+        node.scaleY(1);
+      },
+      [onUpdateItem],
+    );
 
     const renderItem = (item: SceneItem, isChildItem = false) => {
       // 如果隐藏，不渲染
@@ -662,6 +651,25 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
       );
     };
 
+    // Sort by zIndex, filter out items that plugins mark as shouldFilter
+    // Must be before early return to satisfy Rules of Hooks
+    const sortedItems = useMemo(
+      () =>
+        scene
+          ? [...scene.items]
+              .filter((item) => {
+                const plugin = pluginRegistry.getPluginBySourceType(item.type);
+                // If plugin has shouldFilter and it returns true, exclude from rendering
+                if (plugin?.canvasRender?.shouldFilter?.(item)) {
+                  return false;
+                }
+                return true;
+              })
+              .sort((a, b) => a.zIndex - b.zIndex)
+          : [],
+      [scene],
+    );
+
     if (!scene) {
       return (
         <div className="w-full h-full flex items-center justify-center text-gray-500">
@@ -669,18 +677,6 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
         </div>
       );
     }
-
-    // Sort by zIndex, filter out items that plugins mark as shouldFilter
-    const sortedItems = [...scene.items]
-      .filter((item) => {
-        const plugin = pluginRegistry.getPluginBySourceType(item.type);
-        // If plugin has shouldFilter and it returns true, exclude from rendering
-        if (plugin?.canvasRender?.shouldFilter?.(item)) {
-          return false;
-        }
-        return true;
-      })
-      .sort((a, b) => a.zIndex - b.zIndex);
 
     return (
       <div
