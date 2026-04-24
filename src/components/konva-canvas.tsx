@@ -101,6 +101,8 @@ interface KonvaCanvasProps {
   scene: Scene | null;
   canvasWidth: number;
   canvasHeight: number;
+  outputWidth: number;
+  outputHeight: number;
   onSelectItem?: (itemId: string) => void;
   onUpdateItem?: (itemId: string, updates: Partial<SceneItem>) => void;
   selectedItemId?: string | null;
@@ -110,6 +112,7 @@ interface KonvaCanvasProps {
 
 export interface KonvaCanvasHandle {
   getCanvas: () => HTMLCanvasElement | null;
+  getOutputCanvas: () => HTMLCanvasElement | null;
   getStage: () => Konva.Stage | null;
   startContinuousRendering: () => void;
   stopContinuousRendering: () => void;
@@ -121,6 +124,8 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
       scene,
       canvasWidth,
       canvasHeight,
+      outputWidth,
+      outputHeight,
       onSelectItem,
       onUpdateItem,
       selectedItemId,
@@ -140,12 +145,98 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
       height: 0,
     });
     const shapeRefs = useRef<Map<string, Konva.Node>>(new Map());
-    // Pixel ratio for HiDPI displays
+    // Pixel ratio for HiDPI displays (display only)
     const pixelRatio = window.devicePixelRatio || 1;
+    // Ref for editor overlay group (grid, guides, transformer) to hide during output render
+    const editorOverlayRef = useRef<Konva.Group>(null);
     // Timer/clock state
     const [timerStates, setTimerStates] = useState<Map<string, string>>(
       new Map(),
     );
+
+    // Offscreen canvas for fixed-resolution output streaming
+    const outputCanvasRef = useRef<HTMLCanvasElement | null>(null);
+    // Ref to always access latest output dimensions inside callbacks
+    const outputSizeRef = useRef({ width: outputWidth, height: outputHeight });
+    // Ref for canvasWidth/canvasHeight to use in callbacks without stale closures
+    const canvasDimsRef = useRef({ width: canvasWidth, height: canvasHeight });
+
+    // Initialize and resize offscreen canvas when output dimensions change
+    useEffect(() => {
+      if (!outputCanvasRef.current) {
+        outputCanvasRef.current = document.createElement('canvas');
+      }
+      outputCanvasRef.current.width = outputWidth;
+      outputCanvasRef.current.height = outputHeight;
+      outputSizeRef.current = { width: outputWidth, height: outputHeight };
+    }, [outputWidth, outputHeight]);
+
+    // Keep canvas dims ref in sync
+    useEffect(() => {
+      canvasDimsRef.current = { width: canvasWidth, height: canvasHeight };
+    }, [canvasWidth, canvasHeight]);
+
+    // Render scene at output resolution using Konva's toCanvas API
+    // This bypasses the visible Stage canvas entirely, avoiding pixelRatio issues
+    const syncToOutputCanvas = useCallback(() => {
+      const outputCanvas = outputCanvasRef.current;
+      if (!outputCanvas || !layerRef.current || !stageRef.current) return;
+
+      const { width: outW, height: outH } = outputSizeRef.current;
+      const { width: cW, height: cH } = canvasDimsRef.current;
+
+      const stage = stageRef.current.getStage();
+
+      // Save original Stage transform (display scaling)
+      const origScaleX = stage.scaleX();
+      const origScaleY = stage.scaleY();
+      const origWidth = stage.width();
+      const origHeight = stage.height();
+
+      // Hide editor-only UI elements (transformer, grid, guides) from output
+      const editorOverlay = editorOverlayRef.current;
+      if (editorOverlay) editorOverlay.visible(false);
+
+      try {
+        // Temporarily reset Stage to scene logical coordinates (no display scaling)
+        // so toCanvas renders at full 1:1 scene resolution
+        stage.scaleX(1);
+        stage.scaleY(1);
+        stage.width(cW);
+        stage.height(cH);
+
+        // Calculate pixelRatio to render scene at output resolution
+        const renderPixelRatio = Math.max(outW / cW, outH / cH);
+
+        // Use Konva's toCanvas to render the layer at full output resolution
+        const tempCanvas = layerRef.current.toCanvas({
+          x: 0,
+          y: 0,
+          width: cW,
+          height: cH,
+          pixelRatio: renderPixelRatio,
+        });
+
+        const ctx = outputCanvas.getContext('2d');
+        if (!ctx) return;
+
+        // Clear with black background
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, outW, outH);
+
+        // Draw the high-res render to the output canvas
+        ctx.drawImage(tempCanvas, 0, 0, outW, outH);
+      } finally {
+        // Restore original Stage transform and size
+        stage.scaleX(origScaleX);
+        stage.scaleY(origScaleY);
+        stage.width(origWidth);
+        stage.height(origHeight);
+
+        // Restore editor overlay visibility
+        if (editorOverlay) editorOverlay.visible(true);
+      }
+    }, []);
 
     // Expose methods to parent
     useImperativeHandle(ref, () => ({
@@ -156,6 +247,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
         const canvas = stage.getContent().querySelector('canvas');
         return canvas;
       },
+      getOutputCanvas: () => outputCanvasRef.current,
       getStage: () => stageRef.current,
       // Start continuous render loop to keep captureStream alive
       startContinuousRendering: () => {
@@ -165,6 +257,8 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
           if (layerRef.current) {
             layerRef.current.batchDraw();
           }
+          // Sync to offscreen output canvas for fixed-resolution streaming
+          syncToOutputCanvas();
           renderLoopRef.current = requestAnimationFrame(renderLoop);
         };
 
@@ -713,38 +807,41 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
               }}
             >
               <Layer ref={layerRef}>
-                {renderGrid()}
-                {renderGuides()}
                 {sortedItems.map((item) => renderItem(item, false))}
-                <Transformer
-                  ref={transformerRef}
-                  boundBoxFunc={(oldBox, newBox) => {
-                    // Block transforms while locked
-                    const selectedItem = scene.items.find(
-                      (i) => i.id === selectedItemId,
-                    );
-                    if (selectedItem?.locked) {
-                      return oldBox;
-                    }
-                    // Enforce minimum size
-                    if (newBox.width < 5 || newBox.height < 5) {
-                      return oldBox;
-                    }
-                    return newBox;
-                  }}
-                  enabledAnchors={[
-                    'top-left',
-                    'top-right',
-                    'bottom-left',
-                    'bottom-right',
-                    'middle-left',
-                    'middle-right',
-                    'top-center',
-                    'bottom-center',
-                  ]}
-                  rotateEnabled={true}
-                  keepRatio={false}
-                />
+                {/* Editor overlay group: hidden during output rendering */}
+                <Group ref={editorOverlayRef}>
+                  {renderGrid()}
+                  {renderGuides()}
+                  <Transformer
+                    ref={transformerRef}
+                    boundBoxFunc={(oldBox, newBox) => {
+                      // Block transforms while locked
+                      const selectedItem = scene.items.find(
+                        (i) => i.id === selectedItemId,
+                      );
+                      if (selectedItem?.locked) {
+                        return oldBox;
+                      }
+                      // Enforce minimum size
+                      if (newBox.width < 5 || newBox.height < 5) {
+                        return oldBox;
+                      }
+                      return newBox;
+                    }}
+                    enabledAnchors={[
+                      'top-left',
+                      'top-right',
+                      'bottom-left',
+                      'bottom-right',
+                      'middle-left',
+                      'middle-right',
+                      'top-center',
+                      'bottom-center',
+                    ]}
+                    rotateEnabled={true}
+                    keepRatio={false}
+                  />
+                </Group>
               </Layer>
             </Stage>
             {/* HTML overlay for LiveKit video streams */}

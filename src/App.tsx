@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import lmsLogo from './assets/lms.svg';
 import type { SourceType } from './components/add-source-dialog';
 import { BottomBar } from './components/bottom-bar';
@@ -157,9 +157,22 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     fps,
     videoBitrate,
     videoEncoder,
+    outputResolution,
     showGrid,
     showGuides,
   } = useSettingsStore();
+
+  // 解析输出分辨率（推流目标分辨率，不受窗口缩放影响）
+  const outputRes = useMemo(() => {
+    if (outputResolution === 'same') {
+      return { width: data.canvas.width, height: data.canvas.height };
+    }
+    const parts = outputResolution.split('x');
+    return {
+      width: Number.parseInt(parts[0], 10) || 1920,
+      height: Number.parseInt(parts[1], 10) || 1080,
+    };
+  }, [outputResolution, data.canvas.width, data.canvas.height]);
 
   // 初始化激活场景（仅执行一次）
   useEffect(() => {
@@ -835,27 +848,27 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
           return;
         }
 
-        // 获取 Canvas 元素
-        const canvas = canvasRef.current?.getCanvas();
-        if (!canvas) {
-          alert('无法获取画布元素');
+        // 获取输出画布元素（固定分辨率，不受窗口缩放影响）
+        const outputCanvas = canvasRef.current?.getOutputCanvas();
+        if (!outputCanvas) {
+          alert('无法获取输出画布元素');
           return;
         }
 
         // 启动持续渲染，确保 captureStream 持续捕获帧
         canvasRef.current?.startContinuousRendering();
 
-        // 从 Canvas 捕获媒体流
+        // 从输出画布捕获媒体流（固定分辨率）
         const fpsValue = Number.parseInt(fps, 10) || 30;
         const mediaStream = canvasCaptureService.captureStream(
-          canvas,
+          outputCanvas,
           fpsValue,
         );
 
         // 获取视频码率设置（kbps）
         const bitrateValue = Number.parseInt(videoBitrate, 10) || 5000;
 
-        // 连接到 LiveKit 并推流，使用设置中的编码器和帧率
+        // 连接到 LiveKit 并推流，使用设置中的编码器、帧率和输出分辨率
         await streamingService.connect(
           livekitUrl,
           livekitToken,
@@ -863,6 +876,8 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
           bitrateValue,
           videoEncoder as 'h264' | 'h265' | 'vp8' | 'vp9' | 'av1',
           fpsValue,
+          outputRes.width,
+          outputRes.height,
         );
 
         setIsStreaming(true);
@@ -888,7 +903,15 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         console.error('停止推流失败:', error);
       }
     }
-  }, [isStreaming, livekitUrl, livekitToken, fps, videoBitrate, videoEncoder]);
+  }, [
+    isStreaming,
+    livekitUrl,
+    livekitToken,
+    fps,
+    videoBitrate,
+    videoEncoder,
+    outputRes,
+  ]);
 
   // 处理拉流连接/断开
   const handleTogglePulling = useCallback(async () => {
@@ -1085,6 +1108,8 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
             scene={activeScene}
             canvasWidth={data.canvas.width}
             canvasHeight={data.canvas.height}
+            outputWidth={outputRes.width}
+            outputHeight={outputRes.height}
             onSelectItem={setSelectedItemId}
             onUpdateItem={handleUpdateItem}
             selectedItemId={selectedItemId}
@@ -1124,7 +1149,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         statusBar={
           <StatusBar
             isStreaming={isStreaming}
-            outputResolution={`${data.canvas.width}x${data.canvas.height}`}
+            outputResolution={`${outputRes.width}x${outputRes.height}`}
             fps={measuredFps}
             cpuUsage={cpuUsage}
           />
