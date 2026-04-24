@@ -2,8 +2,12 @@ import { useCallback, useState } from 'react';
 import githubIcon from '../assets/github_white.svg';
 import { useI18n } from '../hooks/useI18n';
 import { useSettingsStore } from '../store/setting';
+import type { SceneItem } from '../types/protocol';
 import type { ProtocolData } from '../types/protocol';
 import { AboutDialog } from './about-dialog';
+import { AudioMixerDialog } from './audio-mixer-dialog';
+import { PluginManagerDialog } from './plugin-manager-dialog';
+import { SceneTransitionDialog } from './scene-transition-dialog';
 import { ToolbarMenu } from './toolbar-menu';
 
 interface EditActions {
@@ -27,11 +31,17 @@ interface ViewActions {
   showGuides: boolean;
 }
 
+interface ToolsActions {
+  audioItems: SceneItem[];
+  onUpdateItem?: (itemId: string, updates: Partial<SceneItem>) => void;
+}
+
 interface ToolbarProps {
   data: ProtocolData;
   updateData: (data: ProtocolData) => void;
   editActions?: EditActions;
   viewActions?: ViewActions;
+  toolsActions?: ToolsActions;
 }
 
 export function Toolbar({
@@ -39,9 +49,13 @@ export function Toolbar({
   updateData,
   editActions,
   viewActions,
+  toolsActions,
 }: ToolbarProps) {
   const { t } = useI18n();
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [audioMixerOpen, setAudioMixerOpen] = useState(false);
+  const [sceneTransitionOpen, setSceneTransitionOpen] = useState(false);
+  const [pluginManagerOpen, setPluginManagerOpen] = useState(false);
   const { showGrid, showGuides, updatePersistentSettings } = useSettingsStore();
 
   const handleToggleFullscreen = useCallback(() => {
@@ -199,16 +213,16 @@ export function Toolbar({
         items={[
           {
             label: t('toolbar.audioMixer'),
-            onClick: () => console.log('audio mixer'),
+            onClick: () => setAudioMixerOpen(true),
           },
           {
             label: t('toolbar.sceneTransition'),
-            onClick: () => console.log('scene transition'),
+            onClick: () => setSceneTransitionOpen(true),
           },
           { divider: true },
           {
             label: t('toolbar.pluginManager'),
-            onClick: () => console.log('plugin manager'),
+            onClick: () => setPluginManagerOpen(true),
           },
         ]}
       />
@@ -239,6 +253,20 @@ export function Toolbar({
       </a>
 
       <AboutDialog open={aboutOpen} onOpenChange={setAboutOpen} />
+      <AudioMixerDialog
+        open={audioMixerOpen}
+        onOpenChange={setAudioMixerOpen}
+        audioItems={toolsActions?.audioItems || []}
+        onUpdateItem={toolsActions?.onUpdateItem}
+      />
+      <SceneTransitionDialog
+        open={sceneTransitionOpen}
+        onOpenChange={setSceneTransitionOpen}
+      />
+      <PluginManagerDialog
+        open={pluginManagerOpen}
+        onOpenChange={setPluginManagerOpen}
+      />
     </div>
   );
 }
