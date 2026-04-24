@@ -127,9 +127,11 @@ export function Toolbar({
   };
 
   const handleCheckUpdate = () => {
-    console.log('Check for updates');
-
-    // TODO: Implement update check
+    window.open(
+      'https://github.com/livemixer/livemixer-web/releases',
+      '_blank',
+      'noopener,noreferrer',
+    );
   };
 
   const handleAbout = () => {
@@ -233,7 +235,12 @@ export function Toolbar({
           { divider: true },
           {
             label: t('toolbar.documentation'),
-            onClick: () => console.log('documentation'),
+            onClick: () =>
+              window.open(
+                'https://github.com/livemixer/livemixer-web/blob/main/Readme.md',
+                '_blank',
+                'noopener,noreferrer',
+              ),
           },
           { label: t('toolbar.about'), onClick: handleAbout },
         ]}
