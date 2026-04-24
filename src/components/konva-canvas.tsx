@@ -139,6 +139,8 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
     const layerRef = useRef<Konva.Layer>(null);
     const transformerRef = useRef<Konva.Transformer>(null);
     const renderLoopRef = useRef<number | null>(null);
+    const bgWorkerRef = useRef<Worker | null>(null);
+    const isRenderingRef = useRef(false);
     const [scale, setScale] = useState(1);
     const [stageSize, setStageSize] = useState({
       width: 0,
@@ -280,27 +282,96 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
       getStage: () => stageRef.current,
       // Start continuous render loop to keep captureStream alive
       startContinuousRendering: () => {
-        if (!layerRef.current || renderLoopRef.current !== null) return;
+        if (!layerRef.current || isRenderingRef.current) return;
+        isRenderingRef.current = true;
 
-        const renderLoop = () => {
+        // Core render tick: draw Konva layer + sync to output canvas
+        const doRender = () => {
           if (layerRef.current) {
             layerRef.current.batchDraw();
           }
-          // Sync to offscreen output canvas for fixed-resolution streaming
           syncToOutputCanvas();
-          renderLoopRef.current = requestAnimationFrame(renderLoop);
         };
 
-        renderLoopRef.current = requestAnimationFrame(renderLoop);
+        // RAF-based loop for when page is visible
+        const startRAFLoop = () => {
+          if (renderLoopRef.current !== null) return;
+          const loop = () => {
+            doRender();
+            renderLoopRef.current = requestAnimationFrame(loop);
+          };
+          renderLoopRef.current = requestAnimationFrame(loop);
+        };
+
+        // Web Worker timer for when page is hidden
+        // Worker timers are NOT throttled by browser unlike setInterval
+        const startBgWorker = () => {
+          if (bgWorkerRef.current) return;
+          const blob = new Blob(
+            [
+              'let t;onmessage=e=>{clearInterval(t);if(e.data>0)t=setInterval(()=>postMessage(1),e.data)}',
+            ],
+            { type: 'application/javascript' },
+          );
+          const worker = new Worker(URL.createObjectURL(blob));
+          worker.onmessage = () => doRender();
+          worker.postMessage(33); // ~30fps
+          bgWorkerRef.current = worker;
+        };
+
+        const stopRAFLoop = () => {
+          if (renderLoopRef.current !== null) {
+            cancelAnimationFrame(renderLoopRef.current);
+            renderLoopRef.current = null;
+          }
+        };
+
+        const stopBgWorker = () => {
+          if (bgWorkerRef.current) {
+            bgWorkerRef.current.terminate();
+            bgWorkerRef.current = null;
+          }
+        };
+
+        // Switch between RAF and Worker based on page visibility
+        const handleVisibilityChange = () => {
+          if (document.hidden) {
+            stopRAFLoop();
+            startBgWorker();
+          } else {
+            stopBgWorker();
+            startRAFLoop();
+          }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        // Store cleanup handler for stopContinuousRendering
+        (isRenderingRef as any)._cleanup = () => {
+          document.removeEventListener(
+            'visibilitychange',
+            handleVisibilityChange,
+          );
+          stopRAFLoop();
+          stopBgWorker();
+        };
+
+        // Start with appropriate mode
+        if (document.hidden) {
+          startBgWorker();
+        } else {
+          startRAFLoop();
+        }
         console.log('已启动持续渲染');
       },
       // Stop continuous render loop
       stopContinuousRendering: () => {
-        if (renderLoopRef.current !== null) {
-          cancelAnimationFrame(renderLoopRef.current);
-          renderLoopRef.current = null;
-          console.log('已停止持续渲染');
+        if (!isRenderingRef.current) return;
+        if ((isRenderingRef as any)._cleanup) {
+          (isRenderingRef as any)._cleanup();
+          (isRenderingRef as any)._cleanup = null;
         }
+        isRenderingRef.current = false;
+        console.log('已停止持续渲染');
       },
     }));
 
