@@ -134,8 +134,8 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
     const renderLoopRef = useRef<number | null>(null);
     const [scale, setScale] = useState(1);
     const [stageSize, setStageSize] = useState({
-      width: canvasWidth,
-      height: canvasHeight,
+      width: 0,
+      height: 0,
     });
     const shapeRefs = useRef<Map<string, Konva.Node>>(new Map());
     // Pixel ratio for HiDPI displays
@@ -687,31 +687,26 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
         ref={containerRef}
         className="w-full h-full flex items-center justify-center bg-[#1e1e1e]"
       >
-        <div
-          className="relative shadow-lg"
-          style={{
-            width: stageSize.width,
-            height: stageSize.height,
-            border: '1px solid #666',
-            backgroundColor: '#000',
-            boxShadow:
-              '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)',
-            overflow: 'hidden',
-          }}
-        >
+        {stageSize.width > 0 && stageSize.height > 0 && (
           <div
+            className="relative shadow-lg"
             style={{
-              transform: `scale(${scale})`,
-              transformOrigin: 'top left',
-              width: canvasWidth,
-              height: canvasHeight,
+              width: stageSize.width,
+              height: stageSize.height,
+              border: '1px solid #666',
+              backgroundColor: '#000',
+              boxShadow:
+                '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)',
+              overflow: 'hidden',
               position: 'relative',
             }}
           >
             <Stage
               ref={stageRef}
-              width={canvasWidth}
-              height={canvasHeight}
+              width={stageSize.width}
+              height={stageSize.height}
+              scaleX={scale}
+              scaleY={scale}
               pixelRatio={pixelRatio}
               onMouseDown={(e) => {
                 // Click blank area to clear selection
@@ -771,10 +766,10 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                     key={item.id}
                     style={{
                       position: 'absolute',
-                      left: item.layout.x,
-                      top: item.layout.y,
-                      width: item.layout.width,
-                      height: item.layout.height,
+                      left: item.layout.x * scale,
+                      top: item.layout.y * scale,
+                      width: item.layout.width * scale,
+                      height: item.layout.height * scale,
                       transform: `rotate(${rotation}deg)`,
                       transformOrigin: 'center',
                       opacity,
@@ -789,18 +784,18 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                         item.livekitStream.participantIdentity
                       }
                       streamSource={item.livekitStream.streamSource}
-                      width={item.layout.width}
-                      height={item.layout.height}
+                      width={item.layout.width * scale}
+                      height={item.layout.height * scale}
                     />
                   </div>
                 );
               })}
+            {/* Canvas size label */}
+            <div className="absolute -bottom-6 left-0 text-xs text-gray-500">
+              {canvasWidth} × {canvasHeight}
+            </div>
           </div>
-          {/* Canvas size label */}
-          <div className="absolute -bottom-6 left-0 text-xs text-gray-500">
-            {canvasWidth} × {canvasHeight}
-          </div>
-        </div>
+        )}
       </div>
     );
   },
