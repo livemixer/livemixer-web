@@ -160,6 +160,11 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
     const outputSizeRef = useRef({ width: outputWidth, height: outputHeight });
     // Ref for canvasWidth/canvasHeight to use in callbacks without stale closures
     const canvasDimsRef = useRef({ width: canvasWidth, height: canvasHeight });
+    // Ref to store LiveKit stream video elements for output rendering
+    const livekitVideoMapRef = useRef<Map<string, HTMLVideoElement>>(new Map());
+    // Ref to access current scene in syncToOutputCanvas without stale closure
+    const sceneRef = useRef<Scene | null>(scene);
+    sceneRef.current = scene;
 
     // Initialize and resize offscreen canvas when output dimensions change
     useEffect(() => {
@@ -177,43 +182,39 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
     }, [canvasWidth, canvasHeight]);
 
     // Render scene at output resolution using Konva's toCanvas API
-    // This bypasses the visible Stage canvas entirely, avoiding pixelRatio issues
+    // Uses the current Stage display size with high pixelRatio to achieve output resolution
+    // WITHOUT modifying Stage properties (avoids interfering with drag/interaction)
     const syncToOutputCanvas = useCallback(() => {
       const outputCanvas = outputCanvasRef.current;
       if (!outputCanvas || !layerRef.current || !stageRef.current) return;
 
       const { width: outW, height: outH } = outputSizeRef.current;
-      const { width: cW, height: cH } = canvasDimsRef.current;
 
       const stage = stageRef.current.getStage();
+      // Use current display size (already includes scale factor)
+      const displayWidth = stage.width();
+      const displayHeight = stage.height();
 
-      // Save original Stage transform (display scaling)
-      const origScaleX = stage.scaleX();
-      const origScaleY = stage.scaleY();
-      const origWidth = stage.width();
-      const origHeight = stage.height();
+      if (displayWidth <= 0 || displayHeight <= 0) return;
 
       // Hide editor-only UI elements (transformer, grid, guides) from output
       const editorOverlay = editorOverlayRef.current;
       if (editorOverlay) editorOverlay.visible(false);
 
       try {
-        // Temporarily reset Stage to scene logical coordinates (no display scaling)
-        // so toCanvas renders at full 1:1 scene resolution
-        stage.scaleX(1);
-        stage.scaleY(1);
-        stage.width(cW);
-        stage.height(cH);
+        // High pixelRatio compensates for display scaling:
+        // display is e.g. 640x360, pixelRatio=3 produces 1920x1080 pixel canvas
+        const renderPixelRatio = Math.max(
+          outW / displayWidth,
+          outH / displayHeight,
+        );
 
-        // Calculate pixelRatio to render scene at output resolution
-        const renderPixelRatio = Math.max(outW / cW, outH / cH);
-
-        // Use Konva's toCanvas to render the layer at full output resolution
+        // Render layer at display coordinates but at high pixel density
         const tempCanvas = layerRef.current.toCanvas({
           x: 0,
           y: 0,
-          width: cW,
-          height: cH,
+          width: displayWidth,
+          height: displayHeight,
           pixelRatio: renderPixelRatio,
         });
 
@@ -226,13 +227,41 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
 
         // Draw the high-res render to the output canvas
         ctx.drawImage(tempCanvas, 0, 0, outW, outH);
-      } finally {
-        // Restore original Stage transform and size
-        stage.scaleX(origScaleX);
-        stage.scaleY(origScaleY);
-        stage.width(origWidth);
-        stage.height(origHeight);
 
+        // Composite LiveKit stream video frames (HTML overlay content)
+        // These are not part of the Konva layer, so we draw them manually
+        const currentScene = sceneRef.current;
+        if (currentScene) {
+          const { width: cW, height: cH } = canvasDimsRef.current;
+          const scaleX = outW / cW;
+          const scaleY = outH / cH;
+
+          for (const item of currentScene.items) {
+            if (item.type !== 'livekit_stream' || item.visible === false)
+              continue;
+            const video = livekitVideoMapRef.current.get(item.id);
+            if (!video || video.readyState < 2) continue;
+
+            const x = item.layout.x * scaleX;
+            const y = item.layout.y * scaleY;
+            const w = item.layout.width * scaleX;
+            const h = item.layout.height * scaleY;
+            const rotation = item.transform?.rotation ?? 0;
+            const opacity = item.transform?.opacity ?? 1;
+
+            ctx.save();
+            ctx.globalAlpha = opacity;
+            if (rotation !== 0) {
+              ctx.translate(x + w / 2, y + h / 2);
+              ctx.rotate((rotation * Math.PI) / 180);
+              ctx.drawImage(video, -w / 2, -h / 2, w, h);
+            } else {
+              ctx.drawImage(video, x, y, w, h);
+            }
+            ctx.restore();
+          }
+        }
+      } finally {
         // Restore editor overlay visibility
         if (editorOverlay) editorOverlay.visible(true);
       }
@@ -857,6 +886,15 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                 return (
                   <div
                     key={item.id}
+                    ref={(el) => {
+                      if (el) {
+                        const video = el.querySelector('video');
+                        if (video)
+                          livekitVideoMapRef.current.set(item.id, video);
+                      } else {
+                        livekitVideoMapRef.current.delete(item.id);
+                      }
+                    }}
                     style={{
                       position: 'absolute',
                       left: item.layout.x * scale,
