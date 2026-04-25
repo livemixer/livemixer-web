@@ -5,6 +5,44 @@ All notable changes to LiveMixer Web Studio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-04-26
+
+### Added
+
+- Implement Edit menu operations: undo, redo, copy, paste, and delete (#31)
+- Implement View menu actions: fullscreen toggle via Fullscreen API, show grid, and show guides (center crosshair dashed lines) (#33)
+- Implement Help menu placeholder actions (#35)
+- Add Audio Mixer dialog with volume control (#34)
+- Add Scene Transition dialog (#34)
+- Add Plugin Manager dialog for managing plugins (#34)
+- Composite LiveKit video frames into output canvas for mixed streaming (#40)
+- Add background rendering with Web Worker timer for page-hidden scenario (#41)
+
+### Changed
+
+- Update logo and preview image (#43)
+- Update documentation (#38)
+- Add logo and online demo link to Readme header (#30)
+- Format code and fix format workflow (#32)
+
+### Fixed
+
+- Fix LiveKit stream overlays blocking canvas interaction (#42)
+- Fix rendering output canvas at full resolution using Konva toCanvas API (#39)
+- Fix rendering performance issues across multiple components (#37)
+- Fix canvas controls not scaling with browser window resize (#36)
+
+## [0.0.1-rc1] - 2026-04-19
+
+### Changed
+
+- Use pnpm exec in deploy.yml (#28)
+- Add `--base /livemixer-web/` to deploy.yml for GitHub Pages sub-path (#27)
+
+### Fixed
+
+- Separate lib build output to dist-lib and fix README.md case mismatch (#26)
+
 ## [0.0.1] - 2026-04-19
 
 ### Added
@@ -63,4 +101,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix media source URL validation (check if URL is available before playing)
 - Fix video-input and audio-input plugin failing to open devices
 
+[0.2.0]: https://github.com/livemixer/livemixer-web/releases/tag/v0.2.0
+[0.0.1-rc1]: https://github.com/livemixer/livemixer-web/releases/tag/v0.0.1-rc1
 [0.0.1]: https://github.com/livemixer/livemixer-web/releases/tag/v0.0.1
