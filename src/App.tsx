@@ -131,7 +131,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
   const { t } = useI18n();
   // Performance monitoring (independent of canvas renders)
   const { fps: measuredFps, cpuUsage } = usePerformanceMonitor();
-  // 从 protocol store 获取配置
+  // Get configuration from protocol store
   const { data, updateData, undo, redo, canUndo, canRedo } = useProtocolStore();
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -148,7 +148,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
   );
   const canvasRef = useRef<KonvaCanvasHandle>(null);
 
-  // 从 store 获取 LiveKit 配置和输出设置
+  // Get LiveKit config and output settings from store
   const {
     livekitUrl,
     livekitToken,
@@ -162,7 +162,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     showGuides,
   } = useSettingsStore();
 
-  // 解析输出分辨率（推流目标分辨率，不受窗口缩放影响）
+  // Parse output resolution (streaming target resolution, not affected by window scaling)
   const outputRes = useMemo(() => {
     if (outputResolution === 'same') {
       return { width: data.canvas.width, height: data.canvas.height };
@@ -174,7 +174,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     };
   }, [outputResolution, data.canvas.width, data.canvas.height]);
 
-  // 初始化激活场景（仅执行一次）
+  // Initialize active scene (run only once)
   useEffect(() => {
     const activeScene = data.scenes.find((s) => s.active) || data.scenes[0];
     if (activeScene && !activeSceneId) {
@@ -221,9 +221,9 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     });
   }, [activeSceneId, activeScene?.items, selectedItemId, selectedItem]);
 
-  // 添加新场景
+  // Add a new scene
   const handleAddScene = () => {
-    // 生成新场景 ID，格式为 scene-序号
+    // Generate new scene ID in the format scene-{number}
     const nextNumber = data.scenes.length + 1;
     const newSceneId = `scene-${nextNumber}`;
     const newScene = {
@@ -238,11 +238,11 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       scenes: [...data.scenes, newScene],
     });
 
-    // 自动选择新场景
+    // Automatically select the new scene
     setActiveSceneId(newSceneId);
   };
 
-  // 删除场景
+  // Delete a scene
   const handleDeleteScene = (sceneId: string) => {
     if (data.scenes.length <= 1) {
       alert(t('scene.atLeastOne'));
@@ -255,16 +255,16 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       scenes: newScenes,
     });
 
-    // 如果删除的是当前激活的场景，切换到第一个场景
+    // If the deleted scene was active, switch to the first one
     if (activeSceneId === sceneId) {
       setActiveSceneId(newScenes[0]?.id || null);
     }
   };
 
-  // 上移场景
+  // Move scene up
   const handleMoveSceneUp = (sceneId: string) => {
     const index = data.scenes.findIndex((s) => s.id === sceneId);
-    if (index <= 0) return; // 已经是第一个，无法上移
+    if (index <= 0) return; // Already at the top, cannot move up
 
     const newScenes = [...data.scenes];
     [newScenes[index - 1], newScenes[index]] = [
@@ -278,10 +278,10 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     });
   };
 
-  // 下移场景
+  // Move scene down
   const handleMoveSceneDown = (sceneId: string) => {
     const index = data.scenes.findIndex((s) => s.id === sceneId);
-    if (index < 0 || index >= data.scenes.length - 1) return; // 已经是最后一个，无法下移
+    if (index < 0 || index >= data.scenes.length - 1) return; // Already at the bottom, cannot move down
 
     const newScenes = [...data.scenes];
     [newScenes[index], newScenes[index + 1]] = [
@@ -295,7 +295,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     });
   };
 
-  // 添加新源到当前场景 - 第一步：选择源类型
+  // Add a new source to the current scene - step 1: choose source type
   const handleAddItem = async (sourceType: SourceType) => {
     // Get plugin for this source type
     const plugin = pluginRegistry.getPluginBySourceType(sourceType);
@@ -349,18 +349,18 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       return;
     }
 
-    // 其他类型直接创建
+    // Other types are created directly
     createItem(sourceType);
   };
 
-  // 添加新源到当前场景 - 第二步：配置源内容后创建
+  // Add a new source to the current scene - step 2: create after configuring source content
   const handleConfigureSource = (config: SourceConfig) => {
     if (!pendingSourceType) return;
     createItem(pendingSourceType, config);
     setPendingSourceType(null);
   };
 
-  // 插件对话框确认处理器 (slot-based)
+  // Plugin dialog confirm handler (slot-based)
   const handlePluginDialogConfirm = () => {
     // Consume the pending stream from any plugin
     const pendingStream = mediaStreamManager.consumePendingStream();
@@ -380,14 +380,14 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     setActivePluginDialog(null);
   };
 
-  // 配置定时器/时钟后创建
+  // Create after configuring timer/clock
   const handleConfigureTimer = (config: TimerConfig) => {
     if (!pendingSourceType) return;
     createItem(pendingSourceType, undefined, config);
     setPendingSourceType(null);
   };
 
-  // 创建源项的核心逻辑
+  // Core logic for creating a source item
   const createItem = (
     sourceType: SourceType,
     config?: SourceConfig,
@@ -399,7 +399,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
   ) => {
     if (!activeSceneId) return;
 
-    // 生成新的 ID，格式为 type-序号（类似 OBS）
+    // Generate new ID in the format type-{number} (similar to OBS)
     const existingItems = activeScene?.items || [];
     const sameTypeItems = existingItems.filter(
       (item) => item.type === sourceType,
@@ -409,7 +409,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     let newItem: SceneItem;
 
-    // --- 插件化: 通过 sourceType 获取插件并提取默认属性 ---
+    // --- Plugin-based: get plugin by sourceType and extract default props ---
     const plugin = pluginRegistry.getPluginBySourceType(sourceType);
 
     const pluginDefaultProps: Record<string, unknown> = {};
@@ -588,11 +588,11 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       }),
     });
 
-    // 自动选择新添加的源
+    // Automatically select the newly added source
     setSelectedItemId(newItemId);
   };
 
-  // \u5220\u9664\u6e90
+  // Delete a source
   const handleDeleteItem = useCallback(
     (itemId: string) => {
       if (!activeSceneId) return;
@@ -608,7 +608,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         }),
       });
 
-      // \u5982\u679c\u5220\u9664\u7684\u662f\u5f53\u524d\u9009\u4e2d\u7684\u6e90\uff0c\u6e05\u9664\u9009\u4e2d\u72b6\u6001
+      // If the deleted item was selected, clear the selection
       if (selectedItemId === itemId) {
         setSelectedItemId(null);
       }
@@ -616,19 +616,19 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     [activeSceneId, data, updateData, selectedItemId],
   );
 
-  // \u590d\u5236\u9009\u4e2d\u7684\u573a\u666f\u9879
+  // Copy the selected scene item
   const handleCopyItem = useCallback(() => {
     if (!selectedItem) return;
     clipboardService.copy(selectedItem);
   }, [selectedItem]);
 
-  // \u7c98\u8d34\u526a\u8d34\u677f\u5185\u5bb9\u5230\u5f53\u524d\u573a\u666f
+  // Paste clipboard content into the current scene
   const handlePasteItem = useCallback(() => {
     if (!activeSceneId) return;
     const clipboardItem = clipboardService.get();
     if (!clipboardItem) return;
 
-    // \u751f\u6210\u65b0\u7684 ID\uff0c\u57fa\u4e8e\u539f\u7c7b\u578b\u81ea\u589e\u5e8f\u53f7
+    // Generate new ID based on the original type with auto-incremented number
     const existingItems = activeScene?.items || [];
     const sameTypeItems = existingItems.filter(
       (item) => item.type === clipboardItem.type,
@@ -636,7 +636,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     const nextNumber = sameTypeItems.length + 1;
     const newItemId = `${clipboardItem.type}-${nextNumber}`;
 
-    // \u504f\u79fb\u4f4d\u7f6e\u4ee5\u907f\u514d\u5b8c\u5168\u91cd\u53e0
+    // Offset position to avoid complete overlap
     const offset = 20;
     const pastedItem: SceneItem = {
       ...clipboardItem,
@@ -660,20 +660,20 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       }),
     });
 
-    // \u81ea\u52a8\u9009\u62e9\u7c98\u8d34\u7684\u9879
+    // Automatically select the pasted item
     setSelectedItemId(newItemId);
   }, [activeSceneId, activeScene, data, updateData]);
 
-  // 删除选中的场景项
+  // Delete the selected scene item
   const handleDeleteSelectedItem = useCallback(() => {
     if (!selectedItemId) return;
     handleDeleteItem(selectedItemId);
   }, [selectedItemId, handleDeleteItem]);
 
-  // \u5168\u5c40\u952e\u76d8\u5feb\u6377\u952e
+  // Global keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // \u5ffd\u7565\u8f93\u5165\u6846\u4e2d\u7684\u5feb\u6377\u952e\uff08\u907f\u514d\u5e72\u6270\u7528\u6237\u8f93\u5165\uff09
+      // Ignore shortcuts inside input fields (avoid interfering with user typing)
       const target = e.target as HTMLElement;
       if (
         target.tagName === 'INPUT' ||
@@ -764,7 +764,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     });
   };
 
-  // 切换源的可见性
+  // Toggle source visibility
   const handleToggleItemVisibility = (itemId: string) => {
     if (!activeSceneId) return;
 
@@ -787,7 +787,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     });
   };
 
-  // 切换源的锁定状态
+  // Toggle source lock state
   const handleToggleItemLock = (itemId: string) => {
     if (!activeSceneId) return;
 
@@ -810,7 +810,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     });
   };
 
-  // 更新场景项
+  // Update a scene item
   const handleUpdateItem = (itemId: string, updates: Partial<SceneItem>) => {
     if (!activeSceneId) return;
 
@@ -840,37 +840,39 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     });
   };
 
-  // 处理推流开关
+  // Handle streaming toggle
   const handleToggleStreaming = useCallback(async () => {
     if (!isStreaming) {
-      // 开始推流
+      // Start streaming
       try {
         if (!livekitUrl || !livekitToken) {
-          alert('请先在设置中配置 LiveKit 服务器地址和 Token');
+          alert(
+            'Please configure the LiveKit server URL and token in Settings first',
+          );
           return;
         }
 
-        // 获取输出画布元素（固定分辨率，不受窗口缩放影响）
+        // Get the output canvas element (fixed resolution, not affected by window scaling)
         const outputCanvas = canvasRef.current?.getOutputCanvas();
         if (!outputCanvas) {
-          alert('无法获取输出画布元素');
+          alert('Failed to get the output canvas element');
           return;
         }
 
-        // 启动持续渲染，确保 captureStream 持续捕获帧
+        // Start continuous rendering to keep captureStream producing frames
         canvasRef.current?.startContinuousRendering();
 
-        // 从输出画布捕获媒体流（固定分辨率）
+        // Capture media stream from the output canvas (fixed resolution)
         const fpsValue = Number.parseInt(fps, 10) || 30;
         const mediaStream = canvasCaptureService.captureStream(
           outputCanvas,
           fpsValue,
         );
 
-        // 获取视频码率设置（kbps）
+        // Get the video bitrate setting (kbps)
         const bitrateValue = Number.parseInt(videoBitrate, 10) || 5000;
 
-        // 连接到 LiveKit 并推流，使用设置中的编码器、帧率和输出分辨率
+        // Connect to LiveKit and stream using configured encoder, frame rate and output resolution
         await streamingService.connect(
           livekitUrl,
           livekitToken,
@@ -883,26 +885,26 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         );
 
         setIsStreaming(true);
-        console.log('开始推流');
+        console.log('Streaming started');
       } catch (error) {
-        console.error('推流失败:', error);
+        console.error('Streaming failed:', error);
         alert(
-          `推流失败: ${error instanceof Error ? error.message : '未知错误'}`,
+          `Streaming failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         );
-        // 清理资源
+        // Clean up resources
         canvasRef.current?.stopContinuousRendering();
         canvasCaptureService.stopCapture();
       }
     } else {
-      // 停止推流
+      // Stop streaming
       try {
         await streamingService.disconnect();
         canvasCaptureService.stopCapture();
         canvasRef.current?.stopContinuousRendering();
         setIsStreaming(false);
-        console.log('停止推流');
+        console.log('Streaming stopped');
       } catch (error) {
-        console.error('停止推流失败:', error);
+        console.error('Failed to stop streaming:', error);
       }
     }
   }, [
@@ -915,48 +917,50 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     outputRes,
   ]);
 
-  // 处理拉流连接/断开
+  // Handle pull stream connect/disconnect
   const handleTogglePulling = useCallback(async () => {
     if (!isPulling) {
-      // 开始拉流
+      // Start pulling
       try {
         if (!livekitPullUrl || !livekitPullToken) {
-          alert('请先在设置中配置拉流服务器地址和 Token');
+          alert(
+            'Please configure the pull-stream server URL and token in Settings first',
+          );
           return;
         }
 
         await liveKitPullService.connect(livekitPullUrl, livekitPullToken, {
           onParticipantsChanged: (participants) => {
-            console.log('参会者列表变化:', participants);
+            console.log('Participants changed:', participants);
           },
         });
 
         setIsPulling(true);
-        console.log('开始拉流');
+        console.log('Pulling started');
       } catch (error) {
-        console.error('拉流失败:', error);
+        console.error('Pulling failed:', error);
         alert(
-          `拉流失败: ${error instanceof Error ? error.message : '未知错误'}`,
+          `Pulling failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         );
       }
     } else {
-      // 停止拉流
+      // Stop pulling
       try {
         await liveKitPullService.disconnect();
         setIsPulling(false);
-        console.log('停止拉流');
+        console.log('Pulling stopped');
       } catch (error) {
-        console.error('停止拉流失败:', error);
+        console.error('Failed to stop pulling:', error);
       }
     }
   }, [isPulling, livekitPullUrl, livekitPullToken]);
 
-  // 从参会者添加到场景
+  // Add a participant stream to the current scene
   const handleAddParticipantToScene = useCallback(
     (identity: string, source: 'camera' | 'screen_share') => {
       if (!activeSceneId) return;
 
-      // 生成新的 ID
+      // Generate new ID
       const existingItems = activeScene?.items || [];
       const sameTypeItems = existingItems.filter(
         (item) => item.type === 'livekit_stream',
@@ -964,14 +968,14 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       const nextNumber = sameTypeItems.length + 1;
       const newItemId = `livekit_stream-${nextNumber}`;
 
-      // 根据主画面分辨率计算视频流的合适尺寸
-      // 默认占主画面的 1/3 宽度，高度按 16:9 比例计算
+      // Compute a proper size for the video stream based on the main canvas resolution
+      // Default to 1/3 of the canvas width, with height calculated using 16:9 ratio
       const canvasWidth = data.canvas.width;
       const canvasHeight = data.canvas.height;
       const targetWidth = Math.floor(canvasWidth / 3);
       const targetHeight = Math.floor((targetWidth * 9) / 16);
 
-      // 确保不超出画布高度
+      // Ensure it does not exceed canvas height
       let finalWidth = targetWidth;
       let finalHeight = targetHeight;
       if (targetHeight > canvasHeight * 0.8) {
@@ -979,7 +983,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         finalWidth = Math.floor((finalHeight * 16) / 9);
       }
 
-      // 计算居中位置（稍微偏移以避免完全重叠）
+      // Compute centered position (slight offset to avoid complete overlap)
       const offsetX = (nextNumber - 1) * 50;
       const offsetY = (nextNumber - 1) * 50;
       const x = Math.floor((canvasWidth - finalWidth) / 2) + offsetX;
@@ -1012,10 +1016,10 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         }),
       });
 
-      // 自动选择新添加的源
+      // Automatically select the newly added source
       setSelectedItemId(newItemId);
 
-      console.log('已添加参会者到场景:', {
+      console.log('Participant added to scene:', {
         identity,
         source,
         size: `${finalWidth}x${finalHeight}`,
@@ -1034,7 +1038,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     isPullingRef.current = isPulling;
   }, [isPulling]);
 
-  // 组件卸载时清理资源（仅在 unmount 时执行）
+  // Clean up resources on component unmount (run only on unmount)
   useEffect(() => {
     return () => {
       if (isStreamingRef.current) {

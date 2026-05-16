@@ -182,7 +182,7 @@ export function MainLayout({
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Canvas region */}
           <div className="flex-1 bg-linear-to-br from-neutral-900 via-neutral-850 to-neutral-900 flex items-center justify-center overflow-hidden min-h-0 relative">
-            {/* 背景装饰 */}
+            {/* Background decoration */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
               <div className="absolute top-0 left-1/2 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl transform -translate-x-1/2 -translate-y-1/2"></div>
               <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl transform translate-x-1/3 translate-y-1/3"></div>
@@ -208,7 +208,7 @@ export function MainLayout({
           className={`group relative h-1.5 shrink-0 cursor-ns-resize bg-neutral-700/40 hover:bg-primary-500/60 transition-colors ${
             isResizing ? 'bg-primary-500/80' : ''
           }`}
-          title="拖动调整下方面板高度（双击恢复默认）"
+          title="Drag to resize the bottom panel (double-click to reset)"
         >
           {/* Visible grip handle */}
           <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-0.5 rounded-full bg-neutral-500/60 group-hover:bg-white/80" />

@@ -43,7 +43,7 @@ export function LiveKitStreamItem({
 
         if (!track) {
           if (mounted) {
-            setError('视频流不可用');
+            setError('Video stream unavailable');
             setIsLoading(false);
           }
           return;
@@ -57,14 +57,14 @@ export function LiveKitStreamItem({
           setIsLoading(false);
         }
 
-        console.log('已附加视频轨道:', {
+        console.log('Video track attached:', {
           participant: participantIdentity,
           source: streamSource,
         });
       } catch (err) {
-        console.error('附加视频轨道失败:', err);
+        console.error('Failed to attach video track:', err);
         if (mounted) {
-          setError('加载视频流失败');
+          setError('Failed to load video stream');
           setIsLoading(false);
         }
       }
@@ -90,7 +90,7 @@ export function LiveKitStreamItem({
             setError(null);
           }
         } else if (!track && mounted) {
-          setError('视频流不可用');
+          setError('Video stream unavailable');
         }
       }
     }, 1000);
@@ -145,7 +145,7 @@ export function LiveKitStreamItem({
             fontSize: '14px',
           }}
         >
-          加载中...
+          Loading...
         </div>
       )}
       {error && (

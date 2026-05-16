@@ -185,7 +185,7 @@ export function BottomBar({
                 </button>
               </TooltipTrigger>
               <TooltipContent className="bg-[#2d2d30] border-[#3e3e42] text-white">
-                上移
+                Move Up
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -206,7 +206,7 @@ export function BottomBar({
                 </button>
               </TooltipTrigger>
               <TooltipContent className="bg-[#2d2d30] border-[#3e3e42] text-white">
-                下移
+                Move Down
               </TooltipContent>
             </Tooltip>
           </div>
@@ -294,11 +294,12 @@ export function BottomBar({
                       <div className="space-y-1">
                         <div className="font-medium">{item.id}</div>
                         <div className="text-xs text-gray-400">
-                          类型: {item.type}
+                          Type: {item.type}
                         </div>
                         <div className="text-xs text-gray-400">
-                          状态: {item.visible === false ? '隐藏' : '可见'} |{' '}
-                          {item.locked ? '锁定' : '未锁定'}
+                          Status:{' '}
+                          {item.visible === false ? 'Hidden' : 'Visible'} |{' '}
+                          {item.locked ? 'Locked' : 'Unlocked'}
                         </div>
                       </div>
                     </TooltipContent>
