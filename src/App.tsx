@@ -519,7 +519,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
           video.muted = true;
           video.style.display = 'none';
           document.body.appendChild(video);
-          video.play().catch(() => {});
+          video.play().catch(() => { });
 
           const title =
             itemStream.getVideoTracks()[0]?.label ||
@@ -710,7 +710,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [undo, redo, handleCopyItem, handlePasteItem, handleDeleteSelectedItem]);
 
-  // 上移源
+  // Move source up
   const handleMoveItemUp = (itemId: string) => {
     if (!activeSceneId) return;
 
@@ -720,13 +720,14 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         if (scene.id !== activeSceneId) return scene;
 
         const index = scene.items.findIndex((item) => item.id === itemId);
-        if (index <= 0) return scene; // 已经是第一个，无法上移
+        if (index <= 0) return scene; // Already at the top, cannot move up
 
+        // Swap both array position and zIndex field to stay consistent with KonvaCanvas's zIndex-based render order
         const newItems = [...scene.items];
-        [newItems[index - 1], newItems[index]] = [
-          newItems[index],
-          newItems[index - 1],
-        ];
+        const upper = newItems[index - 1];
+        const current = newItems[index];
+        newItems[index - 1] = { ...current, zIndex: upper.zIndex };
+        newItems[index] = { ...upper, zIndex: current.zIndex };
 
         return {
           ...scene,
@@ -736,7 +737,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     });
   };
 
-  // 下移源
+  // Move source down
   const handleMoveItemDown = (itemId: string) => {
     if (!activeSceneId) return;
 
@@ -746,13 +747,14 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         if (scene.id !== activeSceneId) return scene;
 
         const index = scene.items.findIndex((item) => item.id === itemId);
-        if (index < 0 || index >= scene.items.length - 1) return scene; // 已经是最后一个，无法下移
+        if (index < 0 || index >= scene.items.length - 1) return scene; // Already at the bottom, cannot move down
 
+        // Swap both array position and zIndex field to stay consistent with KonvaCanvas's zIndex-based render order
         const newItems = [...scene.items];
-        [newItems[index], newItems[index + 1]] = [
-          newItems[index + 1],
-          newItems[index],
-        ];
+        const current = newItems[index];
+        const lower = newItems[index + 1];
+        newItems[index] = { ...lower, zIndex: current.zIndex };
+        newItems[index + 1] = { ...current, zIndex: lower.zIndex };
 
         return {
           ...scene,
@@ -1099,11 +1101,10 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
               <button
                 type="button"
                 onClick={handleTogglePulling}
-                className={`w-full py-2 px-4 rounded text-sm font-medium transition-colors ${
-                  isPulling
-                    ? 'bg-red-600 hover:bg-red-700 text-white'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
+                className={`w-full py-2 px-4 rounded text-sm font-medium transition-colors ${isPulling
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  }`}
               >
                 {isPulling
                   ? t('status.disconnectPull')
