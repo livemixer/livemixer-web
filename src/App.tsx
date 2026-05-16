@@ -710,7 +710,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [undo, redo, handleCopyItem, handlePasteItem, handleDeleteSelectedItem]);
 
-  // 上移源
+  // Move source up
   const handleMoveItemUp = (itemId: string) => {
     if (!activeSceneId) return;
 
@@ -720,13 +720,14 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         if (scene.id !== activeSceneId) return scene;
 
         const index = scene.items.findIndex((item) => item.id === itemId);
-        if (index <= 0) return scene; // 已经是第一个，无法上移
+        if (index <= 0) return scene; // Already at the top, cannot move up
 
+        // Swap both array position and zIndex field to stay consistent with KonvaCanvas's zIndex-based render order
         const newItems = [...scene.items];
-        [newItems[index - 1], newItems[index]] = [
-          newItems[index],
-          newItems[index - 1],
-        ];
+        const upper = newItems[index - 1];
+        const current = newItems[index];
+        newItems[index - 1] = { ...current, zIndex: upper.zIndex };
+        newItems[index] = { ...upper, zIndex: current.zIndex };
 
         return {
           ...scene,
@@ -736,7 +737,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     });
   };
 
-  // 下移源
+  // Move source down
   const handleMoveItemDown = (itemId: string) => {
     if (!activeSceneId) return;
 
@@ -746,13 +747,14 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         if (scene.id !== activeSceneId) return scene;
 
         const index = scene.items.findIndex((item) => item.id === itemId);
-        if (index < 0 || index >= scene.items.length - 1) return scene; // 已经是最后一个，无法下移
+        if (index < 0 || index >= scene.items.length - 1) return scene; // Already at the bottom, cannot move down
 
+        // Swap both array position and zIndex field to stay consistent with KonvaCanvas's zIndex-based render order
         const newItems = [...scene.items];
-        [newItems[index], newItems[index + 1]] = [
-          newItems[index + 1],
-          newItems[index],
-        ];
+        const current = newItems[index];
+        const lower = newItems[index + 1];
+        newItems[index] = { ...lower, zIndex: current.zIndex };
+        newItems[index + 1] = { ...current, zIndex: lower.zIndex };
 
         return {
           ...scene,
