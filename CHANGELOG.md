@@ -5,6 +5,25 @@ All notable changes to LiveMixer Web Studio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-05-17
+
+### Added
+
+- Add resizable bottom bar in main layout (#47)
+- Set up Vitest unit testing infrastructure with jsdom env, example tests for `cn` util and PluginRegistry, and a GitHub Actions workflow to run unit tests on PRs (#49)
+
+### Changed
+
+- Tighten main canvas spacing: reduce KonvaCanvas auto-fit margin, soften canvas border and shadow, and move the canvas size indicator into the bottom-left corner as a translucent overlay (#51)
+- Translate all hardcoded Chinese comments and UI strings to English (#48)
+
+### Fixed
+
+- Preserve empty string in plugin string fields by replacing `||` short-circuit with `??` so clearing a text input no longer falls back to schema default value (#52)
+- Clamp frameRatio to prevent CPU usage showing 0 on high refresh rate displays (#50)
+- Fix z-index stacking inconsistency in main canvas (#46)
+- Fix the awk regex in release.yml to get the correct version update history (#45)
+
 ## [0.2.0] - 2026-04-26
 
 ### Added
@@ -101,6 +120,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix media source URL validation (check if URL is available before playing)
 - Fix video-input and audio-input plugin failing to open devices
 
+[0.3.0]: https://github.com/livemixer/livemixer-web/releases/tag/v0.3.0
 [0.2.0]: https://github.com/livemixer/livemixer-web/releases/tag/v0.2.0
 [0.0.1-rc1]: https://github.com/livemixer/livemixer-web/releases/tag/v0.0.1-rc1
 [0.0.1]: https://github.com/livemixer/livemixer-web/releases/tag/v0.0.1
