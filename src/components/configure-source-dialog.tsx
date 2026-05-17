@@ -129,7 +129,7 @@ export function ConfigureSourceDialog({
         </DialogHeader>
 
         <div className="space-y-4 mt-4">
-          {/* 输入方式选择 */}
+          {/* Input method selection */}
           <div className="flex gap-2">
             <button
               type="button"
@@ -157,7 +157,7 @@ export function ConfigureSourceDialog({
             </button>
           </div>
 
-          {/* 文件上传 */}
+          {/* File upload */}
           {inputMethod === 'file' && (
             <div className="space-y-2">
               <Label htmlFor="file-upload" className="text-gray-300">
@@ -189,7 +189,7 @@ export function ConfigureSourceDialog({
             </div>
           )}
 
-          {/* URL 输入 */}
+          {/* URL input */}
           {inputMethod === 'url' && (
             <div className="space-y-2">
               <Label htmlFor="url-input" className="text-gray-300">

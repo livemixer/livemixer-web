@@ -1392,7 +1392,7 @@ export function PropertyPanel({
           </div>
         )}
 
-        {/* 定时器/时钟控制 */}
+        {/* Timer/clock controls */}
         {(localItem.type === 'timer' || localItem.type === 'clock') && (
           <div className="border-t border-[#3e3e42] pt-4">
             <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">

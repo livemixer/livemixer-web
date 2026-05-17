@@ -29,7 +29,7 @@ export function SourcePanel({ sources }: SourcePanelProps) {
     <TooltipProvider>
       <div className="h-full overflow-y-auto">
         <div className="p-4 border-b border-[#3e3e42]">
-          <h3 className="text-sm font-semibold text-gray-300">源</h3>
+          <h3 className="text-sm font-semibold text-gray-300">Sources</h3>
         </div>
 
         <div className="p-3 space-y-2">
@@ -58,7 +58,7 @@ export function SourcePanel({ sources }: SourcePanelProps) {
                   <div className="font-medium">{source.name}</div>
                   <div className="text-xs text-gray-400">ID: {source.id}</div>
                   <div className="text-xs text-gray-400">
-                    类型: {source.type}
+                    Type: {source.type}
                   </div>
                 </div>
               </TooltipContent>
@@ -66,7 +66,9 @@ export function SourcePanel({ sources }: SourcePanelProps) {
           ))}
 
           {sources.length === 0 && (
-            <div className="text-sm text-gray-500 text-center py-8">暂无源</div>
+            <div className="text-sm text-gray-500 text-center py-8">
+              No sources
+            </div>
           )}
         </div>
       </div>

@@ -361,7 +361,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
         } else {
           startRAFLoop();
         }
-        console.log('已启动持续渲染');
+        console.log('Continuous rendering started');
       },
       // Stop continuous render loop
       stopContinuousRendering: () => {
@@ -371,7 +371,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
           (isRenderingRef as any)._cleanup = null;
         }
         isRenderingRef.current = false;
-        console.log('已停止持续渲染');
+        console.log('Continuous rendering stopped');
       },
     }));
 
@@ -549,7 +549,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
             height: node.height() * node.scaleY(),
           },
         });
-        // 重置缩放
+        // Reset scale
         node.scaleX(1);
         node.scaleY(1);
       },
@@ -558,7 +558,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
 
     const handleDragMove = useCallback(
       (_e: Konva.KonvaEventObject<DragEvent>) => {
-        // 拖拽时实时更新 Transformer
+        // Real-time Transformer update during dragging
         if (transformerRef.current) {
           transformerRef.current.getLayer()?.batchDraw();
         }
@@ -589,7 +589,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
           },
         });
 
-        // 重置缩放
+        // Reset scale
         node.scaleX(1);
         node.scaleY(1);
       },
@@ -597,7 +597,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
     );
 
     const renderItem = (item: SceneItem, isChildItem = false) => {
-      // 如果隐藏，不渲染
+      // Skip rendering when hidden
       if (item.visible === false) {
         return null;
       }
@@ -612,7 +612,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
         height: item.layout.height,
         opacity: item.transform?.opacity ?? 1,
         rotation: item.transform?.rotation ?? 0,
-        draggable: isSelected && !isLocked, // 锁定时不可拖拽
+        draggable: isSelected && !isLocked, // Cannot drag when locked
         onClick: isChildItem ? undefined : () => onSelectItem?.(item.id),
         onTap: isChildItem ? undefined : () => onSelectItem?.(item.id),
         onDragMove: isChildItem || isLocked ? undefined : handleDragMove,
@@ -635,9 +635,9 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                 shapeRefs.current.delete(item.id);
               }
             },
-        // 高亮选中的控件
+        // Highlight the selected control
         ...(isSelected && {
-          shadowColor: isLocked ? '#ff6b6b' : '#00a8ff', // 锁定时用红色
+          shadowColor: isLocked ? '#ff6b6b' : '#00a8ff', // Use red when locked
           shadowBlur: 10,
           shadowOpacity: 0.8,
         }),
@@ -737,7 +737,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
           const { key, ...restProps } = commonProps;
           return (
             <Group key={key} {...restProps}>
-              {/* 容器边框（可选，便于识别） */}
+              {/* Container border (optional, for identification) */}
               <Rect
                 x={0}
                 y={0}
@@ -748,7 +748,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                 dash={[10, 5]}
                 listening={false}
               />
-              {/* 渲染子元素（不可交互） */}
+              {/* Render child elements (non-interactive) */}
               {item.children?.map((child) => renderItem(child, true))}
             </Group>
           );
