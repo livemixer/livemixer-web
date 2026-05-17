@@ -497,7 +497,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
 
         const scaleX = containerWidth / canvasWidth;
         const scaleY = containerHeight / canvasHeight;
-        const newScale = Math.min(scaleX, scaleY, 1) * 0.9; // Keep slight margin
+        const newScale = Math.min(scaleX, scaleY, 1) * 0.995; // Keep minimal margin
 
         // Ensure scale stays valid
         if (newScale > 0 && Number.isFinite(newScale)) {
@@ -879,14 +879,14 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
       >
         {stageSize.width > 0 && stageSize.height > 0 && (
           <div
-            className="relative shadow-lg"
+            className="relative shadow-md"
             style={{
               width: stageSize.width,
               height: stageSize.height,
-              border: '1px solid #666',
+              border: '1px solid #3a3a3a',
               backgroundColor: '#000',
               boxShadow:
-                '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)',
+                '0 2px 4px -1px rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.25)',
               overflow: 'hidden',
               position: 'relative',
             }}
@@ -990,8 +990,8 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
                   </div>
                 );
               })}
-            {/* Canvas size label */}
-            <div className="absolute -bottom-6 left-0 text-xs text-gray-500">
+            {/* Canvas size label (bottom-left corner overlay) */}
+            <div className="absolute bottom-1 left-1 text-xs text-gray-300 px-1.5 py-0.5 rounded bg-black/50 pointer-events-none select-none">
               {canvasWidth} × {canvasHeight}
             </div>
           </div>
