@@ -56,7 +56,7 @@ export function usePerformanceMonitor(
       // If we produce fewer frames than target, the deficit suggests CPU pressure.
       // We also consider that even at full FPS there is baseline CPU work.
       const maxFrames = (elapsed / 1000) * targetFPS;
-      const frameRatio = maxFrames > 0 ? counted / maxFrames : 0;
+      const frameRatio = maxFrames > 0 ? Math.min(counted / maxFrames, 1) : 0;
 
       // Estimate: lower FPS → higher CPU. Map frameRatio to a percentage:
       //   frameRatio ≈ 1.0 → light load (~5-15%)
