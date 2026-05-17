@@ -65,11 +65,19 @@ jobs:
         id: changelog
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"
-          # Extract the section between "## [VERSION]" and the next "## [" heading
-          CHANGELOG=$(awk "/^## \[${VERSION#v}\]/,/^## \[/" CHANGELOG.md | head -n -1 | tail -n +2)
-          # Fallback: if no matching section, use the first section
+          VER="${VERSION#v}"
+          # Extract the section strictly between "## [VER]" and the next "## [" heading.
+          # Skip the starting heading itself and stop at the next version heading,
+          # so the start and end patterns won't collide on the same line.
+          CHANGELOG=$(awk -v ver="$VER" '
+            $0 ~ "^## \\[" ver "\\]" { flag = 1; next }
+            flag && /^## \[/ { exit }
+            flag { print }
+          ' CHANGELOG.md)
+          # Fallback: if no matching section, leave body empty rather than dumping
+          # the entire changelog (which used to leak older versions).
           if [ -z "$CHANGELOG" ]; then
-            CHANGELOG=$(sed -n '/^## /,/^## /{ /^## /d; p; }' CHANGELOG.md | head -n -1)
+            CHANGELOG="Release $VERSION"
           fi
           echo "BODY<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGELOG" >> $GITHUB_OUTPUT
