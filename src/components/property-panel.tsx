@@ -970,8 +970,11 @@ export function PropertyPanel({
                           <Input
                             type="text"
                             value={
-                              localItem[key as keyof SceneItem] ||
-                              schema.defaultValue
+                              (localItem[key as keyof SceneItem] as
+                                | string
+                                | undefined) ??
+                              (schema.defaultValue as string) ??
+                              ''
                             }
                             onChange={(e) =>
                               updateProperty({ [key]: e.target.value })
