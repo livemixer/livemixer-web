@@ -20,11 +20,9 @@ export function AudioMixerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[640px] bg-[#2d2d30] border-[#3e3e42]">
+      <DialogContent className="sm:max-w-[640px]">
         <DialogHeader>
-          <DialogTitle className="text-white">
-            {t('toolbar.audioMixer')}
-          </DialogTitle>
+          <DialogTitle>{t('toolbar.audioMixer')}</DialogTitle>
         </DialogHeader>
         <div className="h-[240px]">
           <AudioMixerPanel

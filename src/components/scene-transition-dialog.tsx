@@ -50,21 +50,19 @@ export function SceneTransitionDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[420px] bg-[#2d2d30] border-[#3e3e42]">
+      <DialogContent className="sm:max-w-[420px]">
         <DialogHeader>
-          <DialogTitle className="text-white">
-            {t('sceneTransition.title')}
-          </DialogTitle>
+          <DialogTitle>{t('sceneTransition.title')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-5 py-2">
-          <p className="text-sm text-neutral-400">
+          <p className="text-sm text-[var(--lm-muted-2)]">
             {t('sceneTransition.description')}
           </p>
 
           {/* Transition Type */}
           <div className="space-y-2">
-            <Label className="text-sm text-neutral-300">
+            <Label className="text-sm text-[var(--lm-muted)]">
               {t('sceneTransition.type')}
             </Label>
             <div className="grid grid-cols-3 gap-2">
@@ -76,7 +74,7 @@ export function SceneTransitionDialog({
                   className={`px-3 py-2 text-sm rounded-md border transition-colors ${
                     pendingType === type
                       ? 'bg-blue-600/30 border-blue-500 text-blue-300'
-                      : 'bg-[#1e1e1e] border-[#3e3e42] text-neutral-400 hover:border-neutral-500 hover:text-neutral-300'
+                      : 'bg-[var(--lm-surface-1)] border-[var(--lm-border)] text-[var(--lm-muted-2)] hover:border-[var(--lm-border-strong)] hover:text-[var(--lm-fg)]'
                   }`}
                 >
                   {t(`sceneTransition.${type}`)}
@@ -89,10 +87,10 @@ export function SceneTransitionDialog({
           {pendingType !== 'cut' && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label className="text-sm text-neutral-300">
+                <Label className="text-sm text-[var(--lm-muted)]">
                   {t('sceneTransition.duration')}
                 </Label>
-                <span className="text-xs text-neutral-500">
+                <span className="text-xs text-[var(--lm-muted-2)]">
                   {t('sceneTransition.durationMs', {
                     value: pendingDuration,
                   })}
@@ -109,7 +107,7 @@ export function SceneTransitionDialog({
                 }
                 className="w-full accent-blue-500"
               />
-              <div className="flex justify-between text-[10px] text-neutral-600">
+              <div className="flex justify-between text-[10px] text-[var(--lm-muted-2)]">
                 <span>50ms</span>
                 <span>2000ms</span>
               </div>
@@ -122,7 +120,7 @@ export function SceneTransitionDialog({
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="px-4 py-1.5 text-sm text-neutral-400 hover:text-white hover:bg-[#3e3e42] rounded-md transition-colors"
+            className="px-4 py-1.5 text-sm text-[var(--lm-muted-2)] hover:text-[var(--lm-fg)] hover:bg-[var(--lm-hover)] rounded-md transition-colors"
           >
             {t('dialog.cancel')}
           </button>

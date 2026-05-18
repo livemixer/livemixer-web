@@ -128,19 +128,19 @@ export function AddSourceDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-linear-to-b from-neutral-850 to-neutral-900 border-neutral-700/50 text-white max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-white">
+          <DialogTitle className="text-xl font-semibold">
             {t('addSource.title')}
           </DialogTitle>
-          <DialogDescription className="text-neutral-400">
+          <DialogDescription className="text-[var(--lm-muted-2)]">
             {t('addSource.description')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 mt-4">
           <div>
-            <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+            <h3 className="text-xs font-semibold text-[var(--lm-muted-2)] uppercase tracking-wider mb-3">
               {t('addSource.builtin')}
             </h3>
             <div className="grid grid-cols-2 gap-3">
@@ -149,16 +149,16 @@ export function AddSourceDialog({
                   key={sourceType.type}
                   type="button"
                   onClick={() => handleSelectType(sourceType.type)}
-                  className="flex items-start gap-4 p-4 bg-neutral-800/50 hover:bg-neutral-700/50 border border-neutral-700/50 rounded-lg transition-all text-left hover:border-primary-500/50 group"
+                  className="flex items-start gap-4 p-4 bg-[var(--lm-surface-1)] hover:bg-[var(--lm-hover)] border border-[var(--lm-border)] rounded-lg transition-all text-left hover:border-primary-500/50 group"
                 >
                   <div className="shrink-0 text-primary-400 mt-1 group-hover:scale-110 transition-transform">
                     {sourceType.icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-white text-sm mb-1">
+                    <h4 className="font-medium text-[var(--lm-fg)] text-sm mb-1">
                       {sourceType.name}
                     </h4>
-                    <p className="text-xs text-neutral-400 line-clamp-2">
+                    <p className="text-xs text-[var(--lm-muted-2)] line-clamp-2">
                       {sourceType.description}
                     </p>
                   </div>
@@ -169,7 +169,7 @@ export function AddSourceDialog({
 
           {externalPlugins.length > 0 && (
             <div>
-              <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+              <h3 className="text-xs font-semibold text-[var(--lm-muted-2)] uppercase tracking-wider mb-3">
                 {t('addSource.installedPlugins')}
               </h3>
               <div className="grid grid-cols-2 gap-3">
@@ -178,16 +178,16 @@ export function AddSourceDialog({
                     key={plugin.id}
                     type="button"
                     onClick={() => handleSelectType(plugin.id)}
-                    className="flex items-start gap-4 p-4 bg-neutral-800/50 hover:bg-neutral-700/50 border border-neutral-700/50 rounded-lg transition-all text-left hover:border-primary-500/50 group"
+                    className="flex items-start gap-4 p-4 bg-[var(--lm-surface-1)] hover:bg-[var(--lm-hover)] border border-[var(--lm-border)] rounded-lg transition-all text-left hover:border-primary-500/50 group"
                   >
                     <div className="shrink-0 text-warning-500 mt-1 group-hover:scale-110 transition-transform">
                       <Puzzle className="w-6 h-6" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-white text-sm mb-1">
+                      <h4 className="font-medium text-[var(--lm-fg)] text-sm mb-1">
                         {plugin.name}
                       </h4>
-                      <p className="text-xs text-neutral-400 line-clamp-1">
+                      <p className="text-xs text-[var(--lm-muted-2)] line-clamp-1">
                         {plugin.id}
                       </p>
                     </div>

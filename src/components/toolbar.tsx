@@ -1,12 +1,16 @@
 import { useCallback, useState } from 'react';
+import githubIconDark from '../assets/github_dark.svg';
 import githubIcon from '../assets/github_white.svg';
+
 import { useI18n } from '../hooks/useI18n';
+import { normalizeTheme } from '../services/theme';
 import { useSettingsStore } from '../store/setting';
 import type { ProtocolData, SceneItem } from '../types/protocol';
 import { AboutDialog } from './about-dialog';
 import { AudioMixerDialog } from './audio-mixer-dialog';
 import { PluginManagerDialog } from './plugin-manager-dialog';
 import { SceneTransitionDialog } from './scene-transition-dialog';
+import { ThemeToggle } from './theme-toggle';
 import { ToolbarMenu } from './toolbar-menu';
 
 interface EditActions {
@@ -55,6 +59,7 @@ export function Toolbar({
   const [audioMixerOpen, setAudioMixerOpen] = useState(false);
   const [sceneTransitionOpen, setSceneTransitionOpen] = useState(false);
   const [pluginManagerOpen, setPluginManagerOpen] = useState(false);
+  const theme = useSettingsStore((s) => normalizeTheme(s.theme));
   const { showGrid, showGuides, updatePersistentSettings } = useSettingsStore();
 
   const handleToggleFullscreen = useCallback(() => {
@@ -248,14 +253,19 @@ export function Toolbar({
 
       {/* GitHub link */}
       <div className="flex-1" />
+      <ThemeToggle />
       <a
         href="https://github.com/livemixer/livemixer-web"
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-300 hover:text-white hover:bg-[#3e3e42] transition-colors rounded"
+        className="flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--lm-muted)] hover:text-[var(--lm-fg)] hover:bg-[var(--lm-hover)] transition-colors rounded"
         title={t('toolbar.visitGitHub')}
       >
-        <img src={githubIcon} alt="GitHub" className="w-5 h-5" />
+        <img
+          src={theme === 'dark' ? githubIcon : githubIconDark}
+          alt="GitHub"
+          className="w-5 h-5"
+        />
       </a>
 
       <AboutDialog open={aboutOpen} onOpenChange={setAboutOpen} />

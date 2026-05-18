@@ -15,14 +15,80 @@ body,
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: dark;
-  color: #ffffff;
-  background-color: #0f1419;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html[data-theme="dark"] {
+  --lm-bg: #0f1419;
+  --lm-fg: #ffffff;
+  --lm-muted: #d1d5db;
+  --lm-muted-2: #9ca3af;
+
+  --lm-border: rgba(62, 62, 66, 0.7);
+  --lm-border-strong: #3e3e42;
+
+  --lm-surface-1: rgba(30, 30, 30, 0.85);
+  --lm-surface-2: rgba(37, 37, 38, 0.85);
+  --lm-surface-3: rgba(45, 45, 48, 0.92);
+  --lm-hover: rgba(62, 62, 66, 0.65);
+
+  --lm-gradient-from: #111827;
+  --lm-gradient-via: #0b1220;
+  --lm-gradient-to: #030712;
+  --lm-canvas-from: #111827;
+  --lm-canvas-via: #0b1220;
+  --lm-canvas-to: #111827;
+
+  --lm-accent: #0ea5e9;
+  --lm-accent-weak: rgba(14, 165, 233, 0.35);
+  --lm-link: #0ea5e9;
+  --lm-link-hover: #0284c7;
+
+  --lm-scrollbar-thumb: #4b5563;
+  --lm-scrollbar-thumb-hover: #6b7280;
+  --lm-selection-bg: rgba(14, 165, 233, 0.3);
+  --lm-selection-fg: #ffffff;
+}
+
+html[data-theme="light"] {
+  --lm-bg: #f8fafc;
+  --lm-fg: #0f172a;
+  --lm-muted: #334155;
+  --lm-muted-2: #64748b;
+
+  --lm-border: rgba(148, 163, 184, 0.55);
+  --lm-border-strong: rgba(148, 163, 184, 0.85);
+
+  --lm-surface-1: rgba(255, 255, 255, 0.88);
+  --lm-surface-2: rgba(248, 250, 252, 0.9);
+  --lm-surface-3: rgba(255, 255, 255, 0.96);
+  --lm-hover: rgba(148, 163, 184, 0.35);
+
+  --lm-gradient-from: #f8fafc;
+  --lm-gradient-via: #eef2ff;
+  --lm-gradient-to: #f1f5f9;
+  --lm-canvas-from: #f8fafc;
+  --lm-canvas-via: #eef2ff;
+  --lm-canvas-to: #f8fafc;
+
+  --lm-accent: #0284c7;
+  --lm-accent-weak: rgba(2, 132, 199, 0.25);
+  --lm-link: #0284c7;
+  --lm-link-hover: #0369a1;
+
+  --lm-scrollbar-thumb: #94a3b8;
+  --lm-scrollbar-thumb-hover: #64748b;
+  --lm-selection-bg: rgba(2, 132, 199, 0.25);
+  --lm-selection-fg: #0f172a;
+}
+
+html,
+body {
+  color: var(--lm-fg);
+  background-color: var(--lm-bg);
 }
 
 /* 滚动条美化 */
@@ -36,13 +102,13 @@ body,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: var(--lm-scrollbar-thumb);
   border-radius: 4px;
   transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: var(--lm-scrollbar-thumb-hover);
 }
 
 /* 按钮全局样式 */
@@ -59,27 +125,27 @@ input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: #0ea5e9;
-  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+  border-color: var(--lm-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--lm-accent) 18%, transparent);
 }
 
 /* 链接样式 */
 a {
   font-weight: 500;
-  color: #0ea5e9;
+  color: var(--lm-link);
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 a:hover {
-  color: #0284c7;
+  color: var(--lm-link-hover);
   text-decoration: underline;
 }
 
 /* 选择文本样式 */
 ::selection {
-  background-color: rgba(14, 165, 233, 0.3);
-  color: #ffffff;
+  background-color: var(--lm-selection-bg);
+  color: var(--lm-selection-fg);
 }
 
 /* 动画 */

@@ -91,7 +91,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[600px] p-0 flex flex-col bg-gradient-to-b from-neutral-850 to-neutral-900 border-neutral-700/50">
+      <DialogContent className="max-w-4xl h-[600px] p-0 flex flex-col">
         <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0 bg-gradient-to-r from-primary-600 to-primary-500 rounded-t-xl relative">
           <div className="flex items-center gap-3">
             <img src={lmsLogo} alt="Logo" className="w-8 h-8" />
@@ -103,7 +103,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
         <div className="flex flex-1 min-h-0">
           {/* Left sidebar */}
-          <div className="w-48 border-r border-neutral-700/30 bg-neutral-900/50 flex-shrink-0">
+          <div className="w-48 border-r border-[var(--lm-border)] bg-[var(--lm-surface-2)] flex-shrink-0">
             <div className="flex flex-col p-2">
               <button
                 type="button"
@@ -111,7 +111,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 className={`px-4 py-2 text-left rounded-lg text-sm transition-all ${
                   activeTab === 'general'
                     ? 'bg-primary-600/20 text-primary-400 border border-primary-500/30'
-                    : 'text-neutral-400 hover:text-white hover:bg-neutral-700/30'
+                    : 'text-[var(--lm-muted-2)] hover:text-[var(--lm-fg)] hover:bg-[var(--lm-hover)]'
                 }`}
               >
                 {t('settings.tabs.general')}
@@ -122,7 +122,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 className={`px-4 py-2 text-left rounded-lg text-sm transition-all ${
                   activeTab === 'streaming'
                     ? 'bg-primary-600/20 text-primary-400 border border-primary-500/30'
-                    : 'text-neutral-400 hover:text-white hover:bg-neutral-700/30'
+                    : 'text-[var(--lm-muted-2)] hover:text-[var(--lm-fg)] hover:bg-[var(--lm-hover)]'
                 }`}
               >
                 {t('settings.tabs.streaming')}
@@ -132,8 +132,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 onClick={() => setActiveTab('pulling')}
                 className={`px-4 py-2 text-left rounded text-sm transition-colors ${
                   activeTab === 'pulling'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                    ? 'bg-[var(--lm-hover)] text-[var(--lm-fg)]'
+                    : 'text-[var(--lm-muted-2)] hover:text-[var(--lm-fg)] hover:bg-[var(--lm-hover)]'
                 }`}
               >
                 {t('settings.tabs.pulling')}
@@ -143,8 +143,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 onClick={() => setActiveTab('output')}
                 className={`px-4 py-2 text-left rounded text-sm transition-colors ${
                   activeTab === 'output'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                    ? 'bg-[var(--lm-hover)] text-[var(--lm-fg)]'
+                    : 'text-[var(--lm-muted-2)] hover:text-[var(--lm-fg)] hover:bg-[var(--lm-hover)]'
                 }`}
               >
                 {t('settings.tabs.output')}
@@ -154,8 +154,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 onClick={() => setActiveTab('audio')}
                 className={`px-4 py-2 text-left rounded text-sm transition-colors ${
                   activeTab === 'audio'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                    ? 'bg-[var(--lm-hover)] text-[var(--lm-fg)]'
+                    : 'text-[var(--lm-muted-2)] hover:text-[var(--lm-fg)] hover:bg-[var(--lm-hover)]'
                 }`}
               >
                 {t('settings.tabs.audio')}
@@ -165,8 +165,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 onClick={() => setActiveTab('video')}
                 className={`px-4 py-2 text-left rounded text-sm transition-colors ${
                   activeTab === 'video'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                    ? 'bg-[var(--lm-hover)] text-[var(--lm-fg)]'
+                    : 'text-[var(--lm-muted-2)] hover:text-[var(--lm-fg)] hover:bg-[var(--lm-hover)]'
                 }`}
               >
                 {t('settings.tabs.video')}
@@ -178,7 +178,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           <div className="flex-1 overflow-auto p-6 min-w-0">
             {activeTab === 'general' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-semibold text-[var(--lm-fg)]">
                   {t('settings.tabs.general')}
                 </h2>
                 <div className="space-y-4">
@@ -190,7 +190,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       id="language"
                       value={pendingLanguage}
                       onChange={(e) => handleLanguageSelect(e.target.value)}
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="zh-CN">简体中文</option>
                       <option value="en-US">English</option>
@@ -204,7 +204,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       onChange={(e) =>
                         updatePersistentSettings({ theme: e.target.value })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="dark">{t('settings.theme.dark')}</option>
                       <option value="light">{t('settings.theme.light')}</option>
@@ -216,7 +216,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             {activeTab === 'streaming' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-semibold text-[var(--lm-fg)]">
                   {t('settings.streaming.title')}
                 </h2>
                 <div className="space-y-4">
@@ -232,7 +232,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           streamService: e.target.value,
                         })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="custom">
                         {t('settings.streaming.custom')}
@@ -275,7 +275,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             {activeTab === 'pulling' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-semibold text-[var(--lm-fg)]">
                   {t('settings.pulling.title')}
                 </h2>
                 <div className="space-y-4">
@@ -310,8 +310,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       placeholder={t('settings.streaming.tokenPlaceholder')}
                     />
                   </div>
-                  <div className="pt-4 border-t border-[#3e3e42]">
-                    <p className="text-sm text-gray-400">
+                  <div className="pt-4 border-t border-[var(--lm-border-strong)]">
+                    <p className="text-sm text-[var(--lm-muted-2)]">
                       {t('settings.pulling.description')}
                     </p>
                   </div>
@@ -321,7 +321,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             {activeTab === 'output' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-semibold text-[var(--lm-fg)]">
                   {t('settings.output.title')}
                 </h2>
                 <div className="space-y-4">
@@ -356,7 +356,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           audioBitrate: e.target.value,
                         })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="12000">12 kbps (Telephone)</option>
                       <option value="24000">24 kbps (Speech)</option>
@@ -383,7 +383,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           videoEncoder: e.target.value,
                         })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="h264">H.264/AVC</option>
                       <option value="h265">H.265/HEVC</option>
@@ -405,7 +405,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           audioEncoder: e.target.value,
                         })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="aac">AAC</option>
                       <option value="opus">Opus</option>
@@ -418,7 +418,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             {activeTab === 'audio' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-semibold text-[var(--lm-fg)]">
                   {t('settings.audio.title')}
                 </h2>
                 <div className="space-y-4">
@@ -434,7 +434,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           audioDevice: e.target.value,
                         })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="default">
                         {t('settings.audio.default')}
@@ -451,7 +451,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       onChange={(e) =>
                         updatePersistentSettings({ sampleRate: e.target.value })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="44100">44.1 kHz</option>
                       <option value="48000">48 kHz</option>
@@ -467,7 +467,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       onChange={(e) =>
                         updatePersistentSettings({ channels: e.target.value })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="stereo">
                         {t('settings.audio.stereo')}
@@ -481,7 +481,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             {activeTab === 'video' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-semibold text-[var(--lm-fg)]">
                   {t('settings.video.title')}
                 </h2>
                 <div className="space-y-4">
@@ -497,7 +497,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           baseResolution: e.target.value,
                         })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="1920x1080">1920x1080</option>
                       <option value="1280x720">1280x720</option>
@@ -558,7 +558,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           outputResolution: e.target.value,
                         })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="1920x1080">1920x1080</option>
                       <option value="1280x720">1280x720</option>
@@ -578,7 +578,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       onChange={(e) =>
                         updatePersistentSettings({ fps: e.target.value })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="24">24</option>
                       <option value="30">30</option>
@@ -599,7 +599,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           scaleFilter: e.target.value,
                         })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="bilinear">
                         {t('settings.video.bilinear')}
@@ -617,18 +617,18 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         </div>
 
         {/* Footer buttons */}
-        <div className="flex justify-end gap-3 px-6 py-5 pr-8 border-t border-[#3e3e42] flex-shrink-0">
+        <div className="flex justify-end gap-3 px-6 py-5 pr-8 border-t border-[var(--lm-border-strong)] flex-shrink-0">
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="px-8 py-3 text-sm rounded bg-[#2a2a2a] text-white hover:bg-[#3a3a3a] transition-colors min-w-[90px]"
+            className="px-8 py-3 text-sm rounded bg-[var(--lm-surface-1)] text-[var(--lm-fg)] hover:bg-[var(--lm-hover)] transition-colors min-w-[90px] border border-[var(--lm-border)]"
           >
             {t('dialog.cancel')}
           </button>
           <button
             type="button"
             onClick={handleApply}
-            className="px-8 py-3 text-sm rounded bg-[#2a2a2a] text-white hover:bg-[#3a3a3a] transition-colors min-w-[90px]"
+            className="px-8 py-3 text-sm rounded bg-[var(--lm-surface-1)] text-[var(--lm-fg)] hover:bg-[var(--lm-hover)] transition-colors min-w-[90px] border border-[var(--lm-border)]"
           >
             {t('dialog.apply')}
           </button>

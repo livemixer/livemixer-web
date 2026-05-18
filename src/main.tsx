@@ -10,6 +10,7 @@ import { ScreenCapturePlugin } from './plugins/builtin/screencapture-plugin';
 import { TextPlugin } from './plugins/builtin/text-plugin';
 import { WebCamPlugin } from './plugins/builtin/webcam';
 import { pluginRegistry } from './services/plugin-registry';
+import { applyTheme, readThemeFromPersistedSettings } from './services/theme';
 
 // Register built-in plugins
 pluginRegistry.register(ImagePlugin);
@@ -18,6 +19,9 @@ pluginRegistry.register(ScreenCapturePlugin);
 pluginRegistry.register(WebCamPlugin);
 pluginRegistry.register(AudioInputPlugin);
 pluginRegistry.register(TextPlugin);
+
+// Apply theme as early as possible to avoid a flash of incorrect colors.
+applyTheme(readThemeFromPersistedSettings());
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

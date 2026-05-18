@@ -30,6 +30,7 @@ import { mediaStreamManager } from './services/media-stream-manager';
 import { pluginContextManager } from './services/plugin-context';
 import { pluginRegistry } from './services/plugin-registry';
 import { streamingService } from './services/streaming';
+import { applyTheme, normalizeTheme } from './services/theme';
 import { useProtocolStore } from './store/protocol';
 import { useSettingsStore } from './store/setting';
 import type { LiveMixerExtensions } from './types/extensions';
@@ -150,6 +151,8 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
   // Get LiveKit config and output settings from store
   const {
+    theme,
+    language,
     livekitUrl,
     livekitToken,
     livekitPullUrl,
@@ -160,7 +163,13 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     outputResolution,
     showGrid,
     showGuides,
+    updatePersistentSettings,
   } = useSettingsStore();
+
+  // Apply theme to DOM (and keep it in sync with settings)
+  useEffect(() => {
+    applyTheme(normalizeTheme(theme));
+  }, [theme]);
 
   // Parse output resolution (streaming target resolution, not affected by window scaling)
   const outputRes = useMemo(() => {
@@ -201,9 +210,15 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
             setActivePluginDialog(null);
           }
         },
+        setTheme: (nextTheme) => {
+          updatePersistentSettings({ theme: nextTheme });
+        },
+        setLanguage: (nextLanguage) => {
+          updatePersistentSettings({ language: nextLanguage });
+        },
       },
     });
-  }, []);
+  }, [updatePersistentSettings]);
 
   const activeScene = data.scenes.find((s) => s.id === activeSceneId) || null;
   const selectedItem =
@@ -211,6 +226,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
   // Sync state to Plugin Context
   useEffect(() => {
+    const prevUi = pluginContextManager.getState().ui;
     pluginContextManager.updateState({
       scene: {
         currentId: activeSceneId,
@@ -218,8 +234,20 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         selectedItemId,
         selectedItem,
       },
+      ui: {
+        ...prevUi,
+        theme: normalizeTheme(theme),
+        language,
+      },
     });
-  }, [activeSceneId, activeScene?.items, selectedItemId, selectedItem]);
+  }, [
+    activeSceneId,
+    activeScene?.items,
+    selectedItemId,
+    selectedItem,
+    theme,
+    language,
+  ]);
 
   // Add a new scene
   const handleAddScene = () => {

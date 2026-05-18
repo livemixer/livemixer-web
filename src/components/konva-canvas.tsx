@@ -866,7 +866,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
 
     if (!scene) {
       return (
-        <div className="w-full h-full flex items-center justify-center text-gray-500">
+        <div className="w-full h-full flex items-center justify-center text-[var(--lm-muted-2)]">
           No scenes yet
         </div>
       );
@@ -875,7 +875,7 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
     return (
       <div
         ref={containerRef}
-        className="w-full h-full flex items-center justify-center bg-[#1e1e1e]"
+        className="w-full h-full flex items-center justify-center bg-transparent"
       >
         {stageSize.width > 0 && stageSize.height > 0 && (
           <div
@@ -883,8 +883,8 @@ export const KonvaCanvas = forwardRef<KonvaCanvasHandle, KonvaCanvasProps>(
             style={{
               width: stageSize.width,
               height: stageSize.height,
-              border: '1px solid #3a3a3a',
-              backgroundColor: '#000',
+              border: '1px solid var(--lm-border-strong)',
+              backgroundColor: 'var(--lm-bg)',
               boxShadow:
                 '0 2px 4px -1px rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.25)',
               overflow: 'hidden',

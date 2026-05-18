@@ -257,8 +257,8 @@ function AudioInputPanel({
   };
 
   return (
-    <div className="border-t border-[#3e3e42] pt-4">
-      <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+    <div className="border-t border-[var(--lm-border-strong)] pt-4">
+      <h4 className="text-xs font-semibold text-[var(--lm-fg)] mb-4 flex items-center gap-2">
         <span className="w-1 h-4 bg-blue-500 rounded"></span>
         {t('property.audioInputSource')}
       </h4>
@@ -268,11 +268,11 @@ function AudioInputPanel({
         const entry = mediaStreamManager.getStream(localItem.id);
         const actuallyActive = !!entry?.stream?.active;
         return (
-          <div className="mb-4 p-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg">
-            <div className="text-xs text-gray-400 mb-1">
+          <div className="mb-4 p-3 bg-[var(--lm-surface-1)] border border-[var(--lm-border)] rounded-lg">
+            <div className="text-xs text-[var(--lm-muted-2)] mb-1">
               {t('property.currentSource')}
             </div>
-            <div className="text-sm text-gray-200 flex items-center gap-2">
+            <div className="text-sm text-[var(--lm-muted)] flex items-center gap-2">
               <Mic
                 className={`w-4 h-4 ${actuallyActive ? 'text-blue-400' : 'text-gray-500'}`}
               />
@@ -295,11 +295,13 @@ function AudioInputPanel({
       {/* Device selector (only when not active) */}
       {!isActive && (
         <div className="mb-4">
-          <span className="block text-xs text-gray-400 mb-2">
+          <span className="block text-xs text-[var(--lm-muted-2)] mb-2">
             {t('property.selectDevice')}
           </span>
           {devices.length === 0 ? (
-            <p className="text-xs text-gray-500">{t('property.noDevices')}</p>
+            <p className="text-xs text-[var(--lm-muted-2)]">
+              {t('property.noDevices')}
+            </p>
           ) : (
             <>
               <select
@@ -310,7 +312,7 @@ function AudioInputPanel({
                   setLocalItem({ ...localItem, deviceId });
                 }}
                 disabled={isLocked || isLoadingDevices}
-                className="w-full py-2 px-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 disabled:opacity-50"
+                className="w-full py-2 px-3 bg-[var(--lm-surface-1)] border border-[var(--lm-border)] rounded-lg text-[var(--lm-fg)] text-sm focus:outline-none focus:border-blue-500 disabled:opacity-50"
               >
                 {isLoadingDevices && (
                   <option value="">{t('property.loadingDevices')}</option>
@@ -540,18 +542,18 @@ function VideoInputPanel({
   const entry = mediaStreamManager.getStream(localItem.id);
 
   return (
-    <div className="border-t border-[#3e3e42] pt-4">
-      <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+    <div className="border-t border-[var(--lm-border-strong)] pt-4">
+      <h4 className="text-xs font-semibold text-[var(--lm-fg)] mb-4 flex items-center gap-2">
         <span className="w-1 h-4 bg-purple-500 rounded"></span>
         {t('property.videoInputSource')}
       </h4>
 
       {/* Current source info */}
-      <div className="mb-4 p-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg">
-        <div className="text-xs text-gray-400 mb-1">
+      <div className="mb-4 p-3 bg-[var(--lm-surface-1)] border border-[var(--lm-border)] rounded-lg">
+        <div className="text-xs text-[var(--lm-muted-2)] mb-1">
           {t('property.currentSource')}
         </div>
-        <div className="text-sm text-gray-200 flex items-center gap-2">
+        <div className="text-sm text-[var(--lm-muted)] flex items-center gap-2">
           <Video
             className={`w-4 h-4 ${isActive ? 'text-green-500' : 'text-gray-500'}`}
           />
@@ -583,7 +585,7 @@ function VideoInputPanel({
 
       {/* Device selector */}
       <div className="mb-4">
-        <Label className="text-xs text-gray-400 mb-2 block">
+        <Label className="text-xs text-[var(--lm-muted-2)] mb-2 block">
           {t('property.selectDevice')}
         </Label>
         <select
@@ -591,7 +593,7 @@ function VideoInputPanel({
           onChange={(e) => handleDeviceChange(e.target.value)}
           onFocus={() => loadDevices()}
           disabled={isLocked || isLoadingDevices || isActive}
-          className={`w-full py-2 px-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg text-white text-sm focus:outline-none focus:border-purple-500 ${isActive ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`w-full py-2 px-3 bg-[var(--lm-surface-1)] border border-[var(--lm-border)] rounded-lg text-[var(--lm-fg)] text-sm focus:outline-none focus:border-purple-500 ${isActive ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <option value="">
             {isActive
@@ -684,9 +686,9 @@ export function PropertyPanel({
   };
 
   return (
-    <div className="h-full overflow-y-auto bg-gradient-to-b from-neutral-900 to-neutral-850">
-      <div className="p-4 border-b border-neutral-700/50 bg-neutral-900/80 sticky top-0 backdrop-blur-sm">
-        <h3 className="text-sm font-semibold text-white">
+    <div className="h-full overflow-y-auto bg-linear-to-b from-[var(--lm-surface-2)] to-[var(--lm-surface-3)]">
+      <div className="p-4 border-b border-[var(--lm-border)] bg-[var(--lm-surface-3)] sticky top-0 backdrop-blur-sm">
+        <h3 className="text-sm font-semibold text-[var(--lm-fg)]">
           {t('property.title')}
         </h3>
       </div>
@@ -704,14 +706,14 @@ export function PropertyPanel({
         <div className="space-y-4">
           <div>
             <Label className="block mb-2">{t('property.elementId')}</Label>
-            <div className="text-sm text-neutral-300 bg-neutral-800/50 px-3 py-2 rounded-lg border border-neutral-700/50">
+            <div className="text-sm text-[var(--lm-muted)] bg-[var(--lm-surface-1)] px-3 py-2 rounded-lg border border-[var(--lm-border)]">
               {localItem.id}
             </div>
           </div>
 
           <div>
             <Label className="block mb-2">{t('property.type')}</Label>
-            <div className="text-sm text-neutral-300 bg-neutral-800/50 px-3 py-2 rounded-lg border border-neutral-700/50 capitalize">
+            <div className="text-sm text-[var(--lm-muted)] bg-[var(--lm-surface-1)] px-3 py-2 rounded-lg border border-[var(--lm-border)] capitalize">
               {localItem.type}
             </div>
           </div>
@@ -735,8 +737,8 @@ export function PropertyPanel({
         </div>
 
         {/* Position and size */}
-        <div className="border-t border-[#3e3e42] pt-4">
-          <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+        <div className="border-t border-[var(--lm-border-strong)] pt-4">
+          <h4 className="text-xs font-semibold text-[var(--lm-fg)] mb-4 flex items-center gap-2">
             <span className="w-1 h-4 bg-blue-500 rounded"></span>
             {t('property.positionAndSize')}
           </h4>
@@ -822,8 +824,8 @@ export function PropertyPanel({
         </div>
 
         {/* Transform */}
-        <div className="border-t border-[#3e3e42] pt-4">
-          <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+        <div className="border-t border-[var(--lm-border-strong)] pt-4">
+          <h4 className="text-xs font-semibold text-[var(--lm-fg)] mb-4 flex items-center gap-2">
             <span className="w-1 h-4 bg-blue-500 rounded"></span>
             {t('property.transform')}
           </h4>
@@ -834,7 +836,7 @@ export function PropertyPanel({
                 <Label htmlFor="opacity" className="text-xs">
                   {t('property.opacity')}
                 </Label>
-                <span className="text-xs text-gray-300 font-mono bg-[#1e1e1e] px-2 py-1 rounded border border-[#3e3e42]">
+                <span className="text-xs text-[var(--lm-muted)] font-mono bg-[var(--lm-surface-1)] px-2 py-1 rounded border border-[var(--lm-border)]">
                   {((localItem.transform?.opacity ?? 1) * 100).toFixed(0)}%
                 </span>
               </div>
@@ -856,7 +858,7 @@ export function PropertyPanel({
                 <Label htmlFor="rotation" className="text-xs">
                   {t('property.rotation')}
                 </Label>
-                <span className="text-xs text-gray-300 font-mono bg-[#1e1e1e] px-2 py-1 rounded border border-[#3e3e42]">
+                <span className="text-xs text-[var(--lm-muted)] font-mono bg-[var(--lm-surface-1)] px-2 py-1 rounded border border-[var(--lm-border)]">
                   {Math.round(localItem.transform?.rotation ?? 0)}°
                 </span>
               </div>
@@ -916,8 +918,8 @@ export function PropertyPanel({
             if (schemaEntries.length === 0) return null;
 
             return (
-              <div className="border-t border-[#3e3e42] pt-4">
-                <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+              <div className="border-t border-[var(--lm-border-strong)] pt-4">
+                <h4 className="text-xs font-semibold text-[var(--lm-fg)] mb-4 flex items-center gap-2">
                   <span className="w-1 h-4 bg-purple-500 rounded"></span>
                   {t('property.pluginProps', { name: plugin.name })}
                 </h4>
@@ -932,7 +934,7 @@ export function PropertyPanel({
                                 ? t(schema.labelKey)
                                 : schema.label}
                             </Label>
-                            <span className="text-xs text-gray-300 font-mono bg-[#1e1e1e] px-2 py-1 rounded border border-[#3e3e42]">
+                            <span className="text-xs text-[var(--lm-muted)] font-mono bg-[var(--lm-surface-1)] px-2 py-1 rounded border border-[var(--lm-border)]">
                               {localItem[key as keyof SceneItem] ||
                                 schema.defaultValue}
                             </span>
@@ -1005,7 +1007,9 @@ export function PropertyPanel({
                             }
                             disabled={isLocked}
                             className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                              boolVal ? 'bg-primary-500' : 'bg-[#3e3e42]'
+                              boolVal
+                                ? 'bg-primary-500'
+                                : 'bg-[var(--lm-border-strong)]'
                             } ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                           >
                             <span
@@ -1029,18 +1033,18 @@ export function PropertyPanel({
 
         {/* Screen Capture control panel */}
         {localItem.type === 'screen_capture' && (
-          <div className="border-t border-[#3e3e42] pt-4">
-            <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+          <div className="border-t border-[var(--lm-border-strong)] pt-4">
+            <h4 className="text-xs font-semibold text-[var(--lm-fg)] mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-green-500 rounded"></span>
               {t('property.screenCaptureSource')}
             </h4>
 
             {/* Current source info */}
-            <div className="mb-4 p-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg">
-              <div className="text-xs text-gray-400 mb-1">
+            <div className="mb-4 p-3 bg-[var(--lm-surface-1)] border border-[var(--lm-border)] rounded-lg">
+              <div className="text-xs text-[var(--lm-muted-2)] mb-1">
                 {t('property.currentSource')}
               </div>
-              <div className="text-sm text-gray-200 flex items-center gap-2">
+              <div className="text-sm text-[var(--lm-muted)] flex items-center gap-2">
                 <Monitor className="w-4 h-4 text-green-500" />
                 <span className="truncate">
                   {(() => {
@@ -1063,7 +1067,7 @@ export function PropertyPanel({
                     {t('property.audioCaptured')}
                   </div>
                 ) : entry?.stream ? (
-                  <div className="mt-2 text-xs text-gray-500 flex items-center gap-1.5">
+                  <div className="mt-2 text-xs text-[var(--lm-muted-2)] flex items-center gap-1.5">
                     <Mic className="w-3 h-3" />
                     {t('property.noAudioCaptured')}
                   </div>
@@ -1149,8 +1153,8 @@ export function PropertyPanel({
 
         {/* Image and media source URL editor - moved above plugin props for better UX */}
         {(localItem.type === 'image' || localItem.type === 'media') && (
-          <div className="border-t border-[#3e3e42] pt-4">
-            <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+          <div className="border-t border-[var(--lm-border-strong)] pt-4">
+            <h4 className="text-xs font-semibold text-[var(--lm-fg)] mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-blue-500 rounded"></span>
               {localItem.type === 'image'
                 ? t('property.imageSource')
@@ -1166,7 +1170,7 @@ export function PropertyPanel({
                 className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${
                   urlInputMethod === 'url'
                     ? 'bg-blue-500 border-blue-500 text-white'
-                    : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                    : 'bg-[var(--lm-surface-1)] border-[var(--lm-border)] text-[var(--lm-muted)] hover:bg-[var(--lm-hover)]'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <LinkIcon className="w-3.5 h-3.5" />
@@ -1179,7 +1183,7 @@ export function PropertyPanel({
                 className={`flex-1 px-3 py-2 rounded-lg border transition-colors text-sm flex items-center justify-center gap-2 ${
                   urlInputMethod === 'file'
                     ? 'bg-blue-500 border-blue-500 text-white'
-                    : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                    : 'bg-[var(--lm-surface-1)] border-[var(--lm-border)] text-[var(--lm-muted)] hover:bg-[var(--lm-hover)]'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <Upload className="w-3.5 h-3.5" />
@@ -1211,8 +1215,8 @@ export function PropertyPanel({
               <div>
                 {/* Current file display - moved above select button */}
                 {localItem.url && (
-                  <div className="mb-3 p-2.5 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg">
-                    <div className="text-xs text-gray-400 mb-1">
+                  <div className="mb-3 p-2.5 bg-[var(--lm-surface-1)] border border-[var(--lm-border)] rounded-lg">
+                    <div className="text-xs text-[var(--lm-muted-2)] mb-1">
                       {t('property.current')}
                     </div>
                     <div className="text-xs text-blue-400 font-mono break-all">
@@ -1240,10 +1244,10 @@ export function PropertyPanel({
                   />
                   <label
                     htmlFor="file-upload"
-                    className={`flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg transition-colors text-sm text-gray-300 ${
+                    className={`flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--lm-surface-1)] border border-[var(--lm-border)] rounded-lg transition-colors text-sm text-[var(--lm-muted)] ${
                       isLocked
                         ? 'cursor-not-allowed opacity-50'
-                        : 'cursor-pointer hover:bg-[#2d2d30]'
+                        : 'cursor-pointer hover:bg-[var(--lm-hover)]'
                     }`}
                   >
                     <Upload className="w-4 h-4" />
@@ -1264,8 +1268,8 @@ export function PropertyPanel({
 
         {/* Type-specific props */}
         {localItem.type === 'color' && (
-          <div className="border-t border-[#3e3e42] pt-4">
-            <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+          <div className="border-t border-[var(--lm-border-strong)] pt-4">
+            <h4 className="text-xs font-semibold text-[var(--lm-fg)] mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-blue-500 rounded"></span>
               {t('property.color')}
             </h4>
@@ -1291,8 +1295,8 @@ export function PropertyPanel({
         )}
 
         {localItem.type === 'text' && (
-          <div className="border-t border-[#3e3e42] pt-4">
-            <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+          <div className="border-t border-[var(--lm-border-strong)] pt-4">
+            <h4 className="text-xs font-semibold text-[var(--lm-fg)] mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-blue-500 rounded"></span>
               {t('property.text')}
             </h4>
@@ -1307,7 +1311,7 @@ export function PropertyPanel({
                   value={localItem.content || ''}
                   onChange={(e) => updateProperty({ content: e.target.value })}
                   placeholder={t('property.contentPlaceholder')}
-                  className="flex min-h-[80px] w-full rounded-md border border-[#3e3e42] bg-[#1e1e1e] px-3 py-2 text-sm text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+                  className="flex min-h-[80px] w-full rounded-md border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-2 text-sm text-[var(--lm-fg)] placeholder:text-[var(--lm-muted-2)] focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
                   rows={3}
                   disabled={isLocked}
                 />
@@ -1376,8 +1380,8 @@ export function PropertyPanel({
         )}
 
         {(localItem.type === 'window' || localItem.type === 'screen') && (
-          <div className="border-t border-[#3e3e42] pt-4">
-            <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+          <div className="border-t border-[var(--lm-border-strong)] pt-4">
+            <h4 className="text-xs font-semibold text-[var(--lm-fg)] mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-blue-500 rounded"></span>
               {t('property.mediaSource')}
             </h4>
@@ -1397,8 +1401,8 @@ export function PropertyPanel({
 
         {/* Timer/clock controls */}
         {(localItem.type === 'timer' || localItem.type === 'clock') && (
-          <div className="border-t border-[#3e3e42] pt-4">
-            <h4 className="text-xs font-semibold text-gray-200 mb-4 flex items-center gap-2">
+          <div className="border-t border-[var(--lm-border-strong)] pt-4">
+            <h4 className="text-xs font-semibold text-[var(--lm-fg)] mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-blue-500 rounded"></span>
               {localItem.type === 'timer'
                 ? t('property.timerControls')
@@ -1521,7 +1525,7 @@ export function PropertyPanel({
                       });
                     }}
                     disabled={isLocked}
-                    className="px-4 py-2 bg-[#1e1e1e] hover:bg-[#2d2d30] disabled:cursor-not-allowed text-white rounded-lg transition-colors border border-[#3e3e42] flex items-center gap-2"
+                    className="px-4 py-2 bg-[var(--lm-surface-1)] hover:bg-[var(--lm-hover)] disabled:cursor-not-allowed text-[var(--lm-fg)] rounded-lg transition-colors border border-[var(--lm-border)] flex items-center gap-2"
                   >
                     <RotateCcw className="w-4 h-4" />
                     <span>{t('property.reset')}</span>
@@ -1531,7 +1535,7 @@ export function PropertyPanel({
                 {/* Mode display */}
                 <div className="mb-4">
                   <Label className="block mb-2">{t('property.mode')}</Label>
-                  <div className="text-sm text-gray-300 bg-[#1e1e1e] px-3 py-2 rounded border border-[#3e3e42] capitalize">
+                  <div className="text-sm text-[var(--lm-muted)] bg-[var(--lm-surface-1)] px-3 py-2 rounded border border-[var(--lm-border)] capitalize">
                     {localItem.timerConfig.mode === 'countdown'
                       ? t('property.countdown')
                       : t('property.countup')}
@@ -1581,7 +1585,7 @@ export function PropertyPanel({
                   })
                 }
                 disabled={isLocked}
-                className="w-full bg-[#1e1e1e] border border-[#3e3e42] text-white px-3 py-2 rounded"
+                className="w-full bg-[var(--lm-surface-1)] border border-[var(--lm-border)] text-[var(--lm-fg)] px-3 py-2 rounded"
               >
                 <option value="HH:MM:SS">HH:MM:SS</option>
                 <option value="MM:SS">MM:SS</option>
