@@ -98,12 +98,10 @@ export function ConfigureTimerDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="bg-[#252526] border-[#3e3e42] text-white max-w-md">
+      <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-white">
-            {getTitle()}
-          </DialogTitle>
-          <DialogDescription className="text-gray-400">
+          <DialogTitle className="text-xl font-semibold">{getTitle()}</DialogTitle>
+          <DialogDescription className="text-[var(--lm-muted-2)]">
             {getDescription()}
           </DialogDescription>
         </DialogHeader>
@@ -112,9 +110,7 @@ export function ConfigureTimerDialog({
           {/* Mode selection (timer only) */}
           {sourceType === 'timer' && (
             <div className="space-y-2">
-              <Label className="text-gray-300">
-                {t('configureTimer.timerMode')}
-              </Label>
+              <Label className="text-[var(--lm-muted)]">{t('configureTimer.timerMode')}</Label>
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -122,7 +118,7 @@ export function ConfigureTimerDialog({
                   className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
                     mode === 'countdown'
                       ? 'bg-blue-500 border-blue-500 text-white'
-                      : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                      : 'bg-[var(--lm-surface-1)] border-[var(--lm-border)] text-[var(--lm-muted)] hover:bg-[var(--lm-hover)]'
                   }`}
                 >
                   {t('configureTimer.countdown')}
@@ -133,7 +129,7 @@ export function ConfigureTimerDialog({
                   className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
                     mode === 'countup'
                       ? 'bg-blue-500 border-blue-500 text-white'
-                      : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                      : 'bg-[var(--lm-surface-1)] border-[var(--lm-border)] text-[var(--lm-muted)] hover:bg-[var(--lm-hover)]'
                   }`}
                 >
                   {t('configureTimer.countup')}
@@ -145,12 +141,10 @@ export function ConfigureTimerDialog({
           {/* Duration settings (countdown only) */}
           {sourceType === 'timer' && mode === 'countdown' && (
             <div className="space-y-2">
-              <Label className="text-gray-300">
-                {t('configureTimer.setDuration')}
-              </Label>
+              <Label className="text-[var(--lm-muted)]">{t('configureTimer.setDuration')}</Label>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <Label className="text-xs text-gray-400">
+                  <Label className="text-xs text-[var(--lm-muted-2)]">
                     {t('configureTimer.hours')}
                   </Label>
                   <Input
@@ -158,12 +152,12 @@ export function ConfigureTimerDialog({
                     min="0"
                     max="23"
                     value={hours}
-                    onChange={(e) => setHours(e.target.value)}
-                    className="bg-[#1e1e1e] border-[#3e3e42] text-white"
+                    onChange={e => setHours(e.target.value)}
+                    className="bg-[var(--lm-surface-1)] border-[var(--lm-border)] text-[var(--lm-fg)]"
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-gray-400">
+                  <Label className="text-xs text-[var(--lm-muted-2)]">
                     {t('configureTimer.minutes')}
                   </Label>
                   <Input
@@ -171,12 +165,12 @@ export function ConfigureTimerDialog({
                     min="0"
                     max="59"
                     value={minutes}
-                    onChange={(e) => setMinutes(e.target.value)}
-                    className="bg-[#1e1e1e] border-[#3e3e42] text-white"
+                    onChange={e => setMinutes(e.target.value)}
+                    className="bg-[var(--lm-surface-1)] border-[var(--lm-border)] text-[var(--lm-fg)]"
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-gray-400">
+                  <Label className="text-xs text-[var(--lm-muted-2)]">
                     {t('configureTimer.seconds')}
                   </Label>
                   <Input
@@ -184,8 +178,8 @@ export function ConfigureTimerDialog({
                     min="0"
                     max="59"
                     value={seconds}
-                    onChange={(e) => setSeconds(e.target.value)}
-                    className="bg-[#1e1e1e] border-[#3e3e42] text-white"
+                    onChange={e => setSeconds(e.target.value)}
+                    className="bg-[var(--lm-surface-1)] border-[var(--lm-border)] text-[var(--lm-fg)]"
                   />
                 </div>
               </div>
@@ -194,9 +188,7 @@ export function ConfigureTimerDialog({
 
           {/* Display format */}
           <div className="space-y-2">
-            <Label className="text-gray-300">
-              {t('property.displayFormat')}
-            </Label>
+            <Label className="text-[var(--lm-muted)]">{t('property.displayFormat')}</Label>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -204,7 +196,7 @@ export function ConfigureTimerDialog({
                 className={`flex-1 px-3 py-2 rounded-lg border text-sm transition-colors ${
                   format === 'HH:MM:SS'
                     ? 'bg-blue-500 border-blue-500 text-white'
-                    : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                    : 'bg-[var(--lm-surface-1)] border-[var(--lm-border)] text-[var(--lm-muted)] hover:bg-[var(--lm-hover)]'
                 }`}
               >
                 HH:MM:SS
@@ -215,7 +207,7 @@ export function ConfigureTimerDialog({
                 className={`flex-1 px-3 py-2 rounded-lg border text-sm transition-colors ${
                   format === 'MM:SS'
                     ? 'bg-blue-500 border-blue-500 text-white'
-                    : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                    : 'bg-[var(--lm-surface-1)] border-[var(--lm-border)] text-[var(--lm-muted)] hover:bg-[var(--lm-hover)]'
                 }`}
               >
                 MM:SS
@@ -227,7 +219,7 @@ export function ConfigureTimerDialog({
                   className={`flex-1 px-3 py-2 rounded-lg border text-sm transition-colors ${
                     format === 'HH:MM'
                       ? 'bg-blue-500 border-blue-500 text-white'
-                      : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                      : 'bg-[var(--lm-surface-1)] border-[var(--lm-border)] text-[var(--lm-muted)] hover:bg-[var(--lm-hover)]'
                   }`}
                 >
                   HH:MM
@@ -239,23 +231,23 @@ export function ConfigureTimerDialog({
           {/* Style settings */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-gray-300">{t('property.fontSize')}</Label>
+              <Label className="text-[var(--lm-muted)]">{t('property.fontSize')}</Label>
               <Input
                 type="number"
                 min="12"
                 max="200"
                 value={fontSize}
-                onChange={(e) => setFontSize(e.target.value)}
-                className="bg-[#1e1e1e] border-[#3e3e42] text-white"
+                onChange={e => setFontSize(e.target.value)}
+                className="bg-[var(--lm-surface-1)] border-[var(--lm-border)] text-[var(--lm-fg)]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-gray-300">{t('property.color')}</Label>
+              <Label className="text-[var(--lm-muted)]">{t('property.color')}</Label>
               <Input
                 type="color"
                 value={color}
-                onChange={(e) => setColor(e.target.value)}
-                className="bg-[#1e1e1e] border-[#3e3e42] h-10 cursor-pointer"
+                onChange={e => setColor(e.target.value)}
+                className="bg-[var(--lm-surface-1)] border-[var(--lm-border)] h-10 cursor-pointer"
               />
             </div>
           </div>
@@ -265,7 +257,7 @@ export function ConfigureTimerDialog({
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-2 bg-[#1e1e1e] hover:bg-[#2d2d30] text-white rounded-lg transition-colors border border-[#3e3e42]"
+            className="px-4 py-2 bg-[var(--lm-surface-1)] hover:bg-[var(--lm-hover)] text-[var(--lm-fg)] rounded-lg transition-colors border border-[var(--lm-border)]"
           >
             {t('dialog.cancel')}
           </button>

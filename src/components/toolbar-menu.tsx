@@ -28,13 +28,13 @@ export function ToolbarMenu({ label, items }: ToolbarMenuProps) {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="px-3 py-1.5 text-sm text-neutral-300 hover:bg-neutral-700/50 hover:text-white transition-all rounded-md data-[state=open]:bg-neutral-700/50 data-[state=open]:text-white"
+          className="px-3 py-1.5 text-sm text-[var(--lm-muted)] hover:bg-[var(--lm-hover)] hover:text-[var(--lm-fg)] transition-all rounded-md data-[state=open]:bg-[var(--lm-hover)] data-[state=open]:text-[var(--lm-fg)]"
         >
           {label}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="min-w-[180px] bg-neutral-800/95 border-neutral-700/50 rounded-lg shadow-xl"
+        className="min-w-[180px] bg-[var(--lm-surface-3)] border-[var(--lm-border)] rounded-lg shadow-xl"
         align="start"
         sideOffset={2}
       >
@@ -42,7 +42,7 @@ export function ToolbarMenu({ label, items }: ToolbarMenuProps) {
           item.divider ? (
             <DropdownMenuSeparator
               key={`divider-${item.label || index}`}
-              className="bg-neutral-700/30"
+              className="bg-[var(--lm-border)]"
             />
           ) : item.checked !== undefined ? (
             <DropdownMenuCheckboxItem
@@ -50,24 +50,20 @@ export function ToolbarMenu({ label, items }: ToolbarMenuProps) {
               onCheckedChange={item.onClick}
               checked={item.checked}
               disabled={item.disabled}
-              className="text-sm text-neutral-300 hover:bg-neutral-700/50 hover:text-white focus:bg-neutral-700/50 focus:text-white cursor-pointer data-[disabled]:cursor-default data-[disabled]:text-neutral-500 data-[disabled]:hover:bg-transparent data-[disabled]:hover:text-neutral-500"
+              className="text-sm text-[var(--lm-muted)] hover:bg-[var(--lm-hover)] hover:text-[var(--lm-fg)] focus:bg-[var(--lm-hover)] focus:text-[var(--lm-fg)] cursor-pointer data-[disabled]:cursor-default data-[disabled]:text-[var(--lm-muted-2)] data-[disabled]:hover:bg-transparent data-[disabled]:hover:text-[var(--lm-muted-2)]"
             >
               {item.label}
-              {item.shortcut && (
-                <DropdownMenuShortcut>{item.shortcut}</DropdownMenuShortcut>
-              )}
+              {item.shortcut && <DropdownMenuShortcut>{item.shortcut}</DropdownMenuShortcut>}
             </DropdownMenuCheckboxItem>
           ) : (
             <DropdownMenuItem
               key={item.label || `item-${index}`}
               onClick={item.onClick}
               disabled={item.disabled}
-              className="text-sm text-neutral-300 hover:bg-neutral-700/50 hover:text-white focus:bg-neutral-700/50 focus:text-white cursor-pointer data-[disabled]:cursor-default data-[disabled]:text-neutral-500 data-[disabled]:hover:bg-transparent data-[disabled]:hover:text-neutral-500"
+              className="text-sm text-[var(--lm-muted)] hover:bg-[var(--lm-hover)] hover:text-[var(--lm-fg)] focus:bg-[var(--lm-hover)] focus:text-[var(--lm-fg)] cursor-pointer data-[disabled]:cursor-default data-[disabled]:text-[var(--lm-muted-2)] data-[disabled]:hover:bg-transparent data-[disabled]:hover:text-[var(--lm-muted-2)]"
             >
               {item.label}
-              {item.shortcut && (
-                <DropdownMenuShortcut>{item.shortcut}</DropdownMenuShortcut>
-              )}
+              {item.shortcut && <DropdownMenuShortcut>{item.shortcut}</DropdownMenuShortcut>}
             </DropdownMenuItem>
           ),
         )}

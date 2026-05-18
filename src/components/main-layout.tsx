@@ -1,10 +1,4 @@
-import {
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
 interface MainLayoutProps {
   logo?: ReactNode;
@@ -28,8 +22,7 @@ function readStoredBottomBarHeight(): number {
   try {
     const raw = window.localStorage.getItem(BOTTOM_BAR_HEIGHT_STORAGE_KEY);
     const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
-    if (Number.isFinite(parsed) && parsed >= BOTTOM_BAR_MIN_HEIGHT)
-      return parsed;
+    if (Number.isFinite(parsed) && parsed >= BOTTOM_BAR_MIN_HEIGHT) return parsed;
   } catch {
     // ignore storage errors
   }
@@ -39,10 +32,7 @@ function readStoredBottomBarHeight(): number {
 function clampBottomBarHeight(value: number): number {
   const max =
     typeof window !== 'undefined'
-      ? Math.max(
-          BOTTOM_BAR_MIN_HEIGHT,
-          Math.floor(window.innerHeight * BOTTOM_BAR_MAX_RATIO),
-        )
+      ? Math.max(BOTTOM_BAR_MIN_HEIGHT, Math.floor(window.innerHeight * BOTTOM_BAR_MAX_RATIO))
       : BOTTOM_BAR_DEFAULT_HEIGHT;
   return Math.min(Math.max(value, BOTTOM_BAR_MIN_HEIGHT), max);
 }
@@ -61,17 +51,12 @@ export function MainLayout({
     clampBottomBarHeight(readStoredBottomBarHeight()),
   );
   const [isResizing, setIsResizing] = useState(false);
-  const dragStateRef = useRef<{ startY: number; startHeight: number } | null>(
-    null,
-  );
+  const dragStateRef = useRef<{ startY: number; startHeight: number } | null>(null);
 
   // Persist height to localStorage
   useEffect(() => {
     try {
-      window.localStorage.setItem(
-        BOTTOM_BAR_HEIGHT_STORAGE_KEY,
-        String(bottomBarHeight),
-      );
+      window.localStorage.setItem(BOTTOM_BAR_HEIGHT_STORAGE_KEY, String(bottomBarHeight));
     } catch {
       // ignore storage errors
     }
@@ -80,7 +65,7 @@ export function MainLayout({
   // Re-clamp on viewport resize so the bottom bar never exceeds the window
   useEffect(() => {
     const handleWindowResize = () => {
-      setBottomBarHeight((h) => clampBottomBarHeight(h));
+      setBottomBarHeight(h => clampBottomBarHeight(h));
     };
     window.addEventListener('resize', handleWindowResize);
     return () => window.removeEventListener('resize', handleWindowResize);
@@ -94,9 +79,7 @@ export function MainLayout({
       const state = dragStateRef.current;
       if (!state) return;
       const clientY =
-        'touches' in e
-          ? (e.touches[0]?.clientY ?? state.startY)
-          : (e as MouseEvent).clientY;
+        'touches' in e ? (e.touches[0]?.clientY ?? state.startY) : (e as MouseEvent).clientY;
       // Drag up => bottom bar grows; delta = startY - currentY
       const delta = state.startY - clientY;
       setBottomBarHeight(clampBottomBarHeight(state.startHeight + delta));
@@ -159,9 +142,9 @@ export function MainLayout({
     setBottomBarHeight(clampBottomBarHeight(BOTTOM_BAR_DEFAULT_HEIGHT));
   }, []);
   return (
-    <div className="flex flex-col w-full h-full bg-linear-to-b from-neutral-900 via-neutral-850 to-neutral-950 text-white overflow-hidden">
+    <div className="flex flex-col w-full h-full bg-linear-to-b from-[var(--lm-gradient-from)] via-[var(--lm-gradient-via)] to-[var(--lm-gradient-to)] text-[var(--lm-fg)] overflow-hidden">
       {/* Top toolbar */}
-      <div className="px-4 h-14 shrink-0 bg-neutral-900/80 backdrop-blur-sm border-b border-neutral-700/50 flex items-center gap-4 shadow-sm">
+      <div className="px-4 h-14 shrink-0 bg-[var(--lm-surface-1)] backdrop-blur-sm border-b border-[var(--lm-border)] flex items-center gap-4 shadow-sm">
         {/* Logo area */}
         {logo && <div className="shrink-0">{logo}</div>}
         <div className="flex-1">{toolbar}</div>
@@ -173,7 +156,7 @@ export function MainLayout({
       <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Left reserved area */}
         {leftSidebar && (
-          <div className="w-80 shrink-0 bg-neutral-900/50 border-r border-neutral-700/30 flex flex-col overflow-hidden backdrop-blur-sm">
+          <div className="w-80 shrink-0 bg-[var(--lm-surface-2)] border-r border-[var(--lm-border)] flex flex-col overflow-hidden backdrop-blur-sm">
             {leftSidebar}
           </div>
         )}
@@ -181,7 +164,7 @@ export function MainLayout({
         {/* Center canvas area */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Canvas region */}
-          <div className="flex-1 bg-linear-to-br from-neutral-900 via-neutral-850 to-neutral-900 flex items-center justify-center overflow-hidden min-h-0 relative">
+          <div className="flex-1 bg-linear-to-br from-[var(--lm-canvas-from)] via-[var(--lm-canvas-via)] to-[var(--lm-canvas-to)] flex items-center justify-center overflow-hidden min-h-0 relative">
             {/* Background decoration */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
               <div className="absolute top-0 left-1/2 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl transform -translate-x-1/2 -translate-y-1/2"></div>
@@ -193,7 +176,7 @@ export function MainLayout({
 
         {/* Right sidebar */}
         {rightSidebar && (
-          <div className="w-80 shrink-0 bg-neutral-900/50 border-l border-neutral-700/30 flex flex-col overflow-hidden backdrop-blur-sm">
+          <div className="w-80 shrink-0 bg-[var(--lm-surface-2)] border-l border-[var(--lm-border)] flex flex-col overflow-hidden backdrop-blur-sm">
             {rightSidebar}
           </div>
         )}
@@ -205,13 +188,13 @@ export function MainLayout({
           onMouseDown={handleResizerMouseDown}
           onTouchStart={handleResizerTouchStart}
           onDoubleClick={handleResizerDoubleClick}
-          className={`group relative h-1.5 shrink-0 cursor-ns-resize bg-neutral-700/40 hover:bg-primary-500/60 transition-colors ${
-            isResizing ? 'bg-primary-500/80' : ''
+          className={`group relative h-1.5 shrink-0 cursor-ns-resize bg-[var(--lm-border)] hover:bg-[var(--lm-accent-weak)] transition-colors ${
+            isResizing ? 'bg-[var(--lm-accent)]' : ''
           }`}
           title="Drag to resize the bottom panel (double-click to reset)"
         >
           {/* Visible grip handle */}
-          <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-0.5 rounded-full bg-neutral-500/60 group-hover:bg-white/80" />
+          <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-0.5 rounded-full bg-[var(--lm-border-strong)]/60 group-hover:bg-[var(--lm-fg)]/80" />
         </div>
       )}
 
@@ -219,7 +202,7 @@ export function MainLayout({
       {bottomBar && (
         <div
           style={{ height: bottomBarHeight }}
-          className="shrink-0 bg-neutral-900/80 border-t border-neutral-700/50 flex overflow-hidden backdrop-blur-sm shadow-lg"
+          className="shrink-0 bg-[var(--lm-surface-1)] border-t border-[var(--lm-border)] flex overflow-hidden backdrop-blur-sm shadow-lg"
         >
           {bottomBar}
         </div>

@@ -91,19 +91,17 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[600px] p-0 flex flex-col bg-gradient-to-b from-neutral-850 to-neutral-900 border-neutral-700/50">
+      <DialogContent className="max-w-4xl h-[600px] p-0 flex flex-col">
         <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0 bg-gradient-to-r from-primary-600 to-primary-500 rounded-t-xl relative">
           <div className="flex items-center gap-3">
             <img src={lmsLogo} alt="Logo" className="w-8 h-8" />
-            <DialogTitle className="text-white">
-              {t('settings.title')}
-            </DialogTitle>
+            <DialogTitle className="text-white">{t('settings.title')}</DialogTitle>
           </div>
         </DialogHeader>
 
         <div className="flex flex-1 min-h-0">
           {/* Left sidebar */}
-          <div className="w-48 border-r border-neutral-700/30 bg-neutral-900/50 flex-shrink-0">
+          <div className="w-48 border-r border-[var(--lm-border)] bg-[var(--lm-surface-2)] flex-shrink-0">
             <div className="flex flex-col p-2">
               <button
                 type="button"
@@ -111,7 +109,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 className={`px-4 py-2 text-left rounded-lg text-sm transition-all ${
                   activeTab === 'general'
                     ? 'bg-primary-600/20 text-primary-400 border border-primary-500/30'
-                    : 'text-neutral-400 hover:text-white hover:bg-neutral-700/30'
+                    : 'text-[var(--lm-muted-2)] hover:text-[var(--lm-fg)] hover:bg-[var(--lm-hover)]'
                 }`}
               >
                 {t('settings.tabs.general')}
@@ -122,7 +120,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 className={`px-4 py-2 text-left rounded-lg text-sm transition-all ${
                   activeTab === 'streaming'
                     ? 'bg-primary-600/20 text-primary-400 border border-primary-500/30'
-                    : 'text-neutral-400 hover:text-white hover:bg-neutral-700/30'
+                    : 'text-[var(--lm-muted-2)] hover:text-[var(--lm-fg)] hover:bg-[var(--lm-hover)]'
                 }`}
               >
                 {t('settings.tabs.streaming')}
@@ -132,8 +130,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 onClick={() => setActiveTab('pulling')}
                 className={`px-4 py-2 text-left rounded text-sm transition-colors ${
                   activeTab === 'pulling'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                    ? 'bg-[var(--lm-hover)] text-[var(--lm-fg)]'
+                    : 'text-[var(--lm-muted-2)] hover:text-[var(--lm-fg)] hover:bg-[var(--lm-hover)]'
                 }`}
               >
                 {t('settings.tabs.pulling')}
@@ -143,8 +141,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 onClick={() => setActiveTab('output')}
                 className={`px-4 py-2 text-left rounded text-sm transition-colors ${
                   activeTab === 'output'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                    ? 'bg-[var(--lm-hover)] text-[var(--lm-fg)]'
+                    : 'text-[var(--lm-muted-2)] hover:text-[var(--lm-fg)] hover:bg-[var(--lm-hover)]'
                 }`}
               >
                 {t('settings.tabs.output')}
@@ -154,8 +152,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 onClick={() => setActiveTab('audio')}
                 className={`px-4 py-2 text-left rounded text-sm transition-colors ${
                   activeTab === 'audio'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                    ? 'bg-[var(--lm-hover)] text-[var(--lm-fg)]'
+                    : 'text-[var(--lm-muted-2)] hover:text-[var(--lm-fg)] hover:bg-[var(--lm-hover)]'
                 }`}
               >
                 {t('settings.tabs.audio')}
@@ -165,8 +163,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 onClick={() => setActiveTab('video')}
                 className={`px-4 py-2 text-left rounded text-sm transition-colors ${
                   activeTab === 'video'
-                    ? 'bg-[#2a2a2a] text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#252525]'
+                    ? 'bg-[var(--lm-hover)] text-[var(--lm-fg)]'
+                    : 'text-[var(--lm-muted-2)] hover:text-[var(--lm-fg)] hover:bg-[var(--lm-hover)]'
                 }`}
               >
                 {t('settings.tabs.video')}
@@ -178,19 +176,17 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           <div className="flex-1 overflow-auto p-6 min-w-0">
             {activeTab === 'general' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-semibold text-[var(--lm-fg)]">
                   {t('settings.tabs.general')}
                 </h2>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="language">
-                      {t('settings.language.title')}
-                    </Label>
+                    <Label htmlFor="language">{t('settings.language.title')}</Label>
                     <select
                       id="language"
                       value={pendingLanguage}
-                      onChange={(e) => handleLanguageSelect(e.target.value)}
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      onChange={e => handleLanguageSelect(e.target.value)}
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="zh-CN">简体中文</option>
                       <option value="en-US">English</option>
@@ -201,10 +197,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <select
                       id="theme"
                       value={theme}
-                      onChange={(e) =>
-                        updatePersistentSettings({ theme: e.target.value })
-                      }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      onChange={e => updatePersistentSettings({ theme: e.target.value })}
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="dark">{t('settings.theme.dark')}</option>
                       <option value="light">{t('settings.theme.light')}</option>
@@ -216,38 +210,32 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             {activeTab === 'streaming' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-semibold text-[var(--lm-fg)]">
                   {t('settings.streaming.title')}
                 </h2>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="streamService">
-                      {t('settings.streaming.service')}
-                    </Label>
+                    <Label htmlFor="streamService">{t('settings.streaming.service')}</Label>
                     <select
                       id="streamService"
                       value={streamService}
-                      onChange={(e) =>
+                      onChange={e =>
                         updatePersistentSettings({
                           streamService: e.target.value,
                         })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
-                      <option value="custom">
-                        {t('settings.streaming.custom')}
-                      </option>
+                      <option value="custom">{t('settings.streaming.custom')}</option>
                     </select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="livekitUrl">
-                      {t('settings.streaming.serverUrl')}
-                    </Label>
+                    <Label htmlFor="livekitUrl">{t('settings.streaming.serverUrl')}</Label>
                     <Input
                       id="livekitUrl"
                       value={livekitUrl}
-                      onChange={(e) =>
+                      onChange={e =>
                         updatePersistentSettings({
                           livekitUrl: e.target.value,
                         })
@@ -261,7 +249,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       id="livekitToken"
                       type="password"
                       value={livekitToken}
-                      onChange={(e) =>
+                      onChange={e =>
                         updateSensitiveSettings({
                           livekitToken: e.target.value,
                         })
@@ -275,18 +263,16 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             {activeTab === 'pulling' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-semibold text-[var(--lm-fg)]">
                   {t('settings.pulling.title')}
                 </h2>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="livekitPullUrl">
-                      {t('settings.streaming.serverUrl')}
-                    </Label>
+                    <Label htmlFor="livekitPullUrl">{t('settings.streaming.serverUrl')}</Label>
                     <Input
                       id="livekitPullUrl"
                       value={livekitPullUrl}
-                      onChange={(e) =>
+                      onChange={e =>
                         updatePersistentSettings({
                           livekitPullUrl: e.target.value,
                         })
@@ -295,14 +281,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="livekitPullToken">
-                      {t('settings.streaming.token')}
-                    </Label>
+                    <Label htmlFor="livekitPullToken">{t('settings.streaming.token')}</Label>
                     <Input
                       id="livekitPullToken"
                       type="password"
                       value={livekitPullToken}
-                      onChange={(e) =>
+                      onChange={e =>
                         updateSensitiveSettings({
                           livekitPullToken: e.target.value,
                         })
@@ -310,8 +294,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       placeholder={t('settings.streaming.tokenPlaceholder')}
                     />
                   </div>
-                  <div className="pt-4 border-t border-[#3e3e42]">
-                    <p className="text-sm text-gray-400">
+                  <div className="pt-4 border-t border-[var(--lm-border-strong)]">
+                    <p className="text-sm text-[var(--lm-muted-2)]">
                       {t('settings.pulling.description')}
                     </p>
                   </div>
@@ -321,19 +305,17 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             {activeTab === 'output' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-semibold text-[var(--lm-fg)]">
                   {t('settings.output.title')}
                 </h2>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="videoBitrate">
-                      {t('settings.output.videoBitrate')}
-                    </Label>
+                    <Label htmlFor="videoBitrate">{t('settings.output.videoBitrate')}</Label>
                     <Input
                       id="videoBitrate"
                       type="number"
                       value={videoBitrate}
-                      onChange={(e) =>
+                      onChange={e =>
                         updatePersistentSettings({
                           videoBitrate: e.target.value,
                         })
@@ -345,45 +327,37 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="audioBitrate">
-                      {t('settings.output.audioBitrate')}
-                    </Label>
+                    <Label htmlFor="audioBitrate">{t('settings.output.audioBitrate')}</Label>
                     <select
                       id="audioBitrate"
                       value={audioBitrate}
-                      onChange={(e) =>
+                      onChange={e =>
                         updatePersistentSettings({
                           audioBitrate: e.target.value,
                         })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="12000">12 kbps (Telephone)</option>
                       <option value="24000">24 kbps (Speech)</option>
                       <option value="48000">48 kbps (Music)</option>
                       <option value="64000">64 kbps (Music Stereo)</option>
-                      <option value="96000">
-                        96 kbps (Music High Quality)
-                      </option>
-                      <option value="128000">
-                        128 kbps (Music High Quality Stereo)
-                      </option>
+                      <option value="96000">96 kbps (Music High Quality)</option>
+                      <option value="128000">128 kbps (Music High Quality Stereo)</option>
                     </select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="videoEncoder">
-                      {t('settings.output.videoEncoder')}
-                    </Label>
+                    <Label htmlFor="videoEncoder">{t('settings.output.videoEncoder')}</Label>
                     <select
                       id="videoEncoder"
                       value={videoEncoder}
-                      onChange={(e) =>
+                      onChange={e =>
                         updatePersistentSettings({
                           videoEncoder: e.target.value,
                         })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="h264">H.264/AVC</option>
                       <option value="h265">H.265/HEVC</option>
@@ -394,18 +368,16 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="audioEncoder">
-                      {t('settings.output.audioEncoder')}
-                    </Label>
+                    <Label htmlFor="audioEncoder">{t('settings.output.audioEncoder')}</Label>
                     <select
                       id="audioEncoder"
                       value={audioEncoder}
-                      onChange={(e) =>
+                      onChange={e =>
                         updatePersistentSettings({
                           audioEncoder: e.target.value,
                         })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="aac">AAC</option>
                       <option value="opus">Opus</option>
@@ -418,60 +390,46 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             {activeTab === 'audio' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-semibold text-[var(--lm-fg)]">
                   {t('settings.audio.title')}
                 </h2>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="audioDevice">
-                      {t('settings.audio.device')}
-                    </Label>
+                    <Label htmlFor="audioDevice">{t('settings.audio.device')}</Label>
                     <select
                       id="audioDevice"
                       value={audioDevice}
-                      onChange={(e) =>
+                      onChange={e =>
                         updatePersistentSettings({
                           audioDevice: e.target.value,
                         })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
-                      <option value="default">
-                        {t('settings.audio.default')}
-                      </option>
+                      <option value="default">{t('settings.audio.default')}</option>
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="sampleRate">
-                      {t('settings.audio.sampleRate')}
-                    </Label>
+                    <Label htmlFor="sampleRate">{t('settings.audio.sampleRate')}</Label>
                     <select
                       id="sampleRate"
                       value={sampleRate}
-                      onChange={(e) =>
-                        updatePersistentSettings({ sampleRate: e.target.value })
-                      }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      onChange={e => updatePersistentSettings({ sampleRate: e.target.value })}
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="44100">44.1 kHz</option>
                       <option value="48000">48 kHz</option>
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="channels">
-                      {t('settings.audio.channels')}
-                    </Label>
+                    <Label htmlFor="channels">{t('settings.audio.channels')}</Label>
                     <select
                       id="channels"
                       value={channels}
-                      onChange={(e) =>
-                        updatePersistentSettings({ channels: e.target.value })
-                      }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      onChange={e => updatePersistentSettings({ channels: e.target.value })}
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
-                      <option value="stereo">
-                        {t('settings.audio.stereo')}
-                      </option>
+                      <option value="stereo">{t('settings.audio.stereo')}</option>
                       <option value="mono">{t('settings.audio.mono')}</option>
                     </select>
                   </div>
@@ -481,45 +439,39 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             {activeTab === 'video' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-semibold text-[var(--lm-fg)]">
                   {t('settings.video.title')}
                 </h2>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="baseResolution">
-                      {t('settings.video.baseResolution')}
-                    </Label>
+                    <Label htmlFor="baseResolution">{t('settings.video.baseResolution')}</Label>
                     <select
                       id="baseResolution"
                       value={baseResolution}
-                      onChange={(e) =>
+                      onChange={e =>
                         updatePersistentSettings({
                           baseResolution: e.target.value,
                         })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="1920x1080">1920x1080</option>
                       <option value="1280x720">1280x720</option>
                       <option value="2560x1440">2560x1440</option>
                       <option value="3840x2160">3840x2160</option>
-                      <option value="custom">
-                        {t('settings.video.custom')}
-                      </option>
+                      <option value="custom">{t('settings.video.custom')}</option>
                     </select>
                   </div>
 
                   {baseResolution === 'custom' && (
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="customWidth">
-                          {t('settings.video.width')}
-                        </Label>
+                        <Label htmlFor="customWidth">{t('settings.video.width')}</Label>
                         <Input
                           id="customWidth"
                           type="number"
                           value={customWidth || ''}
-                          onChange={(e) =>
+                          onChange={e =>
                             updatePersistentSettings({
                               customWidth: e.target.value,
                             })
@@ -528,14 +480,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="customHeight">
-                          {t('settings.video.height')}
-                        </Label>
+                        <Label htmlFor="customHeight">{t('settings.video.height')}</Label>
                         <Input
                           id="customHeight"
                           type="number"
                           value={customHeight || ''}
-                          onChange={(e) =>
+                          onChange={e =>
                             updatePersistentSettings({
                               customHeight: e.target.value,
                             })
@@ -547,26 +497,22 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   )}
 
                   <div className="space-y-2">
-                    <Label htmlFor="outputResolution">
-                      {t('settings.video.outputResolution')}
-                    </Label>
+                    <Label htmlFor="outputResolution">{t('settings.video.outputResolution')}</Label>
                     <select
                       id="outputResolution"
                       value={outputResolution}
-                      onChange={(e) =>
+                      onChange={e =>
                         updatePersistentSettings({
                           outputResolution: e.target.value,
                         })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="1920x1080">1920x1080</option>
                       <option value="1280x720">1280x720</option>
                       <option value="2560x1440">2560x1440</option>
                       <option value="3840x2160">3840x2160</option>
-                      <option value="same">
-                        {t('settings.video.sameAsBase')}
-                      </option>
+                      <option value="same">{t('settings.video.sameAsBase')}</option>
                     </select>
                   </div>
 
@@ -575,10 +521,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <select
                       id="fps"
                       value={fps}
-                      onChange={(e) =>
-                        updatePersistentSettings({ fps: e.target.value })
-                      }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      onChange={e => updatePersistentSettings({ fps: e.target.value })}
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
                       <option value="24">24</option>
                       <option value="30">30</option>
@@ -588,25 +532,19 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="scaleFilter">
-                      {t('settings.video.scaleFilter')}
-                    </Label>
+                    <Label htmlFor="scaleFilter">{t('settings.video.scaleFilter')}</Label>
                     <select
                       id="scaleFilter"
                       value={scaleFilter}
-                      onChange={(e) =>
+                      onChange={e =>
                         updatePersistentSettings({
                           scaleFilter: e.target.value,
                         })
                       }
-                      className="flex h-8 w-full rounded border border-[#3e3e42] bg-[#1e1e1e] px-3 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                      className="flex h-8 w-full rounded border border-[var(--lm-border)] bg-[var(--lm-surface-1)] px-3 py-1 text-sm text-[var(--lm-fg)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                     >
-                      <option value="bilinear">
-                        {t('settings.video.bilinear')}
-                      </option>
-                      <option value="bicubic">
-                        {t('settings.video.bicubic')}
-                      </option>
+                      <option value="bilinear">{t('settings.video.bilinear')}</option>
+                      <option value="bicubic">{t('settings.video.bicubic')}</option>
                       <option value="lanczos">Lanczos</option>
                     </select>
                   </div>
@@ -617,18 +555,18 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         </div>
 
         {/* Footer buttons */}
-        <div className="flex justify-end gap-3 px-6 py-5 pr-8 border-t border-[#3e3e42] flex-shrink-0">
+        <div className="flex justify-end gap-3 px-6 py-5 pr-8 border-t border-[var(--lm-border-strong)] flex-shrink-0">
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="px-8 py-3 text-sm rounded bg-[#2a2a2a] text-white hover:bg-[#3a3a3a] transition-colors min-w-[90px]"
+            className="px-8 py-3 text-sm rounded bg-[var(--lm-surface-1)] text-[var(--lm-fg)] hover:bg-[var(--lm-hover)] transition-colors min-w-[90px] border border-[var(--lm-border)]"
           >
             {t('dialog.cancel')}
           </button>
           <button
             type="button"
             onClick={handleApply}
-            className="px-8 py-3 text-sm rounded bg-[#2a2a2a] text-white hover:bg-[#3a3a3a] transition-colors min-w-[90px]"
+            className="px-8 py-3 text-sm rounded bg-[var(--lm-surface-1)] text-[var(--lm-fg)] hover:bg-[var(--lm-hover)] transition-colors min-w-[90px] border border-[var(--lm-border)]"
           >
             {t('dialog.apply')}
           </button>

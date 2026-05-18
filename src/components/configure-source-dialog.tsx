@@ -118,12 +118,10 @@ export function ConfigureSourceDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="bg-[#252526] border-[#3e3e42] text-white max-w-md">
+      <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-white">
-            {getTitle()}
-          </DialogTitle>
-          <DialogDescription className="text-gray-400">
+          <DialogTitle className="text-xl font-semibold">{getTitle()}</DialogTitle>
+          <DialogDescription className="text-[var(--lm-muted-2)]">
             {getDescription()}
           </DialogDescription>
         </DialogHeader>
@@ -137,7 +135,7 @@ export function ConfigureSourceDialog({
               className={`flex-1 px-4 py-2 rounded-lg border transition-colors flex items-center justify-center gap-2 ${
                 inputMethod === 'file'
                   ? 'bg-blue-500 border-blue-500 text-white'
-                  : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                  : 'bg-[var(--lm-surface-1)] border-[var(--lm-border)] text-[var(--lm-muted)] hover:bg-[var(--lm-hover)]'
               }`}
             >
               <Upload className="w-4 h-4" />
@@ -149,7 +147,7 @@ export function ConfigureSourceDialog({
               className={`flex-1 px-4 py-2 rounded-lg border transition-colors flex items-center justify-center gap-2 ${
                 inputMethod === 'url'
                   ? 'bg-blue-500 border-blue-500 text-white'
-                  : 'bg-[#1e1e1e] border-[#3e3e42] text-gray-300 hover:bg-[#2d2d30]'
+                  : 'bg-[var(--lm-surface-1)] border-[var(--lm-border)] text-[var(--lm-muted)] hover:bg-[var(--lm-hover)]'
               }`}
             >
               <LinkIcon className="w-4 h-4" />
@@ -160,7 +158,7 @@ export function ConfigureSourceDialog({
           {/* File upload */}
           {inputMethod === 'file' && (
             <div className="space-y-2">
-              <Label htmlFor="file-upload" className="text-gray-300">
+              <Label htmlFor="file-upload" className="text-[var(--lm-muted)]">
                 {t('property.selectFile')}
               </Label>
               <div className="relative">
@@ -173,16 +171,16 @@ export function ConfigureSourceDialog({
                 />
                 <label
                   htmlFor="file-upload"
-                  className="flex items-center justify-center gap-2 px-4 py-3 bg-[#1e1e1e] border border-[#3e3e42] rounded-lg cursor-pointer hover:bg-[#2d2d30] transition-colors"
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-[var(--lm-surface-1)] border border-[var(--lm-border)] rounded-lg cursor-pointer hover:bg-[var(--lm-hover)] transition-colors"
                 >
                   <Upload className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-300">
+                  <span className="text-[var(--lm-muted)]">
                     {fileName || t('configureSource.clickToSelectFile')}
                   </span>
                 </label>
               </div>
               {fileName && (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-[var(--lm-muted-2)]">
                   {t('configureSource.selected')}: {fileName}
                 </p>
               )}
@@ -192,7 +190,7 @@ export function ConfigureSourceDialog({
           {/* URL input */}
           {inputMethod === 'url' && (
             <div className="space-y-2">
-              <Label htmlFor="url-input" className="text-gray-300">
+              <Label htmlFor="url-input" className="text-[var(--lm-muted)]">
                 {t('configureSource.urlAddress')}
               </Label>
               <Input
@@ -200,8 +198,8 @@ export function ConfigureSourceDialog({
                 type="url"
                 placeholder="https://example.com/image.jpg"
                 value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="bg-[#1e1e1e] border-[#3e3e42] text-white placeholder:text-gray-500"
+                onChange={e => setUrl(e.target.value)}
+                className="bg-[var(--lm-surface-1)] border-[var(--lm-border)] text-[var(--lm-fg)] placeholder:text-[var(--lm-muted-2)]"
               />
             </div>
           )}
@@ -211,7 +209,7 @@ export function ConfigureSourceDialog({
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-2 bg-[#1e1e1e] hover:bg-[#2d2d30] text-white rounded-lg transition-colors border border-[#3e3e42]"
+            className="px-4 py-2 bg-[var(--lm-surface-1)] hover:bg-[var(--lm-hover)] text-[var(--lm-fg)] rounded-lg transition-colors border border-[var(--lm-border)]"
           >
             {t('dialog.cancel')}
           </button>
