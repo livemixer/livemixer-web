@@ -2,8 +2,14 @@
 import lmsLogo from './assets/lms.svg';
 import type { SourceType } from './components/add-source-dialog';
 import { BottomBar } from './components/bottom-bar';
-import { ConfigureSourceDialog, type SourceConfig } from './components/configure-source-dialog';
-import { ConfigureTimerDialog, type TimerConfig } from './components/configure-timer-dialog';
+import {
+  ConfigureSourceDialog,
+  type SourceConfig,
+} from './components/configure-source-dialog';
+import {
+  ConfigureTimerDialog,
+  type TimerConfig,
+} from './components/configure-timer-dialog';
 import { KonvaCanvas, type KonvaCanvasHandle } from './components/konva-canvas';
 import { MainLayout } from './components/main-layout';
 import { ParticipantsPanel } from './components/participants-panel';
@@ -69,7 +75,9 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
 
       // Apply host overrides if provided
       if (extensions?.i18nOverrides) {
-        for (const [lang, namespaces] of Object.entries(extensions.i18nOverrides)) {
+        for (const [lang, namespaces] of Object.entries(
+          extensions.i18nOverrides,
+        )) {
           for (const [namespace, resource] of Object.entries(namespaces)) {
             engine.addResource(lang, namespace, resource, { layer: 'host' });
           }
@@ -78,7 +86,9 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
 
       // Apply user overrides if provided
       if (extensions?.i18nUserOverrides) {
-        for (const [lang, namespaces] of Object.entries(extensions.i18nUserOverrides)) {
+        for (const [lang, namespaces] of Object.entries(
+          extensions.i18nUserOverrides,
+        )) {
           for (const [namespace, resource] of Object.entries(namespaces)) {
             engine.addResource(lang, namespace, resource, { layer: 'user' });
           }
@@ -93,7 +103,11 @@ function App({ extensions }: { extensions?: LiveMixerExtensions } = {}) {
     };
 
     initI18n();
-  }, [extensions?.i18nEngine, extensions?.i18nOverrides, extensions?.i18nUserOverrides]);
+  }, [
+    extensions?.i18nEngine,
+    extensions?.i18nOverrides,
+    extensions?.i18nUserOverrides,
+  ]);
 
   // Show loading state while i18n is initializing
   if (!i18nReady || !i18nEngine) {
@@ -125,10 +139,14 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [pendingSourceType, setPendingSourceType] = useState<SourceType | null>(null);
+  const [pendingSourceType, setPendingSourceType] = useState<SourceType | null>(
+    null,
+  );
   const [configureSourceOpen, setConfigureSourceOpen] = useState(false);
   const [configureTimerOpen, setConfigureTimerOpen] = useState(false);
-  const [activePluginDialog, setActivePluginDialog] = useState<string | null>(null);
+  const [activePluginDialog, setActivePluginDialog] = useState<string | null>(
+    null,
+  );
   const canvasRef = useRef<KonvaCanvasHandle>(null);
 
   // Get LiveKit config and output settings from store
@@ -167,7 +185,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
   // Initialize active scene (run only once)
   useEffect(() => {
-    const activeScene = data.scenes.find(s => s.active) || data.scenes[0];
+    const activeScene = data.scenes.find((s) => s.active) || data.scenes[0];
     if (activeScene && !activeSceneId) {
       setActiveSceneId(activeScene.id);
     }
@@ -178,32 +196,33 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
   useEffect(() => {
     pluginContextManager.setActionHandlers({
       scene: {
-        selectItem: itemId => setSelectedItemId(itemId),
+        selectItem: (itemId) => setSelectedItemId(itemId),
       },
       ui: {
-        showDialog: dialogId => {
+        showDialog: (dialogId) => {
           // Handle specific dialogs
           if (dialogId === 'video-input') {
             setActivePluginDialog('video-input-dialog');
           }
         },
-        closeDialog: dialogId => {
+        closeDialog: (dialogId) => {
           if (dialogId === 'video-input') {
             setActivePluginDialog(null);
           }
         },
-        setTheme: nextTheme => {
+        setTheme: (nextTheme) => {
           updatePersistentSettings({ theme: nextTheme });
         },
-        setLanguage: nextLanguage => {
+        setLanguage: (nextLanguage) => {
           updatePersistentSettings({ language: nextLanguage });
         },
       },
     });
   }, [updatePersistentSettings]);
 
-  const activeScene = data.scenes.find(s => s.id === activeSceneId) || null;
-  const selectedItem = activeScene?.items.find(item => item.id === selectedItemId) || null;
+  const activeScene = data.scenes.find((s) => s.id === activeSceneId) || null;
+  const selectedItem =
+    activeScene?.items.find((item) => item.id === selectedItemId) || null;
 
   // Sync state to Plugin Context
   useEffect(() => {
@@ -221,7 +240,14 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         language,
       },
     });
-  }, [activeSceneId, activeScene?.items, selectedItemId, selectedItem, theme, language]);
+  }, [
+    activeSceneId,
+    activeScene?.items,
+    selectedItemId,
+    selectedItem,
+    theme,
+    language,
+  ]);
 
   // Add a new scene
   const handleAddScene = () => {
@@ -251,7 +277,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       return;
     }
 
-    const newScenes = data.scenes.filter(s => s.id !== sceneId);
+    const newScenes = data.scenes.filter((s) => s.id !== sceneId);
     updateData({
       ...data,
       scenes: newScenes,
@@ -265,11 +291,14 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
   // Move scene up
   const handleMoveSceneUp = (sceneId: string) => {
-    const index = data.scenes.findIndex(s => s.id === sceneId);
+    const index = data.scenes.findIndex((s) => s.id === sceneId);
     if (index <= 0) return; // Already at the top, cannot move up
 
     const newScenes = [...data.scenes];
-    [newScenes[index - 1], newScenes[index]] = [newScenes[index], newScenes[index - 1]];
+    [newScenes[index - 1], newScenes[index]] = [
+      newScenes[index],
+      newScenes[index - 1],
+    ];
 
     updateData({
       ...data,
@@ -279,11 +308,14 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
   // Move scene down
   const handleMoveSceneDown = (sceneId: string) => {
-    const index = data.scenes.findIndex(s => s.id === sceneId);
+    const index = data.scenes.findIndex((s) => s.id === sceneId);
     if (index < 0 || index >= data.scenes.length - 1) return; // Already at the bottom, cannot move down
 
     const newScenes = [...data.scenes];
-    [newScenes[index], newScenes[index + 1]] = [newScenes[index + 1], newScenes[index]];
+    [newScenes[index], newScenes[index + 1]] = [
+      newScenes[index + 1],
+      newScenes[index],
+    ];
 
     updateData({
       ...data,
@@ -397,7 +429,9 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     // Generate new ID in the format type-{number} (similar to OBS)
     const existingItems = activeScene?.items || [];
-    const sameTypeItems = existingItems.filter(item => item.type === sourceType);
+    const sameTypeItems = existingItems.filter(
+      (item) => item.type === sourceType,
+    );
     const nextNumber = sameTypeItems.length + 1;
     const newItemId = `${sourceType}-${nextNumber}`;
 
@@ -409,7 +443,9 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     const pluginDefaultProps: Record<string, unknown> = {};
     if (plugin?.propsSchema) {
       Object.entries(plugin.propsSchema).forEach(([key, schema]) => {
-        pluginDefaultProps[key] = (schema as unknown as { defaultValue: unknown }).defaultValue;
+        pluginDefaultProps[key] = (
+          schema as unknown as { defaultValue: unknown }
+        ).defaultValue;
       });
     }
 
@@ -515,7 +551,9 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
           const title =
             itemStream.getVideoTracks()[0]?.label ||
-            (plugin.streamInit.streamType === 'screen' ? 'Screen/Window Capture' : 'Webcam');
+            (plugin.streamInit.streamType === 'screen'
+              ? 'Screen/Window Capture'
+              : 'Webcam');
 
           mediaStreamManager.setStream(newItemId, {
             stream: itemStream,
@@ -569,7 +607,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     updateData({
       ...data,
-      scenes: data.scenes.map(scene => {
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene;
         return {
           ...scene,
@@ -589,11 +627,11 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
       updateData({
         ...data,
-        scenes: data.scenes.map(scene => {
+        scenes: data.scenes.map((scene) => {
           if (scene.id !== activeSceneId) return scene;
           return {
             ...scene,
-            items: scene.items.filter(item => item.id !== itemId),
+            items: scene.items.filter((item) => item.id !== itemId),
           };
         }),
       });
@@ -620,7 +658,9 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     // Generate new ID based on the original type with auto-incremented number
     const existingItems = activeScene?.items || [];
-    const sameTypeItems = existingItems.filter(item => item.type === clipboardItem.type);
+    const sameTypeItems = existingItems.filter(
+      (item) => item.type === clipboardItem.type,
+    );
     const nextNumber = sameTypeItems.length + 1;
     const newItemId = `${clipboardItem.type}-${nextNumber}`;
 
@@ -639,7 +679,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     updateData({
       ...data,
-      scenes: data.scenes.map(scene => {
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene;
         return {
           ...scene,
@@ -663,7 +703,11 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore shortcuts inside input fields (avoid interfering with user typing)
       const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      ) {
         return;
       }
 
@@ -672,7 +716,10 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       if (isCtrlOrMeta && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
         undo();
-      } else if (isCtrlOrMeta && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+      } else if (
+        isCtrlOrMeta &&
+        (e.key === 'y' || (e.key === 'z' && e.shiftKey))
+      ) {
         e.preventDefault();
         redo();
       } else if (isCtrlOrMeta && e.key === 'c') {
@@ -697,10 +744,10 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     updateData({
       ...data,
-      scenes: data.scenes.map(scene => {
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene;
 
-        const index = scene.items.findIndex(item => item.id === itemId);
+        const index = scene.items.findIndex((item) => item.id === itemId);
         if (index <= 0) return scene; // Already at the top, cannot move up
 
         // Swap both array position and zIndex field to stay consistent with KonvaCanvas's zIndex-based render order
@@ -724,10 +771,10 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     updateData({
       ...data,
-      scenes: data.scenes.map(scene => {
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene;
 
-        const index = scene.items.findIndex(item => item.id === itemId);
+        const index = scene.items.findIndex((item) => item.id === itemId);
         if (index < 0 || index >= scene.items.length - 1) return scene; // Already at the bottom, cannot move down
 
         // Swap both array position and zIndex field to stay consistent with KonvaCanvas's zIndex-based render order
@@ -751,12 +798,12 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     updateData({
       ...data,
-      scenes: data.scenes.map(scene => {
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene;
 
         return {
           ...scene,
-          items: scene.items.map(item => {
+          items: scene.items.map((item) => {
             if (item.id !== itemId) return item;
             return {
               ...item,
@@ -774,12 +821,12 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     updateData({
       ...data,
-      scenes: data.scenes.map(scene => {
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene;
 
         return {
           ...scene,
-          items: scene.items.map(item => {
+          items: scene.items.map((item) => {
             if (item.id !== itemId) return item;
             return {
               ...item,
@@ -797,18 +844,20 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
     updateData({
       ...data,
-      scenes: data.scenes.map(scene => {
+      scenes: data.scenes.map((scene) => {
         if (scene.id !== activeSceneId) return scene;
 
         return {
           ...scene,
-          items: scene.items.map(item => {
+          items: scene.items.map((item) => {
             if (item.id !== itemId) return item;
 
             return {
               ...item,
               ...updates,
-              layout: updates.layout ? { ...item.layout, ...updates.layout } : item.layout,
+              layout: updates.layout
+                ? { ...item.layout, ...updates.layout }
+                : item.layout,
               transform: updates.transform
                 ? { ...item.transform, ...updates.transform }
                 : item.transform,
@@ -825,7 +874,9 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       // Start streaming
       try {
         if (!livekitUrl || !livekitToken) {
-          alert('Please configure the LiveKit server URL and token in Settings first');
+          alert(
+            'Please configure the LiveKit server URL and token in Settings first',
+          );
           return;
         }
 
@@ -841,7 +892,10 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
         // Capture media stream from the output canvas (fixed resolution)
         const fpsValue = Number.parseInt(fps, 10) || 30;
-        const mediaStream = canvasCaptureService.captureStream(outputCanvas, fpsValue);
+        const mediaStream = canvasCaptureService.captureStream(
+          outputCanvas,
+          fpsValue,
+        );
 
         // Get the video bitrate setting (kbps)
         const bitrateValue = Number.parseInt(videoBitrate, 10) || 5000;
@@ -862,7 +916,9 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         console.log('Streaming started');
       } catch (error) {
         console.error('Streaming failed:', error);
-        alert(`Streaming failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        alert(
+          `Streaming failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
         // Clean up resources
         canvasRef.current?.stopContinuousRendering();
         canvasCaptureService.stopCapture();
@@ -879,7 +935,15 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         console.error('Failed to stop streaming:', error);
       }
     }
-  }, [isStreaming, livekitUrl, livekitToken, fps, videoBitrate, videoEncoder, outputRes]);
+  }, [
+    isStreaming,
+    livekitUrl,
+    livekitToken,
+    fps,
+    videoBitrate,
+    videoEncoder,
+    outputRes,
+  ]);
 
   // Handle pull stream connect/disconnect
   const handleTogglePulling = useCallback(async () => {
@@ -887,12 +951,14 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       // Start pulling
       try {
         if (!livekitPullUrl || !livekitPullToken) {
-          alert('Please configure the pull-stream server URL and token in Settings first');
+          alert(
+            'Please configure the pull-stream server URL and token in Settings first',
+          );
           return;
         }
 
         await liveKitPullService.connect(livekitPullUrl, livekitPullToken, {
-          onParticipantsChanged: participants => {
+          onParticipantsChanged: (participants) => {
             console.log('Participants changed:', participants);
           },
         });
@@ -901,7 +967,9 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
         console.log('Pulling started');
       } catch (error) {
         console.error('Pulling failed:', error);
-        alert(`Pulling failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        alert(
+          `Pulling failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
       }
     } else {
       // Stop pulling
@@ -922,7 +990,9 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
       // Generate new ID
       const existingItems = activeScene?.items || [];
-      const sameTypeItems = existingItems.filter(item => item.type === 'livekit_stream');
+      const sameTypeItems = existingItems.filter(
+        (item) => item.type === 'livekit_stream',
+      );
       const nextNumber = sameTypeItems.length + 1;
       const newItemId = `livekit_stream-${nextNumber}`;
 
@@ -965,7 +1035,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
 
       updateData({
         ...data,
-        scenes: data.scenes.map(scene => {
+        scenes: data.scenes.map((scene) => {
           if (scene.id !== activeSceneId) return scene;
           return {
             ...scene,
@@ -1015,7 +1085,11 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
       <MainLayout
         logo={
           extensions?.logo || (
-            <img src={lmsLogo} style={{ width: '40px', height: '40px' }} alt="LMS logo" />
+            <img
+              src={lmsLogo}
+              style={{ width: '40px', height: '40px' }}
+              alt="LMS logo"
+            />
           )
         }
         toolbar={
@@ -1036,8 +1110,10 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
             }}
             toolsActions={{
               audioItems:
-                activeScene?.items.filter(item => {
-                  const plugin = pluginRegistry.getPluginBySourceType(item.type);
+                activeScene?.items.filter((item) => {
+                  const plugin = pluginRegistry.getPluginBySourceType(
+                    item.type,
+                  );
                   return plugin?.audioMixer?.enabled === true;
                 }) || [],
               onUpdateItem: handleUpdateItem,
@@ -1063,7 +1139,9 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
                     : 'bg-blue-600 hover:bg-blue-700 text-white'
                 }`}
               >
-                {isPulling ? t('status.disconnectPull') : t('status.connectPull')}
+                {isPulling
+                  ? t('status.disconnectPull')
+                  : t('status.connectPull')}
               </button>
             </div>
           </div>
@@ -1083,7 +1161,12 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
             showGuides={showGuides}
           />
         }
-        rightSidebar={<PropertyPanel selectedItem={selectedItem} onUpdateItem={handleUpdateItem} />}
+        rightSidebar={
+          <PropertyPanel
+            selectedItem={selectedItem}
+            onUpdateItem={handleUpdateItem}
+          />
+        }
         bottomBar={
           <BottomBar
             scenes={data.scenes}

@@ -59,7 +59,7 @@ export function Toolbar({
   const [audioMixerOpen, setAudioMixerOpen] = useState(false);
   const [sceneTransitionOpen, setSceneTransitionOpen] = useState(false);
   const [pluginManagerOpen, setPluginManagerOpen] = useState(false);
-  const theme = useSettingsStore(s => normalizeTheme(s.theme));
+  const theme = useSettingsStore((s) => normalizeTheme(s.theme));
   const { showGrid, showGuides, updatePersistentSettings } = useSettingsStore();
 
   const handleToggleFullscreen = useCallback(() => {
@@ -82,18 +82,22 @@ export function Toolbar({
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
-    input.onchange = e => {
+    input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = event => {
+      reader.onload = (event) => {
         try {
           const content = event.target?.result as string;
           const importedData = JSON.parse(content) as ProtocolData;
 
           // Validate imported data structure
-          if (!importedData.version || !importedData.scenes || !importedData.canvas) {
+          if (
+            !importedData.version ||
+            !importedData.scenes ||
+            !importedData.canvas
+          ) {
             alert(t('toolbar.importInvalidFormat'));
             return;
           }
@@ -271,8 +275,14 @@ export function Toolbar({
         audioItems={toolsActions?.audioItems || []}
         onUpdateItem={toolsActions?.onUpdateItem}
       />
-      <SceneTransitionDialog open={sceneTransitionOpen} onOpenChange={setSceneTransitionOpen} />
-      <PluginManagerDialog open={pluginManagerOpen} onOpenChange={setPluginManagerOpen} />
+      <SceneTransitionDialog
+        open={sceneTransitionOpen}
+        onOpenChange={setSceneTransitionOpen}
+      />
+      <PluginManagerDialog
+        open={pluginManagerOpen}
+        onOpenChange={setPluginManagerOpen}
+      />
     </div>
   );
 }

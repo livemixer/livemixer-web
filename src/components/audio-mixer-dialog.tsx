@@ -25,7 +25,10 @@ export function AudioMixerDialog({
           <DialogTitle>{t('toolbar.audioMixer')}</DialogTitle>
         </DialogHeader>
         <div className="h-[240px]">
-          <AudioMixerPanel audioItems={audioItems} onUpdateItem={onUpdateItem} />
+          <AudioMixerPanel
+            audioItems={audioItems}
+            onUpdateItem={onUpdateItem}
+          />
         </div>
       </DialogContent>
     </Dialog>

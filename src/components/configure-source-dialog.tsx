@@ -120,7 +120,9 @@ export function ConfigureSourceDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">{getTitle()}</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
+            {getTitle()}
+          </DialogTitle>
           <DialogDescription className="text-[var(--lm-muted-2)]">
             {getDescription()}
           </DialogDescription>
@@ -198,7 +200,7 @@ export function ConfigureSourceDialog({
                 type="url"
                 placeholder="https://example.com/image.jpg"
                 value={url}
-                onChange={e => setUrl(e.target.value)}
+                onChange={(e) => setUrl(e.target.value)}
                 className="bg-[var(--lm-surface-1)] border-[var(--lm-border)] text-[var(--lm-fg)] placeholder:text-[var(--lm-muted-2)]"
               />
             </div>

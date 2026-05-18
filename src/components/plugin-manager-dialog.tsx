@@ -70,8 +70,12 @@ function PluginRow({ plugin }: { plugin: ISourcePlugin }) {
         <span className="w-5 h-5 flex items-center justify-center text-[var(--lm-muted-2)] shrink-0">
           {plugin.icon || <Puzzle className="w-4 h-4" />}
         </span>
-        <span className="text-sm text-[var(--lm-fg)] flex-1 truncate">{plugin.name}</span>
-        <span className="text-xs text-[var(--lm-muted-2)] shrink-0">v{plugin.version}</span>
+        <span className="text-sm text-[var(--lm-fg)] flex-1 truncate">
+          {plugin.name}
+        </span>
+        <span className="text-xs text-[var(--lm-muted-2)] shrink-0">
+          v{plugin.version}
+        </span>
         <CategoryBadge category={plugin.category} />
       </button>
 
@@ -80,24 +84,36 @@ function PluginRow({ plugin }: { plugin: ISourcePlugin }) {
           <div className="flex items-center gap-4 text-xs">
             <div>
               <span className="text-[var(--lm-muted-2)]">ID: </span>
-              <span className="text-[var(--lm-muted)] font-mono">{plugin.id}</span>
+              <span className="text-[var(--lm-muted)] font-mono">
+                {plugin.id}
+              </span>
             </div>
           </div>
           <div className="flex items-center gap-4 text-xs">
             <div>
-              <span className="text-[var(--lm-muted-2)]">{t('pluginManager.sourceType')}:</span>
-              <span className="text-[var(--lm-muted)] font-mono ml-1">{sourceTypeId}</span>
+              <span className="text-[var(--lm-muted-2)]">
+                {t('pluginManager.sourceType')}:
+              </span>
+              <span className="text-[var(--lm-muted)] font-mono ml-1">
+                {sourceTypeId}
+              </span>
             </div>
             <div>
-              <span className="text-[var(--lm-muted-2)]">{t('pluginManager.trustLevel')}:</span>
+              <span className="text-[var(--lm-muted-2)]">
+                {t('pluginManager.trustLevel')}:
+              </span>
               <span className="ml-1">
                 <TrustBadge level={plugin.trustLevel} />
               </span>
             </div>
           </div>
           <div className="text-xs">
-            <span className="text-[var(--lm-muted-2)]">{t('pluginManager.permissions')}:</span>
-            <span className="text-[var(--lm-muted)] font-mono ml-1">{permissionList}</span>
+            <span className="text-[var(--lm-muted-2)]">
+              {t('pluginManager.permissions')}:
+            </span>
+            <span className="text-[var(--lm-muted)] font-mono ml-1">
+              {permissionList}
+            </span>
           </div>
           {plugin.propsSchema && (
             <div className="text-xs">
@@ -118,7 +134,10 @@ interface PluginManagerDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function PluginManagerDialog({ open, onOpenChange }: PluginManagerDialogProps) {
+export function PluginManagerDialog({
+  open,
+  onOpenChange,
+}: PluginManagerDialogProps) {
   const { t } = useI18n();
   const plugins = pluginRegistry.getAllPlugins();
 
@@ -129,7 +148,9 @@ export function PluginManagerDialog({ open, onOpenChange }: PluginManagerDialogP
           <DialogTitle>{t('pluginManager.title')}</DialogTitle>
         </DialogHeader>
 
-        <p className="text-sm text-[var(--lm-muted-2)] -mt-2">{t('pluginManager.description')}</p>
+        <p className="text-sm text-[var(--lm-muted-2)] -mt-2">
+          {t('pluginManager.description')}
+        </p>
 
         <div className="border border-[var(--lm-border)] rounded-lg overflow-hidden max-h-[400px] overflow-y-auto">
           {plugins.length === 0 ? (
@@ -140,7 +161,9 @@ export function PluginManagerDialog({ open, onOpenChange }: PluginManagerDialogP
               </span>
             </div>
           ) : (
-            plugins.map(plugin => <PluginRow key={plugin.id} plugin={plugin} />)
+            plugins.map((plugin) => (
+              <PluginRow key={plugin.id} plugin={plugin} />
+            ))
           )}
         </div>
 

@@ -27,7 +27,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from './ui/alert-dialog';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './ui/tooltip';
 
 interface BottomBarProps {
   scenes: Scene[];
@@ -73,12 +78,14 @@ export function BottomBar({
   onUpdateItem,
 }: BottomBarProps) {
   const { t } = useI18n();
-  const activeScene = scenes.find(s => s.id === activeSceneId);
+  const activeScene = scenes.find((s) => s.id === activeSceneId);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteItemDialogOpen, setDeleteItemDialogOpen] = useState(false);
   const [addSourceDialogOpen, setAddSourceDialogOpen] = useState(false);
   const sceneToDelete = activeScene;
-  const itemToDelete = activeScene?.items.find(item => item.id === selectedItemId);
+  const itemToDelete = activeScene?.items.find(
+    (item) => item.id === selectedItemId,
+  );
 
   return (
     <TooltipProvider>
@@ -86,11 +93,13 @@ export function BottomBar({
         {/* Scene area - 25% */}
         <div className="w-[25%] flex flex-col border-r border-(--lm-border) overflow-hidden">
           <div className="px-4 py-2 border-b border-(--lm-border) text-center bg-(--lm-surface-3) sticky top-0">
-            <h3 className="text-sm font-semibold text-(--lm-fg)">{t('scene.title')}</h3>
+            <h3 className="text-sm font-semibold text-(--lm-fg)">
+              {t('scene.title')}
+            </h3>
           </div>
           <div className="flex-1 overflow-y-auto p-3">
             <div className="space-y-2">
-              {scenes.map(scene => (
+              {scenes.map((scene) => (
                 <Tooltip key={scene.id}>
                   <TooltipTrigger asChild>
                     <button
@@ -114,7 +123,9 @@ export function BottomBar({
                   <TooltipContent side="right">
                     <div className="space-y-1">
                       <div className="font-medium">{scene.name}</div>
-                      <div className="text-xs text-(--lm-muted-2)">ID: {scene.id}</div>
+                      <div className="text-xs text-(--lm-muted-2)">
+                        ID: {scene.id}
+                      </div>
                       <div className="text-xs text-(--lm-muted-2)">
                         {scene.items.length} {t('scene.items')}
                       </div>
@@ -157,7 +168,10 @@ export function BottomBar({
                 <button
                   type="button"
                   onClick={() => activeSceneId && onMoveSceneUp(activeSceneId)}
-                  disabled={!activeSceneId || scenes.findIndex(s => s.id === activeSceneId) === 0}
+                  disabled={
+                    !activeSceneId ||
+                    scenes.findIndex((s) => s.id === activeSceneId) === 0
+                  }
                   className="p-2 hover:bg-(--lm-hover) rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronUp className="w-4 h-4 text-(--lm-muted)" />
@@ -169,10 +183,13 @@ export function BottomBar({
               <TooltipTrigger asChild>
                 <button
                   type="button"
-                  onClick={() => activeSceneId && onMoveSceneDown(activeSceneId)}
+                  onClick={() =>
+                    activeSceneId && onMoveSceneDown(activeSceneId)
+                  }
                   disabled={
                     !activeSceneId ||
-                    scenes.findIndex(s => s.id === activeSceneId) === scenes.length - 1
+                    scenes.findIndex((s) => s.id === activeSceneId) ===
+                      scenes.length - 1
                   }
                   className="p-2 hover:bg-(--lm-hover) rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
@@ -194,7 +211,7 @@ export function BottomBar({
           <div className="flex-1 overflow-y-auto p-3">
             {activeScene ? (
               <div className="space-y-2">
-                {activeScene.items.map(item => (
+                {activeScene.items.map((item) => (
                   <Tooltip key={item.id}>
                     <TooltipTrigger asChild>
                       <div
@@ -220,12 +237,16 @@ export function BottomBar({
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
-                            onClick={e => {
+                            onClick={(e) => {
                               e.stopPropagation();
                               onToggleItemVisibility(item.id);
                             }}
                             className="p-1 hover:bg-black/20 rounded transition-colors"
-                            title={item.visible === false ? t('source.show') : t('source.hide')}
+                            title={
+                              item.visible === false
+                                ? t('source.show')
+                                : t('source.hide')
+                            }
                           >
                             {item.visible === false ? (
                               <EyeOff className="w-3.5 h-3.5" />
@@ -235,12 +256,16 @@ export function BottomBar({
                           </button>
                           <button
                             type="button"
-                            onClick={e => {
+                            onClick={(e) => {
                               e.stopPropagation();
                               onToggleItemLock(item.id);
                             }}
                             className="p-1 hover:bg-black/20 rounded transition-colors"
-                            title={item.locked ? t('source.unlock') : t('source.lock')}
+                            title={
+                              item.locked
+                                ? t('source.unlock')
+                                : t('source.lock')
+                            }
                           >
                             {item.locked ? (
                               <Lock className="w-3.5 h-3.5" />
@@ -254,9 +279,12 @@ export function BottomBar({
                     <TooltipContent side="right">
                       <div className="space-y-1">
                         <div className="font-medium">{item.id}</div>
-                        <div className="text-xs text-(--lm-muted-2)">Type: {item.type}</div>
                         <div className="text-xs text-(--lm-muted-2)">
-                          Status: {item.visible === false ? 'Hidden' : 'Visible'} |{' '}
+                          Type: {item.type}
+                        </div>
+                        <div className="text-xs text-(--lm-muted-2)">
+                          Status:{' '}
+                          {item.visible === false ? 'Hidden' : 'Visible'} |{' '}
                           {item.locked ? 'Locked' : 'Unlocked'}
                         </div>
                       </div>
@@ -307,7 +335,9 @@ export function BottomBar({
                   disabled={
                     !selectedItemId ||
                     !activeScene ||
-                    activeScene.items.findIndex(i => i.id === selectedItemId) === 0
+                    activeScene.items.findIndex(
+                      (i) => i.id === selectedItemId,
+                    ) === 0
                   }
                   className="p-2 hover:bg-(--lm-hover) rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
@@ -320,11 +350,15 @@ export function BottomBar({
               <TooltipTrigger asChild>
                 <button
                   type="button"
-                  onClick={() => selectedItemId && onMoveItemDown(selectedItemId)}
+                  onClick={() =>
+                    selectedItemId && onMoveItemDown(selectedItemId)
+                  }
                   disabled={
                     !selectedItemId ||
                     !activeScene ||
-                    activeScene.items.findIndex(i => i.id === selectedItemId) ===
+                    activeScene.items.findIndex(
+                      (i) => i.id === selectedItemId,
+                    ) ===
                       activeScene.items.length - 1
                   }
                   className="p-2 hover:bg-(--lm-hover) rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
@@ -341,7 +375,7 @@ export function BottomBar({
         <div className="w-[20%] flex flex-col border-r border-(--lm-border) overflow-hidden">
           <AudioMixerPanel
             audioItems={
-              activeScene?.items.filter(item => {
+              activeScene?.items.filter((item) => {
                 // Check if item's plugin supports audio mixing
                 const plugin = pluginRegistry.getPluginBySourceType(item.type);
                 return plugin?.audioMixer?.enabled === true;
@@ -354,7 +388,9 @@ export function BottomBar({
         {/* Control area - 20% */}
         <div className="w-[20%] flex flex-col overflow-hidden">
           <div className="px-4 py-2 border-b border-(--lm-border) text-center">
-            <h3 className="text-sm font-semibold text-(--lm-muted)">{t('control.title')}</h3>
+            <h3 className="text-sm font-semibold text-(--lm-muted)">
+              {t('control.title')}
+            </h3>
           </div>
           <div className="flex-1 p-4 flex flex-col gap-3">
             <button
@@ -398,11 +434,15 @@ export function BottomBar({
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="shadow-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('dialog.confirmDeleteScene')}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t('dialog.confirmDeleteScene')}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {t('scene.deleteConfirm', { name: sceneToDelete?.name })}
               <br />
-              <span className="text-yellow-500 font-medium">{t('scene.deleteWarning')}</span>
+              <span className="text-yellow-500 font-medium">
+                {t('scene.deleteWarning')}
+              </span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-3">
@@ -421,14 +461,21 @@ export function BottomBar({
       </AlertDialog>
 
       {/* Delete source confirmation dialog */}
-      <AlertDialog open={deleteItemDialogOpen} onOpenChange={setDeleteItemDialogOpen}>
+      <AlertDialog
+        open={deleteItemDialogOpen}
+        onOpenChange={setDeleteItemDialogOpen}
+      >
         <AlertDialogContent className="shadow-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('dialog.confirmDeleteSource')}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t('dialog.confirmDeleteSource')}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {t('source.deleteConfirm', { id: itemToDelete?.id })}
               <br />
-              <span className="text-yellow-500 font-medium">{t('source.deleteWarning')}</span>
+              <span className="text-yellow-500 font-medium">
+                {t('source.deleteWarning')}
+              </span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-3">

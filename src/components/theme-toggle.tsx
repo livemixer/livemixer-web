@@ -11,13 +11,20 @@ interface ThemeToggleProps {
 
 export function ThemeToggle({ className }: ThemeToggleProps) {
   const { t } = useI18n();
-  const theme = useSettingsStore(s => normalizeTheme(s.theme));
-  const updatePersistentSettings = useSettingsStore(s => s.updatePersistentSettings);
+  const theme = useSettingsStore((s) => normalizeTheme(s.theme));
+  const updatePersistentSettings = useSettingsStore(
+    (s) => s.updatePersistentSettings,
+  );
 
-  const nextTheme: ThemeMode = useMemo(() => (theme === 'dark' ? 'light' : 'dark'), [theme]);
+  const nextTheme: ThemeMode = useMemo(
+    () => (theme === 'dark' ? 'light' : 'dark'),
+    [theme],
+  );
 
-  const label = theme === 'dark' ? t('settings.theme.dark') : t('settings.theme.light');
-  const nextLabel = nextTheme === 'dark' ? t('settings.theme.dark') : t('settings.theme.light');
+  const label =
+    theme === 'dark' ? t('settings.theme.dark') : t('settings.theme.light');
+  const nextLabel =
+    nextTheme === 'dark' ? t('settings.theme.dark') : t('settings.theme.light');
 
   return (
     <button
@@ -30,7 +37,11 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       aria-label={`${t('settings.theme.title')}: ${label} → ${nextLabel}`}
       title={`${t('settings.theme.title')}: ${label} → ${nextLabel}`}
     >
-      {theme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+      {theme === 'dark' ? (
+        <Moon className="w-4 h-4" />
+      ) : (
+        <Sun className="w-4 h-4" />
+      )}
       <span className="hidden sm:inline">{label}</span>
     </button>
   );

@@ -25,15 +25,23 @@ export function StatusBar({
         <div className="flex items-center gap-1.5">
           <Wifi className="w-3.5 h-3.5" />
           <span
-            className={isStreaming ? 'text-success-500 font-medium' : 'text-[var(--lm-muted-2)]'}
+            className={
+              isStreaming
+                ? 'text-success-500 font-medium'
+                : 'text-[var(--lm-muted-2)]'
+            }
           >
             {isStreaming ? t('status.streaming') : t('status.notStreaming')}
           </span>
         </div>
         {isStreaming && (
           <div className="flex items-center gap-1.5">
-            <span className="text-[var(--lm-muted-2)]">{t('status.duration')}:</span>
-            <span className="font-mono text-[var(--lm-muted)]">{streamDuration}</span>
+            <span className="text-[var(--lm-muted-2)]">
+              {t('status.duration')}:
+            </span>
+            <span className="font-mono text-[var(--lm-muted)]">
+              {streamDuration}
+            </span>
           </div>
         )}
       </div>
@@ -44,12 +52,18 @@ export function StatusBar({
       {/* Right: system info */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5">
-          <span className="text-[var(--lm-muted-2)]">{t('status.output')}:</span>
-          <span className="font-mono text-[var(--lm-muted)]">{outputResolution}</span>
+          <span className="text-[var(--lm-muted-2)]">
+            {t('status.output')}:
+          </span>
+          <span className="font-mono text-[var(--lm-muted)]">
+            {outputResolution}
+          </span>
         </div>
         <div className="flex items-center gap-1.5">
           <Cpu className="w-3.5 h-3.5" />
-          <span className="font-mono text-[var(--lm-muted)]">{cpuUsage.toFixed(1)}%</span>
+          <span className="font-mono text-[var(--lm-muted)]">
+            {cpuUsage.toFixed(1)}%
+          </span>
         </div>
         <div className="flex items-center gap-1.5">
           <HardDrive className="w-3.5 h-3.5" />

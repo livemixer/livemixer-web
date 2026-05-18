@@ -53,7 +53,9 @@ export function ToolbarMenu({ label, items }: ToolbarMenuProps) {
               className="text-sm text-[var(--lm-muted)] hover:bg-[var(--lm-hover)] hover:text-[var(--lm-fg)] focus:bg-[var(--lm-hover)] focus:text-[var(--lm-fg)] cursor-pointer data-[disabled]:cursor-default data-[disabled]:text-[var(--lm-muted-2)] data-[disabled]:hover:bg-transparent data-[disabled]:hover:text-[var(--lm-muted-2)]"
             >
               {item.label}
-              {item.shortcut && <DropdownMenuShortcut>{item.shortcut}</DropdownMenuShortcut>}
+              {item.shortcut && (
+                <DropdownMenuShortcut>{item.shortcut}</DropdownMenuShortcut>
+              )}
             </DropdownMenuCheckboxItem>
           ) : (
             <DropdownMenuItem
@@ -63,7 +65,9 @@ export function ToolbarMenu({ label, items }: ToolbarMenuProps) {
               className="text-sm text-[var(--lm-muted)] hover:bg-[var(--lm-hover)] hover:text-[var(--lm-fg)] focus:bg-[var(--lm-hover)] focus:text-[var(--lm-fg)] cursor-pointer data-[disabled]:cursor-default data-[disabled]:text-[var(--lm-muted-2)] data-[disabled]:hover:bg-transparent data-[disabled]:hover:text-[var(--lm-muted-2)]"
             >
               {item.label}
-              {item.shortcut && <DropdownMenuShortcut>{item.shortcut}</DropdownMenuShortcut>}
+              {item.shortcut && (
+                <DropdownMenuShortcut>{item.shortcut}</DropdownMenuShortcut>
+              )}
             </DropdownMenuItem>
           ),
         )}

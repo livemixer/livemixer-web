@@ -1,4 +1,10 @@
-import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 interface MainLayoutProps {
   logo?: ReactNode;
@@ -22,7 +28,8 @@ function readStoredBottomBarHeight(): number {
   try {
     const raw = window.localStorage.getItem(BOTTOM_BAR_HEIGHT_STORAGE_KEY);
     const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
-    if (Number.isFinite(parsed) && parsed >= BOTTOM_BAR_MIN_HEIGHT) return parsed;
+    if (Number.isFinite(parsed) && parsed >= BOTTOM_BAR_MIN_HEIGHT)
+      return parsed;
   } catch {
     // ignore storage errors
   }
@@ -32,7 +39,10 @@ function readStoredBottomBarHeight(): number {
 function clampBottomBarHeight(value: number): number {
   const max =
     typeof window !== 'undefined'
-      ? Math.max(BOTTOM_BAR_MIN_HEIGHT, Math.floor(window.innerHeight * BOTTOM_BAR_MAX_RATIO))
+      ? Math.max(
+          BOTTOM_BAR_MIN_HEIGHT,
+          Math.floor(window.innerHeight * BOTTOM_BAR_MAX_RATIO),
+        )
       : BOTTOM_BAR_DEFAULT_HEIGHT;
   return Math.min(Math.max(value, BOTTOM_BAR_MIN_HEIGHT), max);
 }
@@ -51,12 +61,17 @@ export function MainLayout({
     clampBottomBarHeight(readStoredBottomBarHeight()),
   );
   const [isResizing, setIsResizing] = useState(false);
-  const dragStateRef = useRef<{ startY: number; startHeight: number } | null>(null);
+  const dragStateRef = useRef<{ startY: number; startHeight: number } | null>(
+    null,
+  );
 
   // Persist height to localStorage
   useEffect(() => {
     try {
-      window.localStorage.setItem(BOTTOM_BAR_HEIGHT_STORAGE_KEY, String(bottomBarHeight));
+      window.localStorage.setItem(
+        BOTTOM_BAR_HEIGHT_STORAGE_KEY,
+        String(bottomBarHeight),
+      );
     } catch {
       // ignore storage errors
     }
@@ -65,7 +80,7 @@ export function MainLayout({
   // Re-clamp on viewport resize so the bottom bar never exceeds the window
   useEffect(() => {
     const handleWindowResize = () => {
-      setBottomBarHeight(h => clampBottomBarHeight(h));
+      setBottomBarHeight((h) => clampBottomBarHeight(h));
     };
     window.addEventListener('resize', handleWindowResize);
     return () => window.removeEventListener('resize', handleWindowResize);
@@ -79,7 +94,9 @@ export function MainLayout({
       const state = dragStateRef.current;
       if (!state) return;
       const clientY =
-        'touches' in e ? (e.touches[0]?.clientY ?? state.startY) : (e as MouseEvent).clientY;
+        'touches' in e
+          ? (e.touches[0]?.clientY ?? state.startY)
+          : (e as MouseEvent).clientY;
       // Drag up => bottom bar grows; delta = startY - currentY
       const delta = state.startY - clientY;
       setBottomBarHeight(clampBottomBarHeight(state.startHeight + delta));

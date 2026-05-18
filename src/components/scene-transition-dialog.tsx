@@ -6,18 +6,29 @@ import { Label } from './ui/label';
 
 type TransitionType = 'cut' | 'fade' | 'dissolve' | 'swipe' | 'stinger';
 
-const TRANSITION_TYPES: TransitionType[] = ['cut', 'fade', 'dissolve', 'swipe', 'stinger'];
+const TRANSITION_TYPES: TransitionType[] = [
+  'cut',
+  'fade',
+  'dissolve',
+  'swipe',
+  'stinger',
+];
 
 interface SceneTransitionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function SceneTransitionDialog({ open, onOpenChange }: SceneTransitionDialogProps) {
+export function SceneTransitionDialog({
+  open,
+  onOpenChange,
+}: SceneTransitionDialogProps) {
   const { t } = useI18n();
-  const { transitionType, transitionDuration, updatePersistentSettings } = useSettingsStore();
+  const { transitionType, transitionDuration, updatePersistentSettings } =
+    useSettingsStore();
 
-  const [pendingType, setPendingType] = useState<TransitionType>(transitionType);
+  const [pendingType, setPendingType] =
+    useState<TransitionType>(transitionType);
   const [pendingDuration, setPendingDuration] = useState(transitionDuration);
 
   // Sync local state when dialog opens
@@ -45,13 +56,17 @@ export function SceneTransitionDialog({ open, onOpenChange }: SceneTransitionDia
         </DialogHeader>
 
         <div className="space-y-5 py-2">
-          <p className="text-sm text-[var(--lm-muted-2)]">{t('sceneTransition.description')}</p>
+          <p className="text-sm text-[var(--lm-muted-2)]">
+            {t('sceneTransition.description')}
+          </p>
 
           {/* Transition Type */}
           <div className="space-y-2">
-            <Label className="text-sm text-[var(--lm-muted)]">{t('sceneTransition.type')}</Label>
+            <Label className="text-sm text-[var(--lm-muted)]">
+              {t('sceneTransition.type')}
+            </Label>
             <div className="grid grid-cols-3 gap-2">
-              {TRANSITION_TYPES.map(type => (
+              {TRANSITION_TYPES.map((type) => (
                 <button
                   key={type}
                   type="button"
@@ -87,7 +102,9 @@ export function SceneTransitionDialog({ open, onOpenChange }: SceneTransitionDia
                 max={2000}
                 step={50}
                 value={pendingDuration}
-                onChange={e => setPendingDuration(Number.parseInt(e.target.value, 10))}
+                onChange={(e) =>
+                  setPendingDuration(Number.parseInt(e.target.value, 10))
+                }
                 className="w-full accent-blue-500"
               />
               <div className="flex justify-between text-[10px] text-[var(--lm-muted-2)]">

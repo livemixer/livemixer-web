@@ -1,8 +1,24 @@
-import { Clock, Image, Mic, Monitor, Puzzle, Timer, Type, Video, Volume2 } from 'lucide-react';
+import {
+  Clock,
+  Image,
+  Mic,
+  Monitor,
+  Puzzle,
+  Timer,
+  Type,
+  Video,
+  Volume2,
+} from 'lucide-react';
 import { useI18n } from '../hooks/useI18n';
 import { pluginRegistry } from '../services/plugin-registry';
 import type { ISourcePlugin } from '../types/plugin';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
 
 export type SourceType =
   | 'image'
@@ -67,13 +83,23 @@ const pluginToSourceOption = (
 
   return {
     type: plugin.sourceType.typeId,
-    name: plugin.sourceType.nameKey ? t(plugin.sourceType.nameKey) : plugin.name,
-    description: plugin.sourceType.descriptionKey ? t(plugin.sourceType.descriptionKey) : '',
-    icon: iconMap[plugin.sourceType.icon || ''] || <Puzzle className="w-6 h-6" />,
+    name: plugin.sourceType.nameKey
+      ? t(plugin.sourceType.nameKey)
+      : plugin.name,
+    description: plugin.sourceType.descriptionKey
+      ? t(plugin.sourceType.descriptionKey)
+      : '',
+    icon: iconMap[plugin.sourceType.icon || ''] || (
+      <Puzzle className="w-6 h-6" />
+    ),
   };
 };
 
-export function AddSourceDialog({ open, onOpenChange, onSelectSourceType }: AddSourceDialogProps) {
+export function AddSourceDialog({
+  open,
+  onOpenChange,
+  onSelectSourceType,
+}: AddSourceDialogProps) {
   const { t } = useI18n();
 
   // Get source plugins from registry
@@ -81,11 +107,14 @@ export function AddSourceDialog({ open, onOpenChange, onSelectSourceType }: AddS
 
   // Convert plugins to source type options
   const pluginSourceTypes = sourcePlugins
-    .map(p => pluginToSourceOption(p, t))
+    .map((p) => pluginToSourceOption(p, t))
     .filter((p): p is SourceTypeOption => p !== null);
 
   // Combine with legacy source types
-  const sourceTypes: SourceTypeOption[] = [...pluginSourceTypes, ...legacySourceTypes(t)];
+  const sourceTypes: SourceTypeOption[] = [
+    ...pluginSourceTypes,
+    ...legacySourceTypes(t),
+  ];
 
   const handleSelectType = (type: SourceType) => {
     onSelectSourceType(type);
@@ -93,13 +122,17 @@ export function AddSourceDialog({ open, onOpenChange, onSelectSourceType }: AddS
   };
 
   // External plugins are those without sourceType mapping (pure extensions)
-  const externalPlugins = pluginRegistry.getAllPlugins().filter(p => !p.sourceType);
+  const externalPlugins = pluginRegistry
+    .getAllPlugins()
+    .filter((p) => !p.sourceType);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">{t('addSource.title')}</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
+            {t('addSource.title')}
+          </DialogTitle>
           <DialogDescription className="text-[var(--lm-muted-2)]">
             {t('addSource.description')}
           </DialogDescription>
@@ -111,7 +144,7 @@ export function AddSourceDialog({ open, onOpenChange, onSelectSourceType }: AddS
               {t('addSource.builtin')}
             </h3>
             <div className="grid grid-cols-2 gap-3">
-              {sourceTypes.map(sourceType => (
+              {sourceTypes.map((sourceType) => (
                 <button
                   key={sourceType.type}
                   type="button"
@@ -140,7 +173,7 @@ export function AddSourceDialog({ open, onOpenChange, onSelectSourceType }: AddS
                 {t('addSource.installedPlugins')}
               </h3>
               <div className="grid grid-cols-2 gap-3">
-                {externalPlugins.map(plugin => (
+                {externalPlugins.map((plugin) => (
                   <button
                     key={plugin.id}
                     type="button"
@@ -154,7 +187,9 @@ export function AddSourceDialog({ open, onOpenChange, onSelectSourceType }: AddS
                       <h4 className="font-medium text-[var(--lm-fg)] text-sm mb-1">
                         {plugin.name}
                       </h4>
-                      <p className="text-xs text-[var(--lm-muted-2)] line-clamp-1">{plugin.id}</p>
+                      <p className="text-xs text-[var(--lm-muted-2)] line-clamp-1">
+                        {plugin.id}
+                      </p>
                     </div>
                   </button>
                 ))}
