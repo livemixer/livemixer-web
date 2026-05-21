@@ -11,7 +11,7 @@ import {
   Square,
   Trash2,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '../hooks/useI18n';
 import { pluginRegistry } from '../services/plugin-registry';
 import type { Scene, SceneItem } from '../types/protocol';
@@ -38,6 +38,7 @@ interface BottomBarProps {
   scenes: Scene[];
   activeSceneId: string | null;
   onSceneSelect: (sceneId: string) => void;
+  onRenameScene: (sceneId: string, name: string) => void;
   selectedItemId: string | null;
   onSelectItem: (itemId: string) => void;
   isStreaming: boolean;
@@ -60,6 +61,7 @@ export function BottomBar({
   scenes,
   activeSceneId,
   onSceneSelect,
+  onRenameScene,
   selectedItemId,
   onSelectItem,
   isStreaming,
@@ -82,10 +84,33 @@ export function BottomBar({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteItemDialogOpen, setDeleteItemDialogOpen] = useState(false);
   const [addSourceDialogOpen, setAddSourceDialogOpen] = useState(false);
+  const [renamingSceneId, setRenamingSceneId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const skipBlurCommitRef = useRef(false);
+  const renameInputRef = useRef<HTMLInputElement | null>(null);
   const sceneToDelete = activeScene;
   const itemToDelete = activeScene?.items.find(
     (item) => item.id === selectedItemId,
   );
+
+  useEffect(() => {
+    if (!renamingSceneId) return;
+    renameInputRef.current?.focus();
+    renameInputRef.current?.select();
+  }, [renamingSceneId]);
+
+  const startRename = (scene: Scene) => {
+    setRenamingSceneId(scene.id);
+    setRenameValue(scene.name);
+  };
+
+  const finishRename = (scene: Scene, mode: 'commit' | 'cancel') => {
+    setRenamingSceneId(null);
+    const nextName = renameValue.trim();
+    if (mode === 'commit' && nextName && nextName !== scene.name) {
+      onRenameScene(scene.id, nextName);
+    }
+  };
 
   return (
     <TooltipProvider>
@@ -104,7 +129,11 @@ export function BottomBar({
                   <TooltipTrigger asChild>
                     <button
                       type="button"
-                      onClick={() => onSceneSelect(scene.id)}
+                      onClick={() => {
+                        if (renamingSceneId === scene.id) return;
+                        onSceneSelect(scene.id);
+                      }}
+                      onDoubleClick={() => startRename(scene)}
                       className={`
                           w-full px-3 py-2 rounded-lg cursor-pointer transition-all text-sm select-none border text-left
                         ${
@@ -114,7 +143,36 @@ export function BottomBar({
                         }
                       `}
                     >
-                      <div className="font-medium">{scene.name}</div>
+                      {renamingSceneId === scene.id ? (
+                        <input
+                          ref={renameInputRef}
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              skipBlurCommitRef.current = true;
+                              finishRename(scene, 'commit');
+                            }
+                            if (e.key === 'Escape') {
+                              e.preventDefault();
+                              skipBlurCommitRef.current = true;
+                              finishRename(scene, 'cancel');
+                            }
+                          }}
+                          onBlur={() => {
+                            if (skipBlurCommitRef.current) {
+                              skipBlurCommitRef.current = false;
+                              return;
+                            }
+                            finishRename(scene, 'commit');
+                          }}
+                          className="w-full rounded-md border border-(--lm-border) bg-(--lm-surface-2) px-2 py-1 text-sm text-(--lm-fg) outline-none focus:ring-2 focus:ring-(--lm-accent-weak)"
+                        />
+                      ) : (
+                        <div className="font-medium">{scene.name}</div>
+                      )}
                       <div className="text-xs opacity-70">
                         {scene.items.length} {t('scene.items')}
                       </div>

@@ -289,6 +289,21 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
     }
   };
 
+  const handleRenameScene = (sceneId: string, name: string) => {
+    const nextName = name.trim();
+    if (!nextName) return;
+
+    const existing = data.scenes.find((s) => s.id === sceneId);
+    if (!existing || existing.name === nextName) return;
+
+    updateData({
+      ...data,
+      scenes: data.scenes.map((scene) =>
+        scene.id === sceneId ? { ...scene, name: nextName } : scene,
+      ),
+    });
+  };
+
   // Move scene up
   const handleMoveSceneUp = (sceneId: string) => {
     const index = data.scenes.findIndex((s) => s.id === sceneId);
@@ -1172,6 +1187,7 @@ function AppContent({ extensions }: { extensions?: LiveMixerExtensions }) {
             scenes={data.scenes}
             activeSceneId={activeSceneId}
             onSceneSelect={setActiveSceneId}
+            onRenameScene={handleRenameScene}
             selectedItemId={selectedItemId}
             onSelectItem={setSelectedItemId}
             isStreaming={isStreaming}
