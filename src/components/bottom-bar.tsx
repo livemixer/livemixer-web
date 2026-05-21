@@ -109,7 +109,7 @@ export function BottomBar({
                           w-full px-3 py-2 rounded-lg cursor-pointer transition-all text-sm select-none border text-left
                         ${
                           activeSceneId === scene.id
-                            ? 'bg-linear-to-r from-primary-600 to-primary-500 text-white border-primary-400 shadow-lg'
+                            ? 'bg-(--lm-accent-weak) text-(--lm-fg) border-(--lm-accent) shadow-sm'
                             : 'bg-(--lm-surface-1) text-(--lm-muted) hover:bg-(--lm-hover) border-(--lm-border)'
                         }
                       `}

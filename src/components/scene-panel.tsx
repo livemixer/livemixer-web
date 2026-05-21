@@ -23,8 +23,8 @@ export function ScenePanel({
   return (
     <TooltipProvider>
       <div className="h-full flex flex-col">
-        <div className="px-4 py-2 border-b border-neutral-700/30 text-center bg-neutral-900/80 sticky top-0">
-          <h3 className="text-sm font-semibold text-white">
+        <div className="px-4 py-2 border-b border-(--lm-border) text-center bg-(--lm-surface-3) sticky top-0">
+          <h3 className="text-sm font-semibold text-(--lm-fg)">
             {t('scene.title')}
           </h3>
         </div>
@@ -40,8 +40,8 @@ export function ScenePanel({
                       w-full px-3 py-2 rounded-lg cursor-pointer transition-all text-sm select-none border text-left
                       ${
                         activeSceneId === scene.id
-                          ? 'bg-gradient-to-r from-primary-600 to-primary-500 text-white border-primary-400 shadow-lg'
-                          : 'bg-neutral-800/40 text-neutral-300 hover:bg-neutral-700/40 border-neutral-700/30'
+                          ? 'bg-(--lm-accent-weak) text-(--lm-fg) border-(--lm-accent) shadow-sm'
+                          : 'bg-(--lm-surface-1) text-(--lm-fg) hover:bg-(--lm-hover) border-(--lm-border) hover:border-(--lm-border-strong)'
                       }
                     `}
                   >
@@ -53,14 +53,14 @@ export function ScenePanel({
                 </TooltipTrigger>
                 <TooltipContent
                   side="right"
-                  className="bg-neutral-800 border-neutral-700/50 text-white"
+                  className="bg-(--lm-surface-3) border-(--lm-border) text-(--lm-fg)"
                 >
                   <div className="space-y-1">
                     <div className="font-medium">{scene.name}</div>
-                    <div className="text-xs text-neutral-400">
+                    <div className="text-xs text-(--lm-muted-2)">
                       ID: {scene.id}
                     </div>
-                    <div className="text-xs text-neutral-400">
+                    <div className="text-xs text-(--lm-muted-2)">
                       {scene.items.length} {t('scene.items')}
                     </div>
                   </div>
